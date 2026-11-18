@@ -377,6 +377,7 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
   const filteredCourses = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return courses.filter((c) => {
+      if (c.visible === false) return false;
       if (selectedFieldId !== 'all' && c.fieldId !== selectedFieldId) return false;
       if (difficultyFilter !== 'all' && c.difficulty !== difficultyFilter) return false;
       if (!q) return true;

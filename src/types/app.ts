@@ -22,6 +22,19 @@ export interface FieldCategory {
   facultyEn: string;
 }
 
+export type UserRole = 'student' | 'professor' | 'admin';
+
+export interface UserSession {
+  id: string;
+  name: string;
+  email: string;
+  university: string;
+  field: string;
+  role: UserRole;
+  avatarInitials: string;
+  joinedAt: string;
+}
+
 export interface CourseItem {
   id: string;
   code: string;
@@ -33,6 +46,7 @@ export interface CourseItem {
   topicsFa: string[];
   topicsEn: string[];
   keyFormula: string;
+  visible?: boolean;
 }
 
 export interface LeitnerCard {

@@ -13,13 +13,17 @@ import {
   Search,
   Loader2,
   Activity,
+  Eye,
+  EyeOff,
+  Server,
 } from 'lucide-react';
 import { ENGINEERING_FIELDS } from '../data/coursesData';
-import { CourseItem, DifficultyLevel, Lang } from '../types/app';
+import { CourseItem, DifficultyLevel, Lang, UserSession } from '../types/app';
 
 interface AdminPanelProps {
   lang: Lang;
   courses: CourseItem[];
+  currentUser?: UserSession | null;
   onAddCourse: (course: Omit<CourseItem, 'id'>) => void;
   onUpdateCourse: (course: CourseItem) => void;
   onDeleteCourse: (courseId: string) => void;
@@ -76,6 +80,7 @@ interface AdminOverviewData {
 export const AdminPanel: React.FC<AdminPanelProps> = ({
   lang,
   courses,
+  currentUser,
   onAddCourse,
   onUpdateCourse,
   onDeleteCourse,
@@ -306,17 +311,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     { name: lang === 'fa' ? 'ME-204 · ترمودینامیک ۱ و ۲' : 'ME-204 · Thermodynamics', students: 318 },
   ];
 
+  const visibleCourseCount = useMemo(
+    () => courses.filter((c) => c.visible !== false).length,
+    [courses]
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-            {lang === 'fa' ? 'پنل مدیریت جامع دانشیار' : 'DaneshYar Admin Control Center'}
-          </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+              {lang === 'fa' ? '👑 پنل مدیریت جامع دانشیار' : '👑 DaneshYar Admin Control Center'}
+            </h2>
+            {currentUser?.role === 'admin' && (
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                · {currentUser.name} ({currentUser.email})
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             {lang === 'fa'
-              ? 'تحلیل شاخص‌های پلتفرم، مدیریت کامل دروس، کاربران و تنظیمات مدل هوش مصنوعی'
-              : 'Platform analytics, full course CRUD, user roles & activity logs, and AI tuning'}
+              ? 'تحلیل شاخص‌های پلتفرم، مدیریت کامل دروس، کاربران و تنظیمات سیستم و هوش مصنوعی'
+              : 'Platform analytics, full course visibility & CRUD, user roles, and AI & server configuration'}
           </p>
         </div>
 
@@ -326,7 +343,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               { id: 'analytics', icon: BarChart3, fa: 'داشبورد تحلیلی', en: 'Analytics' },
               { id: 'courses', icon: BookOpen, fa: 'مدیریت دروس', en: 'Courses CRUD' },
               { id: 'users', icon: Users, fa: 'مدیریت کاربران', en: 'Users & Logs' },
-              { id: 'ai-tuning', icon: Sliders, fa: 'تنظیمات AI', en: 'AI Tuning' },
+              { id: 'ai-tuning', icon: Sliders, fa: 'تنظیمات سیستم و AI', en: 'System & AI' },
             ] as const
           ).map((item) => {
             const Icon = item.icon;
@@ -582,61 +599,84 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </form>
           )}
 
-          {/* Course Table */}
+          {/* Course Table with Visibility Toggle */}
           <div className="glass-surface rounded-3xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
+              <span>
+                {lang === 'fa'
+                  ? `کل دروس: ${courses.length} · فعال در کاتالوگ: ${visibleCourseCount} · مخفی: ${courses.length - visibleCourseCount}`
+                  : `Total: ${courses.length} · Visible: ${visibleCourseCount} · Hidden: ${courses.length - visibleCourseCount}`}
+              </span>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-start text-xs sm:text-sm">
                 <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-600 dark:text-slate-300">
                   <tr>
                     <th className="p-3.5 text-start font-semibold">{lang === 'fa' ? 'کد' : 'Code'}</th>
-                    <th className="p-3.5 text-start font-semibold">{lang === 'fa' ? 'عنوان درس' : 'Course Title'}</th>
+                    <th className="p-3.5 text-start font-semibold">{lang === 'fa' ? 'عنوان درس و سرفصل' : 'Course Title'}</th>
                     <th className="p-3.5 text-start font-semibold">{lang === 'fa' ? 'سطح' : 'Difficulty'}</th>
-                    <th className="p-3.5 text-start font-semibold">{lang === 'fa' ? 'واحد' : 'Credits'}</th>
+                    <th className="p-3.5 text-start font-semibold">{lang === 'fa' ? 'نمایش' : 'Visibility'}</th>
                     <th className="p-3.5 text-end font-semibold">{lang === 'fa' ? 'عملیات' : 'Actions'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200/70 dark:divide-slate-800/70">
-                  {filteredCourses.map((c) => (
-                    <tr key={c.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40">
-                      <td className="p-3.5 font-mono text-sky-700 dark:text-sky-400 font-semibold whitespace-nowrap">{c.code}</td>
-                      <td className="p-3.5">
-                        <div className="font-semibold text-slate-900 dark:text-white">
-                          {lang === 'fa' ? c.titleFa : c.titleEn}
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-md">
-                          {(lang === 'fa' ? c.topicsFa : c.topicsEn).join(' · ')}
-                        </div>
-                      </td>
-                      <td className="p-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                        {c.difficulty === 'introductory'
-                          ? lang === 'fa' ? 'پایه' : 'Intro'
-                          : c.difficulty === 'intermediate'
-                          ? lang === 'fa' ? 'تخصصی' : 'Interm.'
-                          : lang === 'fa' ? 'پیشرفته' : 'Adv.'}
-                      </td>
-                      <td className="p-3.5 font-mono tabular-nums text-slate-700 dark:text-slate-200">{c.credits}</td>
-                      <td className="p-3.5 text-end whitespace-nowrap">
-                        <div className="inline-flex items-center gap-2">
+                  {filteredCourses.map((c) => {
+                    const isVisible = c.visible !== false;
+                    return (
+                      <tr key={c.id} className={`hover:bg-slate-50/70 dark:hover:bg-slate-900/40 ${!isVisible ? 'opacity-60' : ''}`}>
+                        <td className="p-3.5 font-mono text-sky-700 dark:text-sky-400 font-semibold whitespace-nowrap">{c.code}</td>
+                        <td className="p-3.5">
+                          <div className="font-semibold text-slate-900 dark:text-white">
+                            {lang === 'fa' ? c.titleFa : c.titleEn}
+                          </div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-md">
+                            {(lang === 'fa' ? c.topicsFa : c.topicsEn).join(' · ')}
+                          </div>
+                        </td>
+                        <td className="p-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                          {c.difficulty === 'introductory'
+                            ? lang === 'fa' ? 'پایه' : 'Intro'
+                            : c.difficulty === 'intermediate'
+                            ? lang === 'fa' ? 'تخصصی' : 'Interm.'
+                            : lang === 'fa' ? 'پیشرفته' : 'Adv.'} · {c.credits} {lang === 'fa' ? 'واحد' : 'Cr'}
+                        </td>
+                        <td className="p-3.5 whitespace-nowrap">
                           <button
                             type="button"
-                            onClick={() => openEditCourse(c)}
-                            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-sky-600 cursor-pointer"
-                            title={lang === 'fa' ? 'ویرایش' : 'Edit'}
+                            onClick={() => onUpdateCourse({ ...c, visible: !isVisible })}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border cursor-pointer transition-colors ${
+                              isVisible
+                                ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+                                : 'border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                            }`}
                           >
-                            <Pencil className="w-3.5 h-3.5" />
+                            {isVisible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                            <span>{isVisible ? (lang === 'fa' ? 'نمایش' : 'Visible') : (lang === 'fa' ? 'مخفی' : 'Hidden')}</span>
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => onDeleteCourse(c.id)}
-                            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-rose-600 cursor-pointer"
-                            title={lang === 'fa' ? 'حذف' : 'Delete'}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="p-3.5 text-end whitespace-nowrap">
+                          <div className="inline-flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => openEditCourse(c)}
+                              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-sky-600 cursor-pointer"
+                              title={lang === 'fa' ? 'ویرایش' : 'Edit'}
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onDeleteCourse(c.id)}
+                              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-rose-600 cursor-pointer"
+                              title={lang === 'fa' ? 'حذف' : 'Delete'}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -767,102 +807,159 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       )}
 
       {/* ===================================================================== */}
-      {/* TAB 4: AI Tuning Panel                                                */}
+      {/* TAB 4: AI Tuning & System Settings / Server Metrics                   */}
       {/* ===================================================================== */}
       {tab === 'ai-tuning' && (
-        <form onSubmit={handleSaveAiConfig} className="glass-surface rounded-3xl p-6 sm:p-8 max-w-3xl space-y-5">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-              {lang === 'fa' ? 'تنظیمات هسته هوش مصنوعی و سبک فاینمن' : 'AI System Prompt & Pedagogical Tuning'}
-            </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
-              {lang === 'fa'
-                ? 'تغییرات مستقیماً روی دستیار فاینمن، حل فرمول و ربات چت @دانشیار اعمال می‌شوند.'
-                : 'Changes apply immediately to Feynman AI, Formula Solver, and @DaneshYar chat bot.'}
-            </p>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <form onSubmit={handleSaveAiConfig} className="lg:col-span-7 glass-surface rounded-3xl p-6 sm:p-8 space-y-5">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                {lang === 'fa' ? 'تنظیمات هسته هوش مصنوعی و سبک فاینمن' : 'AI System Prompt & Pedagogical Tuning'}
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                {lang === 'fa'
+                  ? 'تغییرات مستقیماً روی دستیار فاینمن، حل فرمول و ربات چت @دانشیار اعمال می‌شوند.'
+                  : 'Changes apply immediately to Feynman AI, Formula Solver, and @DaneshYar chat bot.'}
+              </p>
+            </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              {lang === 'fa' ? 'دستورالعمل سیستمی (System Prompt)' : 'Global System Prompt'}
-            </label>
-            <textarea
-              rows={4}
-              value={aiConfig.systemPrompt}
-              onChange={(e) => setAiConfig((p) => ({ ...p, systemPrompt: e.target.value }))}
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/85 dark:bg-slate-900/85 p-3.5 text-sm text-slate-900 dark:text-white"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                {lang === 'fa' ? `خلاقیت پاسخ (${aiConfig.temperature})` : `Creativity (${aiConfig.temperature})`}
+                {lang === 'fa' ? 'دستورالعمل سیستمی (System Prompt)' : 'Global System Prompt'}
               </label>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.1}
-                value={aiConfig.temperature}
-                onChange={(e) => setAiConfig((p) => ({ ...p, temperature: Number(e.target.value) }))}
-                className="w-full accent-sky-600 cursor-pointer"
+              <textarea
+                rows={4}
+                value={aiConfig.systemPrompt}
+                onChange={(e) => setAiConfig((p) => ({ ...p, systemPrompt: e.target.value }))}
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/85 dark:bg-slate-900/85 p-3.5 text-sm text-slate-900 dark:text-white"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                {lang === 'fa' ? 'سبک توضیح فاینمن' : 'Feynman Style'}
-              </label>
-              <select
-                value={aiConfig.feynmanStyle}
-                onChange={(e) =>
-                  setAiConfig((p) => ({ ...p, feynmanStyle: e.target.value as AiTuningConfig['feynmanStyle'] }))
-                }
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs sm:text-sm text-slate-900 dark:text-white"
-              >
-                <option value="storytelling">{lang === 'fa' ? 'داستان‌محور و تشبیهی' : 'Storytelling & Analogy'}</option>
-                <option value="balanced">{lang === 'fa' ? 'متعادل دانشگاهی' : 'Balanced Academic'}</option>
-                <option value="rigorous">{lang === 'fa' ? 'دقیق با اثبات ریاضی' : 'Rigorous Mathematical'}</option>
-              </select>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  {lang === 'fa' ? `خلاقیت پاسخ (${aiConfig.temperature})` : `Creativity (${aiConfig.temperature})`}
+                </label>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.1}
+                  value={aiConfig.temperature}
+                  onChange={(e) => setAiConfig((p) => ({ ...p, temperature: Number(e.target.value) }))}
+                  className="w-full accent-sky-600 cursor-pointer"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  {lang === 'fa' ? 'سبک توضیح فاینمن' : 'Feynman Style'}
+                </label>
+                <select
+                  value={aiConfig.feynmanStyle}
+                  onChange={(e) =>
+                    setAiConfig((p) => ({ ...p, feynmanStyle: e.target.value as AiTuningConfig['feynmanStyle'] }))
+                  }
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs sm:text-sm text-slate-900 dark:text-white"
+                >
+                  <option value="storytelling">{lang === 'fa' ? 'داستان‌محور و تشبیهی' : 'Storytelling & Analogy'}</option>
+                  <option value="balanced">{lang === 'fa' ? 'متعادل دانشگاهی' : 'Balanced Academic'}</option>
+                  <option value="rigorous">{lang === 'fa' ? 'دقیق با اثبات ریاضی' : 'Rigorous Mathematical'}</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  {lang === 'fa' ? 'عمق استدلال فرمول‌حل‌کن' : 'Solver Reasoning Depth'}
+                </label>
+                <select
+                  value={aiConfig.thinkingLevel}
+                  onChange={(e) =>
+                    setAiConfig((p) => ({ ...p, thinkingLevel: e.target.value as AiTuningConfig['thinkingLevel'] }))
+                  }
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs sm:text-sm text-slate-900 dark:text-white"
+                >
+                  <option value="LOW">LOW (سریع)</option>
+                  <option value="MEDIUM">MEDIUM (متعادل)</option>
+                  <option value="HIGH">HIGH (استنتاج عمیق)</option>
+                </select>
+              </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                {lang === 'fa' ? 'عمق استدلال فرمول‌حل‌کن' : 'Solver Reasoning Depth'}
-              </label>
-              <select
-                value={aiConfig.thinkingLevel}
-                onChange={(e) =>
-                  setAiConfig((p) => ({ ...p, thinkingLevel: e.target.value as AiTuningConfig['thinkingLevel'] }))
-                }
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs sm:text-sm text-slate-900 dark:text-white"
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={savingAi}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold cursor-pointer"
               >
-                <option value="LOW">LOW (سریع)</option>
-                <option value="MEDIUM">MEDIUM (متعادل)</option>
-                <option value="HIGH">HIGH (استنتاج عمیق)</option>
-              </select>
+                {savingAi ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                <span>{lang === 'fa' ? 'ذخیره و اعمال تنظیمات' : 'Save & Apply AI Config'}</span>
+              </button>
+
+              {aiSavedToast && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{lang === 'fa' ? 'تنظیمات با موفقیت اعمال شد.' : 'AI configuration updated.'}</span>
+                </span>
+              )}
+            </div>
+          </form>
+
+          {/* Server Metrics & System Status Panel */}
+          <div className="lg:col-span-5 glass-surface rounded-3xl p-6 space-y-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Server className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  {lang === 'fa' ? 'وضعیت سرور و متریک‌های سیستم' : 'Server Metrics & Runtime'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={loadAdminOverview}
+                className="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
+              >
+                {lang === 'fa' ? 'بروزرسانی' : 'Refresh'}
+              </button>
+            </div>
+
+            <div className="divide-y divide-slate-200/70 dark:divide-slate-800/70 text-xs sm:text-sm">
+              {[
+                {
+                  label: lang === 'fa' ? 'سرویس هسته AI' : 'AI Core Runtime',
+                  val: 'Express + Gemini SDK',
+                },
+                {
+                  label: lang === 'fa' ? 'دروس فعال / کل کاتالوگ' : 'Visible / Total Courses',
+                  val: `${visibleCourseCount} / ${courses.length}`,
+                },
+                {
+                  label: lang === 'fa' ? 'کل درخواست‌های پردازش‌شده AI' : 'Total AI Queries',
+                  val: String(overview?.metrics.totalAiQueries ?? 0),
+                },
+                {
+                  label: lang === 'fa' ? 'تعداد کاربران ثبت‌شده' : 'Registered Users',
+                  val: String(overview?.metrics.totalRegisteredUsers ?? 0),
+                },
+                {
+                  label: lang === 'fa' ? 'سطح استنتاج فعال' : 'Active Thinking Level',
+                  val: `${aiConfig.thinkingLevel} · T=${aiConfig.temperature}`,
+                },
+                {
+                  label: lang === 'fa' ? 'اپراتور نشست فعلی' : 'Current Session Operator',
+                  val: currentUser ? `${currentUser.name} (${currentUser.role})` : 'Guest View',
+                },
+              ].map((row, idx) => (
+                <div key={idx} className="py-2.5 flex items-center justify-between gap-3">
+                  <span className="text-slate-500 dark:text-slate-400">{row.label}</span>
+                  <span className="font-mono tabular-nums font-semibold text-slate-900 dark:text-white">
+                    {row.val}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
-
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={savingAi}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold cursor-pointer"
-            >
-              {savingAi ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              <span>{lang === 'fa' ? 'ذخیره و اعمال تنظیمات' : 'Save & Apply AI Config'}</span>
-            </button>
-
-            {aiSavedToast && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>{lang === 'fa' ? 'تنظیمات با موفقیت اعمال شد.' : 'AI configuration updated.'}</span>
-              </span>
-            )}
-          </div>
-        </form>
+        </div>
       )}
     </div>
   );
