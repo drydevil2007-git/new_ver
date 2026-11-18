@@ -536,18 +536,20 @@ export function getCourseRichDetail(course: CourseItem, allCourses: CourseItem[]
   const topicZeroEn = course.topicsEn[0] || course.titleEn;
 
   const feynmanChild5Fa =
-    course.code === 'EE-201'
+    course.feynmanAnalogyFa?.trim() ||
+    (course.code === 'EE-201'
       ? 'تصور کن باتری مثل یک پمپ آب پرقدرت است و سیم‌ها جوی‌های آب هستند؛ اگر دو راه داشته باشی آب بین هر دو تقسیم می‌شود، اما اگر راهی را تنگ‌تر کنی (مقاومت بیشتر)، آب کمتری از آنجا رد می‌شود!'
       : course.code === 'AI-401'
       ? 'فکر کن یک مغز کاغذی داری که هزاران عکس گربه و سگ می‌بیند و هر بار حدس اشتباهی می‌زند، گوشزد می‌کنی «کمی گوش‌هایش را تیزتر ببین!» تا کم‌کم با تمرین استاد تشخیص شود.'
-      : `${bp.child5Fa} در درس «${course.titleFa}»، ما دقیقاً همین ایده ساده را برای فهمیدن «${topicZeroFa}» به کار می‌بریم.`;
+      : `${bp.child5Fa} در درس «${course.titleFa}»، ما دقیقاً همین ایده ساده را برای فهمیدن «${topicZeroFa}» به کار می‌بریم.`);
 
   const feynmanChild5En =
-    course.code === 'EE-201'
+    course.feynmanAnalogyEn?.trim() ||
+    (course.code === 'EE-201'
       ? 'Imagine a battery is a water pump and wires are garden canals: when two paths split, water divides smoothly, and squeezing one hose (higher resistance) sends less current down that branch!'
       : course.code === 'AI-401'
       ? 'Think of a giant puzzle brain looking at thousands of pictures; every time it guesses wrong, we gently nudge its tiny knobs so it gets smarter on the next try.'
-      : `${bp.child5En} In "${course.titleEn}", we apply this exact everyday intuition to master ${topicZeroEn}.`;
+      : `${bp.child5En} In "${course.titleEn}", we apply this exact everyday intuition to master ${topicZeroEn}.`);
 
   // Derive sibling prerequisite / unlocked courses cleanly within same field or math/physics
   const sameField = allCourses.filter((c) => c.fieldId === course.fieldId && c.id !== course.id);
@@ -608,6 +610,31 @@ export function getCourseRichDetail(course: CourseItem, allCourses: CourseItem[]
 
   const deep = getDeepEnrichmentForCourse(course);
 
+  const mergedHardestExam = {
+    ...deep.hardestExam,
+    problemStatementFa: course.hardestExamQuestionFa?.trim() || deep.hardestExam.problemStatementFa,
+    problemStatementEn: course.hardestExamQuestionEn?.trim() || course.hardestExamQuestionFa?.trim() || deep.hardestExam.problemStatementEn,
+    problemFormulaLatex: course.hardestExamFormulaLatex?.trim() || deep.hardestExam.problemFormulaLatex,
+    steps: course.hardestExamSolutionSummaryFa?.trim()
+      ? [
+          {
+            stepNumber: 1,
+            titleFa: 'راهبرد و جمع‌بندی حل تشریحی مدیر/استاد',
+            titleEn: 'Instructor Verified Solution Strategy',
+            explanationFa: course.hardestExamSolutionSummaryFa.trim(),
+            explanationEn:
+              course.hardestExamSolutionSummaryEn?.trim() ||
+              course.hardestExamSolutionSummaryFa.trim(),
+            mathLatex: course.hardestExamFormulaLatex?.trim() || deep.hardestExam.problemFormulaLatex,
+          },
+          ...deep.hardestExam.steps.slice(1).map((st, idx) => ({
+            ...st,
+            stepNumber: idx + 2,
+          })),
+        ]
+      : deep.hardestExam.steps,
+  };
+
   return {
     feynmanChild5Fa,
     feynmanChild5En,
@@ -616,7 +643,7 @@ export function getCourseRichDetail(course: CourseItem, allCourses: CourseItem[]
     historicalOriginEn: deep.historicalOriginEn,
     mathematicalProof: deep.mathematicalProof,
     formulaCheatSheet: deep.formulaCheatSheet,
-    hardestExam: deep.hardestExam,
+    hardestExam: mergedHardestExam,
     syllabusFa,
     syllabusEn,
     prerequisiteCodes,

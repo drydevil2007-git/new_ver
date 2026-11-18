@@ -32,6 +32,7 @@ import {
   DEMO_PROFESSOR_PROFILE,
   DEMO_STUDENT_PROFILE,
 } from './components/AuthModal';
+import { signOutGoogle } from './lib/googleAuth';
 import { ENGINEERING_COURSES } from './data/coursesData';
 import { DANESH_REELS, buildReelForCourse } from './data/reelsAndCourseDetails';
 import {
@@ -183,6 +184,7 @@ export default function App() {
 
   const handleLogout = () => {
     const prevName = user?.name;
+    signOutGoogle().catch(() => {});
     setUser(null);
     setDemoSwitcherOpen(false);
     if (activeSection === 'admin') {
@@ -542,6 +544,7 @@ export default function App() {
               onAddCourse={handleAddCourse}
               onUpdateCourse={handleUpdateCourse}
               onDeleteCourse={handleDeleteCourse}
+              onNotify={showToast}
             />
           )}
           {activeSection === 'admin' && user?.role !== 'admin' && (

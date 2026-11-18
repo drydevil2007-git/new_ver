@@ -33,6 +33,7 @@ export interface UserSession {
   role: UserRole;
   avatarInitials: string;
   joinedAt: string;
+  photoURL?: string | null;
 }
 
 export interface CourseItem {
@@ -47,6 +48,13 @@ export interface CourseItem {
   topicsEn: string[];
   keyFormula: string;
   visible?: boolean;
+  feynmanAnalogyFa?: string;
+  feynmanAnalogyEn?: string;
+  hardestExamQuestionFa?: string;
+  hardestExamQuestionEn?: string;
+  hardestExamFormulaLatex?: string;
+  hardestExamSolutionSummaryFa?: string;
+  hardestExamSolutionSummaryEn?: string;
 }
 
 export interface LeitnerCard {
@@ -102,6 +110,28 @@ export interface ScientificArticle {
   };
   takeawaysFa: string[];
   takeawaysEn: string[];
+  status?: 'published' | 'draft';
+}
+
+export interface LectureNote {
+  id: string;
+  titleFa: string;
+  titleEn: string;
+  courseCode: string;
+  fieldFa: string;
+  fieldEn: string;
+  author: string;
+  university: string;
+  pages: number;
+  ratingSum: number;
+  ratingCount: number;
+  downloads: number;
+  summaryFa: string;
+  summaryEn: string;
+  previewFormula: string;
+  contentSnippet: string;
+  createdAt: string;
+  status?: 'published' | 'draft';
 }
 
 export type ReelVisualType = 'oscilloscope' | 'quantum' | 'neural' | 'graph' | 'thermo';

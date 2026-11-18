@@ -10,8 +10,10 @@ import {
   UserPlus,
   Building2,
   ShieldCheck,
+  Loader2,
 } from 'lucide-react';
 import { Lang, UserRole, UserSession } from '../types/app';
+import { signInWithGoogleAccount } from '../lib/googleAuth';
 
 interface AuthModalProps {
   lang: Lang;
@@ -27,7 +29,7 @@ interface StoredRegisteredUser extends UserSession {
 
 const REGISTERED_USERS_KEY = 'daneshyar_registered_users_v1';
 
-// Authorized system administrator accounts (recognized strictly upon standard email + password sign-in)
+// Authorized system administrator accounts (recognized strictly upon standard email + password or verified Google sign-in)
 const AUTHORIZED_ADMIN_EMAILS = ['hashssshdh@gmail.com'];
 
 export const DEMO_PROFESSOR_PROFILE: UserSession = {
@@ -67,6 +69,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onLoginSuccess,
 }) => {
   const [tab, setTab] = useState<'login' | 'register'>(initialTab);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   // Sign-In fields
   const [loginEmail, setLoginEmail] = useState('');
@@ -87,6 +90,84 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return raw ? JSON.parse(raw) : [];
     } catch {
       return [];
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setErrorMsg(null);
+    setGoogleLoading(true);
+    try {
+      const gUser = await signInWithGoogleAccount();
+      const email = gUser.email.toLowerCase();
+      const isAuthorizedAdmin = AUTHORIZED_ADMIN_EMAILS.includes(email);
+
+      if (isAuthorizedAdmin) {
+        const adminSession: UserSession = {
+          id: `admin-${gUser.uid}`,
+          name: gUser.name || (lang === 'fa' ? 'مدیر ارشد سیستم' : 'System Administrator'),
+          email,
+          university: lang === 'fa' ? 'دانشگاه صنعتی شریف' : 'Sharif University',
+          field: lang === 'fa' ? 'مدیریت ارشد سیستم' : 'System Administration',
+          role: 'admin',
+          avatarInitials: computeInitials(gUser.name || 'مدیر ارشد'),
+          joinedAt: new Date().toLocaleDateString(lang === 'fa' ? 'fa-IR' : 'en-US'),
+          photoURL: gUser.photoURL,
+        };
+        onLoginSuccess(adminSession, false);
+        onClose();
+        return;
+      }
+
+      const existing = getStoredUsers().find((u) => u.email.toLowerCase() === email);
+      const userSession: UserSession = {
+        id: `google-${gUser.uid}`,
+        name: gUser.name || email.split('@')[0],
+        email,
+        university: existing?.university || (lang === 'fa' ? 'دانشگاه سراسری' : 'University Campus'),
+        field: existing?.field || (lang === 'fa' ? 'مهندسی' : 'Engineering'),
+        role: existing && existing.role !== 'admin' ? existing.role : 'student',
+        avatarInitials: computeInitials(gUser.name || email),
+        joinedAt: existing?.joinedAt || new Date().toLocaleDateString(lang === 'fa' ? 'fa-IR' : 'en-US'),
+        photoURL: gUser.photoURL,
+      };
+
+      fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: userSession.name,
+          email: userSession.email,
+          university: userSession.university,
+          major: userSession.field,
+          role: userSession.role === 'professor' ? 'Professor' : 'Student',
+        }),
+      }).catch(() => {});
+
+      onLoginSuccess(userSession, false);
+      onClose();
+    } catch (err: any) {
+      const code = String(err?.code || '');
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        setErrorMsg(
+          lang === 'fa'
+            ? 'پنجره ورود با گوگل بسته شد. در صورت تمایل دوباره تلاش کنید.'
+            : 'Google Sign-In popup was closed before finishing.'
+        );
+      } else if (code === 'auth/popup-blocked') {
+        setErrorMsg(
+          lang === 'fa'
+            ? 'مرورگر پنجره ورود گوگل را مسدود کرد؛ لطفاً مجوز Pop-up را فعال کنید.'
+            : 'Browser blocked the sign-in popup. Please allow popups for this site.'
+        );
+      } else {
+        setErrorMsg(
+          lang === 'fa'
+            ? `خطا در ورود با حساب گوگل: ${err?.message || 'لطفاً دوباره تلاش کنید.'}`
+            : `Google Sign-In failed: ${err?.message || 'Please try again.'}`
+        );
+      }
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -239,7 +320,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             role="dialog"
             aria-modal="true"
             aria-label={lang === 'fa' ? 'حساب کاربری دانشیار' : 'DaneshYar Authentication'}
-            className="glass-surface bg-white/95 dark:bg-slate-900/95 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-200/80 dark:border-slate-700/70"
+            className="glass-surface bg-white/95 dark:bg-slate-900/95 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200/80 dark:border-slate-700/70"
           >
             {/* Header */}
             <div className="flex items-start justify-between gap-4">
@@ -249,8 +330,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
                   {lang === 'fa'
-                    ? 'برای ذخیره پیشرفت دروس، جعبه لایتنر و شرکت در گفتگوهای هم‌دانشگاهی وارد شوید.'
-                    : 'Sign in to sync your course progress, Leitner flashcards, and campus discussions.'}
+                    ? 'با حساب گوگل یا ایمیل دانشگاهی وارد شوید تا پیشرفت دروس و یادداشت‌های شما ذخیره شود.'
+                    : 'Sign in with Google or your university email to sync courses and notes.'}
                 </p>
               </div>
               <button
@@ -261,6 +342,53 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               >
                 <X className="w-4 h-4" />
               </button>
+            </div>
+
+            {/* Official Continue with Google Button */}
+            <button
+              type="button"
+              disabled={googleLoading}
+              onClick={handleGoogleSignIn}
+              className="w-full min-h-[46px] px-4 py-2.5 rounded-xl bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-800/90 border border-slate-300 dark:border-slate-700 shadow-sm flex items-center justify-center gap-3 text-sm font-bold text-slate-800 dark:text-slate-100 transition-colors cursor-pointer disabled:opacity-60"
+            >
+              {googleLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin text-sky-600" />
+              ) : (
+                <svg
+                  className="w-5 h-5 shrink-0"
+                  viewBox="0 0 48 48"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill="#EA4335"
+                    d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+                  />
+                  <path
+                    fill="#4285F4"
+                    d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+                  />
+                </svg>
+              )}
+              <span>
+                {googleLoading
+                  ? lang === 'fa' ? 'در حال اتصال به گوگل...' : 'Connecting to Google...'
+                  : lang === 'fa' ? 'ورود با حساب گوگل' : 'Continue with Google'}
+              </span>
+            </button>
+
+            <div className="relative flex items-center justify-center">
+              <div className="absolute inset-x-0 h-px bg-slate-200 dark:bg-slate-800" />
+              <span className="relative px-3 bg-white dark:bg-slate-900 text-[11px] font-medium text-slate-400">
+                {lang === 'fa' ? 'یا با ایمیل و رمز عبور' : 'or with email and password'}
+              </span>
             </div>
 
             {/* Tabs: Sign In | Register */}
@@ -469,8 +597,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                 <span>
                   {lang === 'fa'
-                    ? 'نشست شما به‌صورت امن در مرورگر ذخیره می‌شود.'
-                    : 'Your session is persisted locally in your browser.'}
+                    ? 'نشست شما به‌صورت امن با احراز هویت گوگل یا حساب محلی ذخیره می‌شود.'
+                    : 'Your session is securely persisted with Google Auth or local account storage.'}
                 </span>
               </span>
             </div>

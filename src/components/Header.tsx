@@ -150,7 +150,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className="inline-flex items-center gap-2 ps-1.5 pe-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700 bg-white/85 dark:bg-slate-900/85 hover:border-sky-500 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
               >
                 <span
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0 ${
+                  className={`w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-[11px] font-bold text-white shrink-0 ${
                     user.role === 'admin'
                       ? 'bg-gradient-to-br from-amber-500 to-rose-500'
                       : user.role === 'professor'
@@ -158,7 +158,16 @@ export const Header: React.FC<HeaderProps> = ({
                       : 'bg-sky-600'
                   }`}
                 >
-                  {user.avatarInitials}
+                  {user.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt={user.name}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    user.avatarInitials
+                  )}
                 </span>
                 <span className="hidden sm:inline text-xs font-bold text-slate-900 dark:text-white max-w-[110px] truncate">
                   {user.name}
@@ -179,7 +188,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="absolute end-0 mt-2 w-72 rounded-2xl glass-surface bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 shadow-2xl p-4 space-y-3 z-50">
                   <div className="flex items-center gap-3 pb-3 border-b border-slate-200/80 dark:border-slate-800/80">
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-extrabold text-white shrink-0 ${
+                      className={`w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-sm font-extrabold text-white shrink-0 ${
                         user.role === 'admin'
                           ? 'bg-gradient-to-br from-amber-500 to-rose-500'
                           : user.role === 'professor'
@@ -187,7 +196,16 @@ export const Header: React.FC<HeaderProps> = ({
                           : 'bg-sky-600'
                       }`}
                     >
-                      {user.avatarInitials}
+                      {user.photoURL ? (
+                        <img
+                          src={user.photoURL}
+                          alt={user.name}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        user.avatarInitials
+                      )}
                     </div>
                     <div className="min-w-0">
                       <div className="text-sm font-bold text-slate-900 dark:text-white truncate">

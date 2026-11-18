@@ -85,6 +85,7 @@ interface LectureNote {
   previewFormula: string;
   contentSnippet: string;
   createdAt: string;
+  status?: 'published' | 'draft';
 }
 
 const lectureNotesStore: LectureNote[] = [
@@ -409,6 +410,7 @@ interface ScientificArticleRecord {
   codeSnippet?: { language: string; title: string; code: string };
   takeawaysFa: string[];
   takeawaysEn: string[];
+  status?: 'published' | 'draft';
 }
 
 const articlesStore: ScientificArticleRecord[] = [
@@ -2179,8 +2181,12 @@ async function startServer() {
   // ==========================================================================
   // Community, Lecture Notes & Study Rooms REST APIs
   // ==========================================================================
-  app.get('/api/notes', (_req, res) => {
-    res.json({ notes: lectureNotesStore });
+  app.get('/api/notes', (req, res) => {
+    const includeDrafts = req.query.includeDrafts === 'true';
+    const notes = includeDrafts
+      ? lectureNotesStore
+      : lectureNotesStore.filter((n) => n.status !== 'draft');
+    res.json({ notes });
   });
 
   app.post('/api/notes', (req, res) => {
@@ -2206,9 +2212,47 @@ async function startServer() {
       previewFormula: previewFormula?.trim() || 'E = mc^2',
       contentSnippet: summaryFa?.trim() || titleFa.trim(),
       createdAt: 'امروز',
+      status: 'published',
     };
     lectureNotesStore.unshift(newNote);
     res.json({ note: newNote });
+  });
+
+  app.patch('/api/notes/:id', (req, res) => {
+    const note = lectureNotesStore.find((n) => n.id === req.params.id);
+    if (!note) return res.status(404).json({ error: 'جزوه یافت نشد.' });
+    const { titleFa, titleEn, courseCode, summaryFa, previewFormula, status, author, university } =
+      req.body as Partial<LectureNote>;
+    if (typeof titleFa === 'string' && titleFa.trim()) note.titleFa = titleFa.trim();
+    if (typeof titleEn === 'string' && titleEn.trim()) note.titleEn = titleEn.trim();
+    if (typeof courseCode === 'string' && courseCode.trim()) note.courseCode = courseCode.trim();
+    if (typeof summaryFa === 'string') note.summaryFa = summaryFa.trim();
+    if (typeof previewFormula === 'string' && previewFormula.trim()) note.previewFormula = previewFormula.trim();
+    if (typeof author === 'string' && author.trim()) note.author = author.trim();
+    if (typeof university === 'string' && university.trim()) note.university = university.trim();
+    if (status === 'published' || status === 'draft') note.status = status;
+    adminActivityLogs.unshift({
+      id: `log-${Date.now()}`,
+      actor: 'مدیر سیستم',
+      action: status ? `تغییر وضعیت جزوه به ${status}` : 'ویرایش جزوه',
+      target: note.titleFa,
+      timestamp: 'هم‌اکنون',
+    });
+    res.json({ note, logs: adminActivityLogs.slice(0, 20) });
+  });
+
+  app.delete('/api/notes/:id', (req, res) => {
+    const idx = lectureNotesStore.findIndex((n) => n.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ error: 'جزوه یافت نشد.' });
+    const [removed] = lectureNotesStore.splice(idx, 1);
+    adminActivityLogs.unshift({
+      id: `log-${Date.now()}`,
+      actor: 'مدیر سیستم',
+      action: 'حذف جزوه',
+      target: removed.titleFa,
+      timestamp: 'هم‌اکنون',
+    });
+    res.json({ ok: true, id: removed.id, logs: adminActivityLogs.slice(0, 20) });
   });
 
   app.post('/api/notes/:id/rate', (req, res) => {
@@ -2306,8 +2350,12 @@ async function startServer() {
   // ==========================================================================
   // Scientific Articles & Publication Hub APIs
   // ==========================================================================
-  app.get('/api/articles', (_req, res) => {
-    res.json({ articles: articlesStore });
+  app.get('/api/articles', (req, res) => {
+    const includeDrafts = req.query.includeDrafts === 'true';
+    const articles = includeDrafts
+      ? articlesStore
+      : articlesStore.filter((a) => a.status !== 'draft');
+    res.json({ articles });
   });
 
   app.post('/api/articles', (req, res) => {
@@ -2349,6 +2397,7 @@ async function startServer() {
       codeSnippet: codeSnippet?.code?.trim() ? codeSnippet : undefined,
       takeawaysFa: Array.isArray(takeawaysFa) && takeawaysFa.length > 0 ? takeawaysFa : ['نکته کلیدی مقاله منتشرشده'],
       takeawaysEn: Array.isArray(takeawaysFa) && takeawaysFa.length > 0 ? takeawaysFa : ['Key takeaway'],
+      status: 'published',
     };
 
     articlesStore.unshift(newArticle);
@@ -2361,6 +2410,55 @@ async function startServer() {
     });
 
     res.json({ article: newArticle });
+  });
+
+  app.patch('/api/articles/:id', (req, res) => {
+    const article = articlesStore.find((a) => a.id === req.params.id);
+    if (!article) return res.status(404).json({ error: 'مقاله یافت نشد.' });
+    const {
+      titleFa,
+      titleEn,
+      categoryFa,
+      categoryEn,
+      difficulty,
+      authorFa,
+      readMinutes,
+      excerptFa,
+      markdownFa,
+      status,
+    } = req.body as Partial<ScientificArticleRecord>;
+    if (typeof titleFa === 'string' && titleFa.trim()) article.titleFa = titleFa.trim();
+    if (typeof titleEn === 'string' && titleEn.trim()) article.titleEn = titleEn.trim();
+    if (typeof categoryFa === 'string' && categoryFa.trim()) article.categoryFa = categoryFa.trim();
+    if (typeof categoryEn === 'string' && categoryEn.trim()) article.categoryEn = categoryEn.trim();
+    if (difficulty) article.difficulty = difficulty;
+    if (typeof authorFa === 'string' && authorFa.trim()) article.authorFa = authorFa.trim();
+    if (typeof readMinutes === 'number' && readMinutes > 0) article.readMinutes = readMinutes;
+    if (typeof excerptFa === 'string') article.excerptFa = excerptFa.trim();
+    if (typeof markdownFa === 'string' && markdownFa.trim()) article.markdownFa = markdownFa.trim();
+    if (status === 'published' || status === 'draft') article.status = status;
+    adminActivityLogs.unshift({
+      id: `log-${Date.now()}`,
+      actor: 'مدیر سیستم',
+      action: status ? `تغییر وضعیت مقاله به ${status}` : 'ویرایش مقاله علمی',
+      target: article.titleFa,
+      timestamp: 'هم‌اکنون',
+    });
+    res.json({ article, logs: adminActivityLogs.slice(0, 20) });
+  });
+
+  app.delete('/api/articles/:id', (req, res) => {
+    const idx = articlesStore.findIndex((a) => a.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ error: 'مقاله یافت نشد.' });
+    const [removed] = articlesStore.splice(idx, 1);
+    adminActivityLogs.unshift({
+      id: `log-${Date.now()}`,
+      actor: 'مدیر سیستم',
+      action: 'حذف مقاله علمی',
+      target: removed.titleFa,
+      timestamp: 'هم‌اکنون',
+    });
+    res.json({ ok: true, id: removed.id, logs: adminActivityLogs.slice(0, 20) });
   });
 
   // ==========================================================================
@@ -2506,17 +2604,35 @@ async function startServer() {
   app.patch('/api/admin/users/:id', (req, res) => {
     const user = adminUsersStore.find((u) => u.id === req.params.id);
     if (!user) return res.status(404).json({ error: 'کاربر یافت نشد.' });
-    const { role, status } = req.body as Partial<Pick<AdminUser, 'role' | 'status'>>;
+    const { name, email, university, major, role, status } = req.body as Partial<AdminUser>;
+    if (typeof name === 'string' && name.trim()) user.name = name.trim();
+    if (typeof email === 'string' && email.trim()) user.email = email.trim();
+    if (typeof university === 'string' && university.trim()) user.university = university.trim();
+    if (typeof major === 'string' && major.trim()) user.major = major.trim();
     if (role) user.role = role;
     if (status) user.status = status;
     adminActivityLogs.unshift({
       id: `log-${Date.now()}`,
       actor: 'مدیر سیستم',
-      action: role ? `تغییر نقش به ${role}` : `تغییر وضعیت به ${status}`,
+      action: role ? `تغییر نقش به ${role}` : status ? `تغییر وضعیت به ${status}` : 'ویرایش اطلاعات کاربر',
       target: user.name,
       timestamp: 'هم‌اکنون',
     });
     res.json({ user, logs: adminActivityLogs.slice(0, 20) });
+  });
+
+  app.delete('/api/admin/users/:id', (req, res) => {
+    const idx = adminUsersStore.findIndex((u) => u.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ error: 'کاربر یافت نشد.' });
+    const [removed] = adminUsersStore.splice(idx, 1);
+    adminActivityLogs.unshift({
+      id: `log-${Date.now()}`,
+      actor: 'مدیر سیستم',
+      action: 'حذف کاربر',
+      target: removed.name,
+      timestamp: 'هم‌اکنون',
+    });
+    res.json({ ok: true, id: removed.id, logs: adminActivityLogs.slice(0, 20) });
   });
 
   app.put('/api/admin/ai-config', (req, res) => {
