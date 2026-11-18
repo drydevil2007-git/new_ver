@@ -1,0 +1,6 @@
+{
+  "name": "دانشیار — پلتفرم آموزش دانشگاهی و مهندسی | DaneshYar",
+  "description": "پلتفرم جامع آموزش مهندسی و دانشگاهی دانشیار با دستیار فاینمن، حل گام‌به‌گام فرمول‌ها با LaTeX، نقشه سه‌بعدی دروس، فلش‌کارت هوشمند لایتنر، مربی صوتی زنده و اتاق مطالعه اشتراکی.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
