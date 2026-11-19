@@ -50,7 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
   const navItems: Array<{ id: NavSection; labelFa: string; labelEn: string; isCampus?: boolean }> = [
     { id: 'courses', labelFa: 'دروس و نقشه', labelEn: 'Courses' },
     { id: 'ai-lab', labelFa: 'آزمایشگاه AI', labelEn: 'AI Lab' },
-    { id: 'articles', labelFa: 'مقالات علمی', labelEn: 'Articles' },
+    { id: 'articles', labelFa: 'کتب و مقالات علمی', labelEn: 'Books & Papers' },
     { id: 'community', labelFa: 'چت و انجمن', labelEn: 'Chat' },
     { id: 'campus', labelFa: 'هم‌دانشگاهی', labelEn: 'Campus', isCampus: true },
     { id: 'study-deck', labelFa: 'جعبه یادگیری', labelEn: 'Study' },

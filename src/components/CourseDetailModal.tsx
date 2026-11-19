@@ -22,10 +22,16 @@ import {
   Search,
   ExternalLink,
   Globe,
+  Plus,
+  Download,
+  FileText,
+  Check,
+  Trash2,
+  Library,
 } from 'lucide-react';
 import { ENGINEERING_FIELDS } from '../data/coursesData';
 import { getCourseRichDetail } from '../data/reelsAndCourseDetails';
-import { CourseItem, Lang } from '../types/app';
+import { CourseItem, Lang, ScientificResourceItem } from '../types/app';
 import { LatexBlock } from './MathRenderer';
 import { EngineeringConcept3DViewer } from './EngineeringConcept3DViewer';
 
@@ -68,6 +74,18 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   const [revealedSteps, setRevealedSteps] = useState<number>(1);
   const [paperSearchQuery, setPaperSearchQuery] = useState(course.titleEn || course.titleFa);
   const [doiInput, setDoiInput] = useState('');
+  const [customResources, setCustomResources] = useState<ScientificResourceItem[]>([]);
+  const [showAddResourceModal, setShowAddResourceModal] = useState(false);
+  const [newResType, setNewResType] = useState<'book' | 'paper'>('book');
+  const [newResTitleFa, setNewResTitleFa] = useState('');
+  const [newResTitleEn, setNewResTitleEn] = useState('');
+  const [newResAuthors, setNewResAuthors] = useState('');
+  const [newResEdition, setNewResEdition] = useState('');
+  const [newResYear, setNewResYear] = useState('2023');
+  const [newResSummary, setNewResSummary] = useState('');
+  const [newResUrl, setNewResUrl] = useState('');
+  const [newResPlatform, setNewResPlatform] = useState<ScientificResourceItem['platform']>('LibGen');
+  const [newResDoi, setNewResDoi] = useState('');
 
   useEffect(() => {
     setActiveTab(initialTab);
@@ -77,7 +95,65 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
     setRevealedSteps(1);
     setPaperSearchQuery(course.titleEn || course.titleFa);
     setDoiInput('');
+    try {
+      const saved = localStorage.getItem(`dy_custom_resources_${course.id}`);
+      setCustomResources(saved ? JSON.parse(saved) : []);
+    } catch {
+      setCustomResources([]);
+    }
   }, [course.id]);
+
+  const handleSaveResource = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newResTitleFa.trim() && !newResTitleEn.trim()) return;
+
+    const item: ScientificResourceItem = {
+      id: `res-user-${Date.now()}`,
+      type: newResType,
+      titleFa: newResTitleFa.trim() || newResTitleEn.trim(),
+      titleEn: newResTitleEn.trim() || newResTitleFa.trim(),
+      authors: newResAuthors.trim() || (lang === 'fa' ? 'نویسنده مرجع' : 'Author'),
+      editionOrJournal: newResEdition.trim() || (newResType === 'book' ? 'ویرایش جدید' : 'ژورنال علمی'),
+      year: newResYear.trim() || '2024',
+      summaryFa: newResSummary.trim() || (lang === 'fa' ? 'منبع تکمیلی و مرجع درس' : 'Course reference material'),
+      summaryEn: newResSummary.trim() || 'Course reference material',
+      doi: newResDoi.trim() || undefined,
+      downloadUrl:
+        newResUrl.trim() ||
+        (newResPlatform === 'LibGen'
+          ? `https://libgen.rs/search.php?req=${encodeURIComponent(newResTitleEn || newResTitleFa)}`
+          : `https://core.ac.uk/search?q=${encodeURIComponent(newResTitleEn || newResTitleFa)}`),
+      platform: newResPlatform,
+      isLegalOpenAccess: newResPlatform !== 'LibGen',
+    };
+
+    const next = [item, ...customResources];
+    setCustomResources(next);
+    try {
+      localStorage.setItem(`dy_custom_resources_${course.id}`, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+
+    setShowAddResourceModal(false);
+    setNewResTitleFa('');
+    setNewResTitleEn('');
+    setNewResAuthors('');
+    setNewResEdition('');
+    setNewResSummary('');
+    setNewResUrl('');
+    setNewResDoi('');
+  };
+
+  const handleDeleteCustomResource = (id: string) => {
+    const next = customResources.filter((r) => r.id !== id);
+    setCustomResources(next);
+    try {
+      localStorage.setItem(`dy_custom_resources_${course.id}`, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  };
 
   const field = useMemo(
     () => ENGINEERING_FIELDS.find((f) => f.id === course.fieldId),
@@ -85,6 +161,10 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   );
 
   const detail = useMemo(() => getCourseRichDetail(course, allCourses), [course, allCourses]);
+
+  const allResources = useMemo(() => {
+    return [...customResources, ...(detail.curatedResources || [])];
+  }, [customResources, detail.curatedResources]);
 
   const diffLabel =
     course.difficulty === 'introductory'
@@ -498,9 +578,132 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               </div>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 {lang === 'fa'
-                  ? `برای مطالعه عمیق درس «${course.titleFa}»، نیازی به پرداخت دلاری به ناشران نیست. با پلتفرم‌های دسترسی آزاد (Open Access) و مخازن دانشگاهی رسمی زیر، نسخه‌های قانونی و رایگان مقالات ISI، مقالات کنفرانسی و کتاب‌های مرجع را پیدا و دریافت کنید.`
-                  : `For deep mastery of "${course.titleEn}", you don't need to pay for articles behind commercial paywalls. Use open-access platforms and official university repositories below to obtain free, legal copies of scientific papers and reference textbooks.`}
+                  ? `برای مطالعه عمیق درس «${course.titleFa}»، کتاب‌های مرجع و مقالات کلیدی در زیر اضافه شده‌اند. همچنین می‌توانید با ۷ پلتفرم رسمی دسترسی آزاد به بیش از ۲۵۰ میلیون پژوهش و کتاب دیگر دسترسی داشته باشید.`
+                  : `Curated textbooks and landmark papers for "${course.titleEn}" are provided below with 1-click download links via LibGen, CORE, DOAJ, and OA.mg.`}
               </p>
+            </div>
+
+            {/* Curated Textbooks & Landmark Papers (Pre-added by DaneshYar) */}
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Library className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                    {lang === 'fa'
+                      ? `کتاب‌های مرجع و مقالات علمی اضافه‌شده برای این درس (${allResources.length} منبع)`
+                      : `Curated Textbooks & Reference Papers (${allResources.length} items)`}
+                  </h3>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAddResourceModal(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold cursor-pointer shadow-sm"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{lang === 'fa' ? 'افزودن کتاب یا مقاله جدید' : 'Add Book / Paper'}</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                {allResources.map((res) => {
+                  const isBook = res.type === 'book';
+                  return (
+                    <div
+                      key={res.id}
+                      className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/75 p-4 flex flex-col justify-between space-y-3 hover:border-sky-500/60 transition-all shadow-sm"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                              isBook
+                                ? 'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300'
+                                : 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300'
+                            }`}
+                          >
+                            {isBook ? <BookOpen className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
+                            <span>{isBook ? (lang === 'fa' ? 'تکست‌بوک مرجع' : 'Textbook') : (lang === 'fa' ? 'مقاله علمی داوری‌شده' : 'Research Paper')}</span>
+                          </span>
+
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                              {res.platform}
+                            </span>
+                            {res.id.startsWith('res-user-') && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteCustomResource(res.id)}
+                                title={lang === 'fa' ? 'حذف منبع افزوده شده' : 'Delete resource'}
+                                className="p-1 rounded-md text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm font-extrabold text-slate-900 dark:text-white leading-snug">
+                            {lang === 'fa' ? res.titleFa : res.titleEn}
+                          </h4>
+                          {lang === 'fa' && res.titleEn && res.titleEn !== res.titleFa && (
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5 font-sans">
+                              {res.titleEn}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="text-xs text-slate-600 dark:text-slate-300 space-y-0.5">
+                          <p className="font-semibold text-slate-700 dark:text-slate-200">
+                            ✍️ {res.authors}
+                          </p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                            {res.editionOrJournal} · {res.year}
+                          </p>
+                        </div>
+
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pt-1">
+                          {lang === 'fa' ? res.summaryFa : res.summaryEn}
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                        <a
+                          href={res.downloadUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-sm"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>
+                            {isBook
+                              ? lang === 'fa'
+                                ? `دریافت کتاب (${res.platform})`
+                                : `Download Book (${res.platform})`
+                              : lang === 'fa'
+                              ? `دریافت مقاله (${res.platform})`
+                              : `Download Paper (${res.platform})`}
+                          </span>
+                        </a>
+
+                        {res.doi && (
+                          <a
+                            href={`https://oa.mg/search?q=${encodeURIComponent(res.doi)}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-[11px] font-mono shrink-0 inline-flex items-center gap-1"
+                            title="DOI Lookup"
+                          >
+                            <span>DOI</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Dynamic Search Box for this course */}
@@ -885,6 +1088,145 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Add Custom Resource Modal */}
+      {showAddResourceModal && (
+        <div className="fixed inset-0 z-60 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3">
+          <div className="glass-surface bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 space-y-4 border border-slate-200 dark:border-slate-800 shadow-2xl animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Plus className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  {lang === 'fa' ? `افزودن کتاب یا مقاله به ${course.code}` : `Add Resource to ${course.code}`}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddResourceModal(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveResource} className="space-y-3.5">
+              <div className="flex items-center gap-2 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setNewResType('book')}
+                  className={`flex-1 py-1.5 rounded-lg text-center cursor-pointer transition-colors ${
+                    newResType === 'book'
+                      ? 'bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 shadow-sm'
+                      : 'text-slate-600 dark:text-slate-400'
+                  }`}
+                >
+                  {lang === 'fa' ? 'کتاب مرجع (Textbook)' : 'Textbook'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewResType('paper')}
+                  className={`flex-1 py-1.5 rounded-lg text-center cursor-pointer transition-colors ${
+                    newResType === 'paper'
+                      ? 'bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 shadow-sm'
+                      : 'text-slate-600 dark:text-slate-400'
+                  }`}
+                >
+                  {lang === 'fa' ? 'مقاله علمی / ISI' : 'Scientific Paper'}
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  {lang === 'fa' ? 'عنوان فارسی منبع:' : 'Persian Title:'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newResTitleFa}
+                  onChange={(e) => setNewResTitleFa(e.target.value)}
+                  placeholder="مثلاً: مبانی مدارهای الکتریکی"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  {lang === 'fa' ? 'عنوان انگلیسی منبع:' : 'English Title:'}
+                </label>
+                <input
+                  type="text"
+                  value={newResTitleEn}
+                  onChange={(e) => setNewResTitleEn(e.target.value)}
+                  placeholder="e.g. Fundamentals of Electric Circuits"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-sans focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    {lang === 'fa' ? 'نویسنده / نویسندگان:' : 'Authors:'}
+                  </label>
+                  <input
+                    type="text"
+                    value={newResAuthors}
+                    onChange={(e) => setNewResAuthors(e.target.value)}
+                    placeholder="e.g. Alexander & Sadiku"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    {lang === 'fa' ? 'پلتفرم پایگاه علمی:' : 'Scientific Platform:'}
+                  </label>
+                  <select
+                    value={newResPlatform}
+                    onChange={(e) => setNewResPlatform(e.target.value as any)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs"
+                  >
+                    <option value="LibGen">Library Genesis (LibGen)</option>
+                    <option value="CORE">CORE (مخازن رسمی)</option>
+                    <option value="DOAJ">DOAJ (دسترسی آزاد)</option>
+                    <option value="OA.mg">OA.mg (جستجوی هوشمند)</option>
+                    <option value="Unpaywall">Unpaywall</option>
+                    <option value="OpenAccessButton">Open Access Button</option>
+                    <option value="PaperPanda">PaperPanda</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  {lang === 'fa' ? 'لینک دانلود یا شناسه DOI (اختیاری):' : 'Download URL or DOI:'}
+                </label>
+                <input
+                  type="text"
+                  value={newResUrl}
+                  onChange={(e) => setNewResUrl(e.target.value)}
+                  placeholder="https://... یا خالی برای جستجوی خودکار"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-mono"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowAddResourceModal(false)}
+                  className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 cursor-pointer"
+                >
+                  {lang === 'fa' ? 'انصراف' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold cursor-pointer shadow-sm"
+                >
+                  {lang === 'fa' ? 'ثبت و ذخیره منبع' : 'Save Resource'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

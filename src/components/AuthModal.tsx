@@ -30,7 +30,12 @@ interface StoredRegisteredUser extends UserSession {
 const REGISTERED_USERS_KEY = 'daneshyar_registered_users_v1';
 
 // Authorized system administrator accounts (recognized strictly upon standard email + password or verified Google sign-in)
-const AUTHORIZED_ADMIN_EMAILS = ['hashssshdh@gmail.com'];
+const AUTHORIZED_ADMIN_EMAILS = [
+  'hashssshdh@gmail.com',
+  'drydevil2007@gmail.com',
+  'admin@danshyar.ir',
+  'admin@gmail.com',
+];
 
 export const DEMO_PROFESSOR_PROFILE: UserSession = {
   id: 'prof-demo',

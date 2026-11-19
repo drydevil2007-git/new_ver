@@ -215,6 +215,22 @@ export interface HardestExamChallenge {
   steps: HardestExamStep[];
 }
 
+export interface ScientificResourceItem {
+  id: string;
+  type: 'book' | 'paper';
+  titleFa: string;
+  titleEn: string;
+  authors: string;
+  editionOrJournal: string;
+  year: string;
+  summaryFa: string;
+  summaryEn: string;
+  doi?: string;
+  downloadUrl: string;
+  platform: 'LibGen' | 'CORE' | 'DOAJ' | 'OA.mg' | 'arXiv' | 'Unpaywall' | 'OpenAccessButton' | 'PaperPanda';
+  isLegalOpenAccess: boolean;
+}
+
 export interface CourseRichDetail {
   feynmanChild5Fa: string;
   feynmanChild5En: string;
@@ -238,6 +254,7 @@ export interface CourseRichDetail {
   marketDemandEn: string;
   industryTools: string[];
   curatedVideos: CuratedVideoLecture[];
+  curatedResources: ScientificResourceItem[];
 }
 
 export type CampusCategory =
