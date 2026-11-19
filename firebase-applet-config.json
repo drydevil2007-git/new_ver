@@ -1,11 +1,9 @@
 {
-  "projectId": "gen-lang-client-0953710453",
-  "appId": "1:691292181742:web:7fb53d2f65e19e19654fff",
-  "apiKey": "AIzaSyDIsUis5ktKHJPvrwVjl5wGaByf8GhuSf4",
-  "authDomain": "gen-lang-client-0953710453.firebaseapp.com",
-  "storageBucket": "gen-lang-client-0953710453.firebasestorage.app",
-  "messagingSenderId": "691292181742",
-  "measurementId": "",
-  "oAuthClientId": "691292181742-9qbslnmjvktjshhlv35u4f6kneqamdqm.apps.googleusercontent.com",
-  "recaptchaSiteKey": ""
+  "projectId": "danshyar-edu",
+  "appId": "1:1076085796946:web:8938ed0260355a3257ef8b",
+  "storageBucket": "danshyar-edu.firebasestorage.app",
+  "apiKey": "AIzaSyDkUHQArOb2cAhN9tFlS3Te8BxAX1je4s0",
+  "authDomain": "danshyar-edu.firebaseapp.com",
+  "messagingSenderId": "1076085796946",
+  "measurementId": "G-97YRCRTLQ6"
 }
