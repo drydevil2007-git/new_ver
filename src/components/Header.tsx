@@ -48,6 +48,7 @@ export const Header: React.FC<HeaderProps> = ({
   }, []);
 
   const navItems: Array<{ id: NavSection; labelFa: string; labelEn: string; isCampus?: boolean }> = [
+    { id: 'exam-sprint', labelFa: '🎯 آمادگی امتحان', labelEn: '🎯 Exam Prep' },
     { id: 'courses', labelFa: 'دروس و نقشه', labelEn: 'Courses' },
     { id: 'ai-lab', labelFa: 'آزمایشگاه AI', labelEn: 'AI Lab' },
     { id: 'articles', labelFa: 'کتب و مقالات علمی', labelEn: 'Books & Papers' },

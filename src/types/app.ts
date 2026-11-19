@@ -3,6 +3,7 @@ export type Theme = 'light' | 'dark';
 
 export type NavSection =
   | 'overview'
+  | 'exam-sprint'
   | 'courses'
   | 'ai-lab'
   | 'articles'

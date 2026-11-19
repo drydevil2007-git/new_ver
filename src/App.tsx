@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Header } from './components/Header';
 import { OverviewHero } from './components/OverviewHero';
+import { ExamSprintHub } from './components/ExamSprintHub';
 import { CoursesAndMindMap } from './components/CoursesAndMindMap';
 import { AiEngineeringLab, LabTab } from './components/AiEngineeringLab';
 import { DeckTab, StudyDeckHub } from './components/StudyDeckHub';
@@ -415,6 +416,7 @@ export default function App() {
               <>
                 <span aria-hidden="true">/</span>
                 <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  {activeSection === 'exam-sprint' && (lang === 'fa' ? '🎯 آمادگی هوشمند برای امتحان' : '🎯 Smart Exam Readiness Sprint')}
                   {activeSection === 'courses' && (lang === 'fa' ? 'دروس و نقشه سه‌بعدی' : 'Courses & 3D Map')}
                   {activeSection === 'ai-lab' && (lang === 'fa' ? 'آزمایشگاه هوش مصنوعی' : 'AI Studio')}
                   {activeSection === 'articles' && (lang === 'fa' ? 'مقالات علمی و آموزشی' : 'Scientific Articles')}
@@ -485,6 +487,14 @@ export default function App() {
               }}
               onOpenReelStory={handleOpenStoryReel}
               viewedReelIds={viewedReelIds}
+            />
+          )}
+
+          {activeSection === 'exam-sprint' && (
+            <ExamSprintHub
+              lang={lang}
+              onNavigate={setActiveSection}
+              onImportFlashcards={handleAddCards}
             />
           )}
 

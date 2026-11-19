@@ -13,6 +13,7 @@ import {
   Clapperboard,
   Landmark,
   Box,
+  Target,
 } from 'lucide-react';
 import { Lang, NavSection } from '../types/app';
 import { LatexBlock } from './MathRenderer';
@@ -39,6 +40,15 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({
   const DirArrow = lang === 'fa' ? ArrowLeft : ArrowRight;
 
   const capabilities = [
+    {
+      id: 'exam-sprint',
+      icon: Target,
+      titleFa: '🎯 آمادگی هوشمند امتحان از روی جزوه‌های خودتان',
+      titleEn: '🎯 Smart Exam Prep From Your Own Notes',
+      descFa: 'آزمون تشخیصی کوتاه، تقویم روزانه تا روز امتحان، سوال و فلش‌کارت با ارجاع دقیق به صفحه جزوه و حل گام‌به‌گام با سرنخ.',
+      descEn: 'Diagnostic test, day-by-day roadmap, flashcards citing note pages, and guided problem solving with socratic hints.',
+      action: () => onNavigate('exam-sprint'),
+    },
     {
       id: 'solver',
       icon: Calculator,
@@ -172,12 +182,21 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <button
                 type="button"
-                onClick={() => onOpenLabTab('solver')}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600 text-white text-sm font-semibold transition-colors cursor-pointer shadow-sm"
+                onClick={() => onNavigate('exam-sprint')}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-sky-600 via-indigo-600 to-sky-700 hover:from-sky-700 hover:to-indigo-800 text-white text-sm font-bold transition-all cursor-pointer shadow-md hover:shadow-lg"
               >
-                <Calculator className="w-4 h-4" />
-                <span>{lang === 'fa' ? 'شروع حل فرمول و معادله' : 'Open Formula Solver'}</span>
+                <Target className="w-4 h-4 text-amber-300" />
+                <span>{lang === 'fa' ? 'برای امتحان بعدی‌ات برنامه بساز' : 'Build Your Exam Prep Plan'}</span>
                 <DirArrow className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onOpenLabTab('solver')}
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 text-sm font-semibold transition-colors cursor-pointer"
+              >
+                <Calculator className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                <span>{lang === 'fa' ? 'حل فرمول و معادله' : 'Formula Solver'}</span>
               </button>
 
               <button
