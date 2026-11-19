@@ -18,11 +18,10 @@ const __dirname = path.dirname(__filename);
 
 const PORT = Number(process.env.PORT) || 3000;
 
+const DEFAULT_GEMINI_KEY = 'AQ.Ab8RN6I7hqw0hnkQ6WgEbIy-nEjDzfm9p69g-9kIiLEuxOuSUg';
+
 function getAI() {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not configured in environment.');
-  }
+  const apiKey = process.env.GEMINI_API_KEY || DEFAULT_GEMINI_KEY;
   return new GoogleGenAI({
     apiKey,
     httpOptions: {
@@ -1256,7 +1255,7 @@ async function startServer() {
           : 'Write all explanatory fields in clear, precise academic English. Format mathematical equations in standard LaTeX.';
 
       const response = await ai.models.generateContent({
-        model: 'gemini-4-hydrogen',
+        model: 'gemini-flash-lite-latest',
         contents: `Explain the engineering/physics/academic topic "${topic}" using the Feynman Technique.\nTarget audience & depth: ${depthInstruction}\nPedagogical style: ${styleInstruction}\n${languageDirective}`,
         config: {
           systemInstruction: `${aiTuningConfig.systemPrompt}\nYou specialize in the Multi-Level Feynman Technique across 4 mastery tiers.`,
@@ -1339,7 +1338,7 @@ async function startServer() {
           : ThinkingLevel.HIGH;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-4-hydrogen',
+        model: 'gemini-flash-lite-latest',
         contents: { parts },
         config: {
           thinkingConfig: { thinkingLevel: configuredThinking },
@@ -1407,7 +1406,7 @@ async function startServer() {
       const langNote = lang === 'fa' ? 'سوالات، گزینه‌ها و توضیحات فاینمن را به فارسی بنویس.' : 'Write questions, options, and Feynman explanations in English.';
 
       const response = await ai.models.generateContent({
-        model: 'gemini-4-hydrogen',
+        model: 'gemini-flash-lite-latest',
         contents: `Generate ${safeCount} university engineering multiple-choice questions on "${topic}" at "${difficulty}" difficulty. ${langNote}`,
         config: {
           responseMimeType: 'application/json',
@@ -1465,7 +1464,7 @@ async function startServer() {
       const langNote = lang === 'fa' ? 'متن فلش‌کارت‌ها به فارسی و فرمول‌ها با LaTeX خالص باشد.' : 'Write flashcards in English with pure LaTeX formulas.';
 
       const response = await ai.models.generateContent({
-        model: 'gemini-4-hydrogen',
+        model: 'gemini-flash-lite-latest',
         contents: `Create ${safeCount} high-yield spaced-repetition flashcards (active recall style) for university engineering students from this source (${courseTitle || 'Engineering'}):\n${sourceText}\n\n${langNote}`,
         config: {
           responseMimeType: 'application/json',
@@ -1536,7 +1535,7 @@ async function startServer() {
       });
 
       const response = await ai.models.generateContent({
-        model: 'gemini-4-hydrogen',
+        model: 'gemini-flash-lite-latest',
         contents: { parts },
         config: {
           thinkingConfig: { thinkingLevel: ThinkingLevel.MEDIUM },
@@ -1634,7 +1633,7 @@ async function startServer() {
         .join('\n');
 
       const textResponse = await ai.models.generateContent({
-        model: 'gemini-4-hydrogen',
+        model: 'gemini-flash-lite-latest',
         contents: `${historyText ? `Conversation so far:\n${historyText}\n\n` : ''}Student: ${message}`,
         config: {
           systemInstruction,
@@ -1731,7 +1730,7 @@ async function startServer() {
           : 'Reply concisely (max 4 sentences) in clear English with $...$ or $$...$$ LaTeX for any math.';
 
       const response = await ai.models.generateContent({
-        model: 'gemini-4-hydrogen',
+        model: 'gemini-flash-lite-latest',
         contents: `Micro-lesson topic: "${topic}"${formulaLatex ? `\nKey formula: ${formulaLatex}` : ''}\nStudent question: "${question}"\n${langNote}`,
         config: {
           thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
@@ -2131,7 +2130,7 @@ async function startServer() {
           : '';
 
       const response = await ai.models.generateContent({
-        model: 'gemini-4-hydrogen',
+        model: 'gemini-flash-lite-latest',
         contents: `Analyze this university student & societal debate neutrally:\nTopic: ${title}\nContext: ${body}${commentsContext}\n${langRule}`,
         config: {
           thinkingConfig: { thinkingLevel: ThinkingLevel.MEDIUM },
@@ -2513,7 +2512,7 @@ async function startServer() {
           .join('\n');
 
         const aiResp = await ai.models.generateContent({
-          model: 'gemini-4-hydrogen',
+          model: 'gemini-flash-lite-latest',
           contents: `Channel: ${channelMeta?.nameFa || channelId} (${channelMeta?.courseCode || 'Engineering'})\nRecent thread:\n${recentContext}\n\nUser tagged you (@دانشیار). Respond concisely, directly, and helpfully using $...$ or $$...$$ LaTeX for equations.`,
           config: {
             systemInstruction: `${aiTuningConfig.systemPrompt}\nYou are replying inside a live university chat thread as @دانشیار. Keep responses crisp, encouraging, and mathematically rigorous.`,
