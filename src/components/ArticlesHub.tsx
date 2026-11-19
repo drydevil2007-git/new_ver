@@ -216,6 +216,9 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
               alt={lang === 'fa' ? activeArticle.titleFa : activeArticle.titleEn}
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1200&q=80';
+              }}
             />
           </div>
 
@@ -271,6 +274,43 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
       ) : (
         /* Categorized Article Feed */
         <div className="space-y-5">
+          {/* Open Access & Scientific Platforms Spotlight Banner */}
+          <div className="rounded-2xl bg-gradient-to-r from-sky-500/10 via-indigo-500/10 to-emerald-500/10 border border-sky-300 dark:border-sky-800 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-md bg-sky-600 text-white text-[11px] font-bold">
+                  {lang === 'fa' ? 'راهنمای ویژه پژوهش' : 'Featured Research Guide'}
+                </span>
+                <span className="text-xs font-semibold text-sky-800 dark:text-sky-300">
+                  {lang === 'fa' ? '۷ سایت کاربردی برای دانلود رایگان مقالات و کتب' : '7 Free Academic Paper & Textbook Search Engines'}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                {lang === 'fa'
+                  ? 'نیازی به پرداخت دلاری برای مقالات ISI و کتاب‌های مرجع نیست؛ از Unpaywall، Open Access Button، CORE، DOAJ، OA.mg، PaperPanda و LibGen استفاده کنید.'
+                  : 'Bypass academic paywalls legally with open-access repositories and automated DOI retrieval tools.'}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  const target = articles.find((a) => a.id === 'art-free-papers-books');
+                  if (target) {
+                    setActiveArticle(target);
+                  } else {
+                    setSelectedCategory(lang === 'fa' ? 'مهارت‌های پژوهشی و دانشگاهی' : 'Academic & Research Skills');
+                  }
+                }}
+                className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>{lang === 'fa' ? 'مطالعه راهنما و دسترسی به سایت‌ها' : 'Read Guide & Search'}</span>
+              </button>
+            </div>
+          </div>
+
           <div className="glass-surface rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80">
               {categories.map((cat) => (
@@ -321,6 +361,9 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
                       alt={lang === 'fa' ? art.titleFa : art.titleEn}
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80';
+                      }}
                     />
                   </div>
                   <div className="p-5 space-y-2.5">

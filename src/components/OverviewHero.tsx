@@ -111,6 +111,15 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({
       descEn: 'Interactive 3D electromagnetic, mechanical, neural, and crystal models paired with 4-step toughest exam solvers.',
       action: () => onNavigate('courses'),
     },
+    {
+      id: 'papers',
+      icon: BookOpen,
+      titleFa: 'مقالات و کتب مرجع رایگان',
+      titleEn: 'Open Access Research & Textbook Hub',
+      descFa: 'دسترسی رایگان و قانونی به بیش از ۲۵۰ میلیون مقاله علمی و تکست‌بوک با CORE، DOAJ، Unpaywall و LibGen.',
+      descEn: 'Free and legal access to 250M+ peer-reviewed papers and textbooks via CORE, DOAJ, Unpaywall, and LibGen.',
+      action: () => onNavigate('articles'),
+    },
   ];
 
   const stats = [

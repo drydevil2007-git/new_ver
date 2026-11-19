@@ -34,7 +34,7 @@ function setLocal<T>(key: string, val: T): void {
 
 const DEFAULT_AI_CONFIG = {
   systemPrompt:
-    'تو «دانشیار» هستی، استاد و دستیار هوشمند آموزش مهندسی دانشگاهی. مفاهیم را با دقت علمی، مثال‌های شهودی روزمره، پرهیز از پیچیدگی غیرضروری و فرمول‌های استاندارد LaTeX آموزش بده.',
+    'تو «دانشیار» هستی، استاد و دستیار هوشمند آموزش مهندسی دانشگاهی. مفاهیم را با دقت علمی، مثال‌های شهودی روزمره، پرهیز از پیچیدگی غیرضروری و فرمول‌های استاندارد LaTeX آموزش بده. هرگاه دانشجو درباره دانلود مقالات علمی، کتاب‌های مرجع یا تکست‌بوک‌ها پرسید، ۷ سرویس معتبر دسترسی آزاد (شامل CORE, OA.mg, DOAJ, Unpaywall, Open Access Button, PaperPanda و LibGen) را برای دریافت رایگان و قانونی معرفی کن و روش یافتن مقاله با شناسه DOI را آموزش بده.',
   temperature: 0.4,
   feynmanStyle: 'balanced' as 'storytelling' | 'balanced' | 'rigorous',
   thinkingLevel: 'HIGH' as 'LOW' | 'MEDIUM' | 'HIGH',
@@ -138,6 +138,71 @@ const INITIAL_LOGS = [
 
 const INITIAL_ARTICLES = [
   {
+    id: 'art-free-papers-books',
+    titleFa: '۷ سایت کاربردی برای دانلود رایگان و قانونی مقالات و کتاب‌های علمی دانشگاهی',
+    titleEn: '7 Essential Free Platforms for Academic Papers & Textbooks',
+    categoryFa: 'مهارت‌های پژوهشی و دانشگاهی',
+    categoryEn: 'Academic & Research Skills',
+    difficulty: 'introductory',
+    authorFa: 'تیم آموزش و پژوهش دانشیار',
+    authorEn: 'DaneshYar Research Team',
+    readMinutes: 6,
+    date: '۱۴۰۴/۰۸/۲۸',
+    image: '/src/assets/images/hero_engineering_lab_1795017177911.jpg',
+    excerptFa: 'اگه برای پروژه دانشگاهی، تحقیق یا مطالعه درسی به مقاله‌ای برخوردی که برای دانلودش باید پول بدی، این ۷ پایگاه و ابزار رایگان کمکت می‌کنن نسخه‌های قانونی و معتبرش رو پیدا کنی.',
+    excerptEn: 'If you need research papers or textbooks behind paywalls, these 7 open-access platforms and DOI tools help find free, legal full-texts.',
+    markdownFa: `## چرا نباید برای مقالات دانشگاهی پول دلاری داد؟
+در دنیای پژوهش دانشگاهی، بسیاری از نویسندگان و پژوهشگران نسخه‌های مقالات خود را به صورت دسترسی باز (Open Access) یا پیش‌چاپ (Preprint) در مخازن رسمی دانشگاه‌ها بارگذاری می‌کنند. با استفاده از پلتفرم‌ها و افزونه‌های تخصصی زیر، می‌توانید به جای پرداخت هزینه‌های سنگین دلاری، به سرعت نسخه معتبر و رایگان مقاله یا کتاب مرجع مورد نظرتان را به دست آورید:
+
+## ۱. Unpaywall (unpaywall.org)
+افزونه‌ای قدرتمند برای مرورگرهای کروم و فایرفاکس است. به محض باز کردن صفحه یک مقاله پولی در سایت‌هایی مانند IEEE Xplore، ScienceDirect یا Springer، این افزونه بیش از ۵۰ هزار مخزن دانشگاهی را کاوش کرده و در صورت وجود نسخه قانونی رایگان، یک آیکون قفل سبز رنگ نمایش می‌دهد که با یک کلیک فایل PDF را تحویلتان می‌دهد.
+
+## ۲. Open Access Button (openaccessbutton.org)
+سامانه‌ای ساده و کارآمد: کافی است لینک صفحه مقاله یا شناسه دیجیتال (DOI) را وارد کنید تا نسخه رایگان در مخازن جهانی جستجو شود. اگر نسخه‌ای پیدا نشود، به نویسنده مقاله ایمیلی ارسال می‌شود تا دسترسی رایگان به نسخه قانونی را فراهم کند.
+
+## ۳. PaperPanda (paperpanda.app)
+افزونه مرورگر مبتنی بر هوش مصنوعی برای دانلود سریع مقالات علمی. با یک کلیک در صفحات مقالات پولی، نسخه PDF باز را پیدا و دانلود می‌کند.
+
+## ۴. DOAJ - Directory of Open Access Journals (doaj.org)
+یکی از معتبرترین پایگاه‌های جهانی ژورنال‌های دسترسی آزاد. بیش از ۱۰ میلیون مقاله علمی داوری‌شده (Peer-reviewed) در زمینه‌های مهندسی، علوم پایه، پزشکی و علوم انسانی را به صورت کاملاً رایگان ارائه می‌دهد.
+
+## ۵. OA.mg (oa.mg)
+موتور جست‌وجوی هوشمند نسل جدید برای مقالات علمی. امکان جستجوی مقالات، نویسندگان و ژورنال‌ها با لینک مستقیم به فایل‌های تمام‌متن قابل دسترس.
+
+## ۶. CORE (core.ac.uk)
+بزرگ‌ترین موتور جستجو و مجمع مقالات پژوهشی جهان با بیش از ۲۵۰ میلیون پژوهش دانشگاهی از هزاران مخزن دانشگاهی و پایگاه باز در سراسر کره زمین.
+
+## ۷. Library Genesis - LibGen (libgen.rs)
+پایگاهی شناخته‌شده در میان دانشجویان مهندسی برای پیدا کردن کتاب‌های مرجع (Textbook)، کتاب‌های حل‌المسائل و مقالات علمی تخصصی زبان اصلی. (تذکر: وضعیت حقوقی برخی عناوین یکسان نیست و بهتر است اولویت اول شما منابع Open Access رسمی باشد).
+
+## 📝 توصیه طلایی برای دسترسی سریع:
+برای دسترسی قانونی و مطمئن، بهتره همیشه اول سراغ منابع Open Access و نسخه‌های منتشرشده در مخازن رسمی دانشگاه‌ها بری. اگر شناسه DOI مقاله را داری، از Open Access Button یا موتور OA.mg استفاده کن تا در چند ثانیه فایل PDF را تحویل بگیری.`,
+    markdownEn: `## Open Access & Academic Literature
+Never let paywalls stop your university research. Over 50% of recent scholarly literature has free, legal Open Access versions in institutional repositories or pre-print archives.
+
+## 7 Essential Platforms & Tools
+1. **Unpaywall (unpaywall.org)**: Chrome & Firefox extension discovering legal free versions of scholarly research across 50,000+ university repositories.
+2. **Open Access Button (openaccessbutton.org)**: Instant free copy retrieval by DOI or URL, with automated author-request fallback.
+3. **PaperPanda (paperpanda.app)**: Fast 1-click academic paper downloader browser extension.
+4. **DOAJ (doaj.org)**: High quality, peer-reviewed open access journals with full-text search.
+5. **OA.mg (oa.mg)**: Search engine matching academic citations to open full-text repositories.
+6. **CORE (core.ac.uk)**: World's largest aggregator of open access research papers from thousands of academic institutions.
+7. **Library Genesis (libgen.rs)**: Comprehensive database for university textbooks, manuals, and technical references.`,
+    takeawaysFa: [
+      'همیشه قبل از پرداخت پول، شناسه DOI را در Open Access Button یا OA.mg جستجو کنید.',
+      'افزونه Unpaywall به طور خودکار قفل سبز دانلود نسخه قانونی را در صفحات ژورنال‌ها نمایش می‌دهد.',
+      'پایگاه‌های CORE و DOAJ صدها میلیون مقاله داوری‌شده رایگان از مخازن دانشگاه‌های معتبر جهان دارند.',
+      'برای کتب مرجع مهندسی و تکست‌بوک‌های زبان اصلی، LibGen گزینه‌ای شناخته‌شده است.',
+    ],
+    takeawaysEn: [
+      'Always check the DOI on Open Access Button or OA.mg before facing paywalls.',
+      'Unpaywall displays a green open-access lock automatically on paper landing pages.',
+      'CORE and DOAJ index hundreds of millions of peer-reviewed open papers from top universities.',
+      'For engineering textbooks and reference manuals, Library Genesis provides extensive coverage.',
+    ],
+    status: 'published',
+  },
+  {
     id: 'art-laplace-intuition',
     titleFa: 'درک شهودی تبدیل لاپلاس: کوچ مهندسان از حوزه زمان به صفحه s',
     titleEn: 'Intuitive Laplace Transforms: Leaving the Time Domain',
@@ -158,6 +223,22 @@ const INITIAL_ARTICLES = [
     status: 'published',
   },
 ];
+
+function getArticlesStore(): any[] {
+  const stored = getLocal<any[]>('dy_articles', INITIAL_ARTICLES);
+  const storedIds = new Set(stored.map((a: any) => a.id));
+  let modified = false;
+  for (const a of INITIAL_ARTICLES) {
+    if (!storedIds.has(a.id)) {
+      stored.unshift(a);
+      modified = true;
+    }
+  }
+  if (modified) {
+    setLocal('dy_articles', stored);
+  }
+  return stored;
+}
 
 const INITIAL_NOTES = [
   {
@@ -258,7 +339,7 @@ async function handleStaticApiFallback(apiPath: string, query: URLSearchParams, 
     const logs = getLocal<any[]>('dy_admin_logs', INITIAL_LOGS);
     const aiConfig = getLocal('dy_admin_ai_config', DEFAULT_AI_CONFIG);
     const notes = getLocal<any[]>('dy_notes', INITIAL_NOTES);
-    const articles = getLocal<any[]>('dy_articles', INITIAL_ARTICLES);
+    const articles = getArticlesStore();
     const threads = getLocal<any[]>('dy_forum_threads', []);
     return jsonResponse({
       metrics: {
@@ -341,7 +422,7 @@ async function handleStaticApiFallback(apiPath: string, query: URLSearchParams, 
 
   // Articles CRUD
   if (apiPath === '/api/articles') {
-    const articles = getLocal<any[]>('dy_articles', INITIAL_ARTICLES);
+    const articles = getArticlesStore();
     if (method === 'POST') {
       const created = {
         id: `art-${Date.now()}`,
@@ -376,7 +457,7 @@ async function handleStaticApiFallback(apiPath: string, query: URLSearchParams, 
 
   if (apiPath.startsWith('/api/articles/')) {
     const id = apiPath.split('/').pop()!;
-    const articles = getLocal<any[]>('dy_articles', INITIAL_ARTICLES);
+    const articles = getArticlesStore();
     if (method === 'PATCH') {
       const art = articles.find((a) => a.id === id);
       if (!art) return jsonResponse({ error: 'مقاله یافت نشد.' }, 404);
