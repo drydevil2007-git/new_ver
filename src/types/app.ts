@@ -11,6 +11,7 @@ export type NavSection =
   | 'campus'
   | 'mercury'
   | 'mausbot'
+  | 'strata'
   | 'study-deck'
   | 'study-rooms'
   | 'admin';
@@ -509,5 +510,66 @@ export interface MausMessage {
   terminalOutput?: string[];
   modelUsed?: MausModelId;
 }
+
+// -------------------------------------------------------------
+// Strata Engine (Local Frontier AI Inference on Consumer Hardware)
+// Inspired by niko1221/strata
+// -------------------------------------------------------------
+export type StrataModelFamily =
+  | 'qwen-3.8-flash'
+  | 'qwen-3.6-35b'
+  | 'deepseek-v4-moe'
+  | 'llama-3-moe';
+
+export type StrataQuantPack =
+  | 'ISTA-DASLab-Q2_0'
+  | 'ISTA-DASLab-IQ3_S'
+  | 'Unsloth-UD-Q4_K_XL'
+  | 'Unsloth-Q8_0'
+  | 'Gyro-S';
+
+export interface StrataHardwareProfile {
+  gpuName: string;
+  vramTotalGb: number;
+  vramUsedGb: number;
+  ramTotalGb: number;
+  ramUsedGb: number;
+  cpuName: string;
+  storageSpeedMbS: number;
+  hasCudaOrHip: boolean;
+  tierScore: 'entry' | 'enthusiast' | 'workstation' | 'frontier';
+}
+
+export interface StrataModelSpec {
+  id: string;
+  name: string;
+  family: StrataModelFamily;
+  parameters: string;
+  activeParameters: string;
+  recommendedPack: StrataQuantPack;
+  vramRequiredGb: number;
+  ramRequiredGb: number;
+  tokensPerSecEstimate: number;
+  contextWindow: number;
+  descriptionFa: string;
+  descriptionEn: string;
+  supportedBackends: string[];
+}
+
+export interface StrataServingConfig {
+  activeModelId: string;
+  port: number;
+  host: string;
+  contextSize: '32k' | '64k' | '128k';
+  visionMode: 'off' | 'on' | 'gpu';
+  parallelRequests: number;
+  status: 'offline' | 'running' | 'allocating' | 'streaming';
+  currentTokensPerSec: number;
+  totalTokensServed: number;
+  vramAllocatedGb: number;
+  ramAllocatedGb: number;
+  nvmeStreamBandwidthGbS: number;
+}
+
 
 

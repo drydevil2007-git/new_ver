@@ -16,6 +16,7 @@ import {
   Target,
   Cpu,
   Bot,
+  Zap,
 } from 'lucide-react';
 import { Lang, NavSection } from '../types/app';
 import { ENGINEERING_COURSES, ENGINEERING_FIELDS } from '../data/coursesData';
@@ -124,6 +125,15 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({
       descFa: 'تیم بات‌های هوش مصنوعی با کامپیوتر ایزوله اختصاصی (VM)، کارت‌های تایید مجوز (Approval Cards)، اتاق‌های چندرباته و پشتیبانی از مدل‌های Claude، Gemini، Grok و DeepSeek.',
       descEn: 'Your AI team in a chat app. Every bot gets an isolated computer sandbox, interactive approval cards for dangerous actions, and multi-bot collaborative rooms.',
       action: () => onNavigate('mausbot'),
+    },
+    {
+      id: 'strata',
+      icon: Zap,
+      titleFa: '⚡ هسته استنتاج محلی Strata: اجرای MoE بدون اینترنت',
+      titleEn: '⚡ Strata Local Engine: Frontier MoE on Consumer Hardware',
+      descFa: 'اجرای مدل‌های فرانتیر (Qwen3.8 Flash و DeepSeek V4) روی کارت‌های گرافیک معمولی با لایه‌بندی حافظه VRAM/RAM/NVMe، بدون تحریم، آفلاین و ۱۰۰٪ خصوصی.',
+      descEn: 'Run 110B+ MoE models on consumer gaming GPUs using layered VRAM/RAM/NVMe offloading with OpenAI/Anthropic compatible local APIs.',
+      action: () => onNavigate('strata'),
     },
     {
       id: 'campus',

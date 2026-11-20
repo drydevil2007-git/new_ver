@@ -13,6 +13,7 @@ import {
   Calendar,
   Cpu,
   Bot,
+  Zap,
 } from 'lucide-react';
 import { Lang, NavSection, UserSession } from '../types/app';
 
@@ -49,10 +50,11 @@ export const Header: React.FC<HeaderProps> = ({
     return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
 
-  const navItems: Array<{ id: NavSection; labelFa: string; labelEn: string; isCampus?: boolean; isMercury?: boolean; isMaus?: boolean }> = [
+  const navItems: Array<{ id: NavSection; labelFa: string; labelEn: string; isCampus?: boolean; isMercury?: boolean; isMaus?: boolean; isStrata?: boolean }> = [
     { id: 'exam-sprint', labelFa: '🎯 آمادگی امتحان', labelEn: '🎯 Exam Prep' },
     { id: 'mercury', labelFa: '⚡ مرکیوری ایجنت', labelEn: '⚡ Mercury Agent', isMercury: true },
     { id: 'mausbot', labelFa: '🐭 اوپن‌ماوس‌بات', labelEn: '🐭 OpenMausBot', isMaus: true },
+    { id: 'strata', labelFa: '⚡ استراتا محلی', labelEn: '⚡ Strata Local', isStrata: true },
     { id: 'courses', labelFa: 'دروس و نقشه', labelEn: 'Courses' },
     { id: 'ai-lab', labelFa: 'آزمایشگاه AI', labelEn: 'AI Lab' },
     { id: 'articles', labelFa: 'کتب و مقالات علمی', labelEn: 'Books & Papers' },
@@ -124,6 +126,14 @@ export const Header: React.FC<HeaderProps> = ({
                     aria-hidden="true"
                   >
                     <Bot className="w-3.5 h-3.5" />
+                  </span>
+                )}
+                {item.isStrata && (
+                  <span
+                    className="inline-flex items-center text-emerald-500 dark:text-emerald-400"
+                    aria-hidden="true"
+                  >
+                    <Zap className="w-3.5 h-3.5" />
                   </span>
                 )}
                 <span>{lang === 'fa' ? item.labelFa : item.labelEn}</span>
@@ -355,6 +365,11 @@ export const Header: React.FC<HeaderProps> = ({
                 {item.isMaus && (
                   <span className="inline-flex items-center text-cyan-500 dark:text-cyan-400" aria-hidden="true">
                     <Bot className="w-4 h-4" />
+                  </span>
+                )}
+                {item.isStrata && (
+                  <span className="inline-flex items-center text-emerald-500 dark:text-emerald-400" aria-hidden="true">
+                    <Zap className="w-4 h-4" />
                   </span>
                 )}
                 <span>{lang === 'fa' ? item.labelFa : item.labelEn}</span>
