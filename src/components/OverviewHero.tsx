@@ -116,8 +116,8 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({
       icon: BookOpen,
       titleFa: 'مقالات و کتب مرجع رایگان',
       titleEn: 'Open Access Research & Textbook Hub',
-      descFa: 'دسترسی رایگان و قانونی به بیش از ۲۵۰ میلیون مقاله علمی و تکست‌بوک با CORE، DOAJ، Unpaywall و LibGen.',
-      descEn: 'Free and legal access to 250M+ peer-reviewed papers and textbooks via CORE, DOAJ, Unpaywall, and LibGen.',
+      descFa: 'جستجوی پژوهش‌ها در OpenAlex، Semantic Scholar، arXiv و Crossref و یافتن نسخه‌های دسترسی آزاد.',
+      descEn: 'Search research across OpenAlex, Semantic Scholar, arXiv, and Crossref, including available open-access versions.',
       action: () => onNavigate('articles'),
     },
   ];

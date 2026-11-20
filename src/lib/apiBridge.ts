@@ -2,23 +2,7 @@
 // DaneshYar — Resilient Universal API Bridge (Express + Static Hosting + AI Fallback)
 // ============================================================================
 
-const DEFAULT_GEMINI_KEY = 'AQ.Ab8RN6I7hqw0hnkQ6WgEbIy-nEjDzfm9p69g-9kIiLEuxOuSUg';
-const CANDIDATE_MODELS = [
-  'gemini-flash-lite-latest',
-  'gemini-flash-latest',
-  'gemini-1.5-flash',
-  'gemini-pro-latest',
-];
-
-function getApiKey(): string {
-  try {
-    const custom = localStorage.getItem('dy_gemini_key') || localStorage.getItem('gemini_api_key');
-    if (custom && custom.trim()) return custom.trim();
-  } catch {
-    /* ignore */
-  }
-  return DEFAULT_GEMINI_KEY;
-}
+import { getFirebaseIdToken } from './googleAuth';
 
 function getLocal<T>(key: string, fallback: T): T {
   try {
@@ -40,7 +24,7 @@ function setLocal<T>(key: string, val: T): void {
 
 const DEFAULT_AI_CONFIG = {
   systemPrompt:
-    'تو «دانشیار» هستی، پلتفرم هوشمند مهندسی دانشگاهی. مفاهیم را با دقت علمی، مثال‌های شهودی روزمره، پرهیز از پیچیدگی غیرضروری و فرمول‌های استاندارد LaTeX آموزش بده. هرگاه دانشجو درباره دانلود مقالات علمی یا کتاب‌های مرجع پرسید، ۷ پایگاه دسترسی آزاد (شامل CORE, OA.mg, DOAJ, Unpaywall, Open Access Button, PaperPanda و LibGen) را برای دریافت رایگان و قانونی معرفی کن و روش یافتن مقاله با شناسه DOI را آموزش بده.',
+    'تو «دانشیار» هستی، پلتفرم هوشمند مهندسی دانشگاهی. مفاهیم را با دقت علمی، مثال‌های شهودی روزمره، پرهیز از پیچیدگی غیرضروری و فرمول‌های استاندارد LaTeX آموزش بده. برای جستجوی علمی، OpenAlex، Semantic Scholar، arXiv و Crossref را معرفی کن و لینک نسخهٔ آزاد را فقط وقتی خود منبع آن را تأیید کرده نمایش بده.',
   temperature: 0.4,
   feynmanStyle: 'balanced' as 'storytelling' | 'balanced' | 'rigorous',
   thinkingLevel: 'HIGH' as 'LOW' | 'MEDIUM' | 'HIGH',
@@ -56,64 +40,10 @@ async function callGemini(
   systemPrompt?: string,
   imagePart?: ImagePartInput | null
 ): Promise<string> {
-  const key = getApiKey();
-  const aiCfg = getLocal('dy_admin_ai_config', DEFAULT_AI_CONFIG);
-
-  const parts: Array<Record<string, unknown>> = [];
-  if (imagePart?.base64) {
-    parts.push({
-      inlineData: {
-        mimeType: imagePart.mimeType || 'image/png',
-        data: imagePart.base64,
-      },
-    });
-  }
-  parts.push({ text: prompt });
-
-  const body = {
-    contents: [{ role: 'user', parts }],
-    generationConfig: {
-      temperature: typeof aiCfg.temperature === 'number' ? aiCfg.temperature : 0.4,
-      maxOutputTokens: 2048,
-    },
-    systemInstruction: {
-      parts: [{ text: systemPrompt ? `${aiCfg.systemPrompt}\n${systemPrompt}` : aiCfg.systemPrompt }],
-    },
-  };
-
-  let lastError: Error | null = null;
-
-  for (const model of CANDIDATE_MODELS) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
-
-      const res = await originalFetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!res.ok) {
-        throw new Error(`Model ${model} returned status ${res.status}`);
-      }
-
-      const data = await res.json();
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (typeof text === 'string' && text.trim()) {
-        return text.trim();
-      }
-    } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
-      // continue to next candidate model
-    }
-  }
-
-  throw lastError || new Error('سرویس هوش مصنوعی جمینای در دسترس نیست.');
+  void prompt;
+  void systemPrompt;
+  void imagePart;
+  throw new Error('AI requests must be handled by the authenticated server.');
 }
 
 function extractJson<T>(rawText: string, fallback: T): T {
@@ -214,8 +144,8 @@ const INITIAL_LOGS = [
 const INITIAL_ARTICLES = [
   {
     id: 'art-free-papers-books',
-    titleFa: '۷ سایت کاربردی برای دانلود رایگان و قانونی مقالات و کتاب‌های علمی دانشگاهی',
-    titleEn: '7 Essential Free Platforms for Academic Papers & Textbooks',
+    titleFa: 'جستجوی پژوهش و تشخیص نسخه‌های دسترسی آزاد',
+    titleEn: 'Finding Scholarly Research and Verifying Open Access',
     categoryFa: 'مهارت‌های پژوهشی و دانشگاهی',
     categoryEn: 'Academic & Research Skills',
     difficulty: 'introductory',
@@ -224,56 +154,41 @@ const INITIAL_ARTICLES = [
     readMinutes: 6,
     date: '۱۴۰۴/۰۸/۲۸',
     image: '/src/assets/images/hero_engineering_lab_1795017177911.jpg',
-    excerptFa: 'اگه برای پروژه دانشگاهی، تحقیق یا مطالعه درسی به مقاله‌ای برخوردی که برای دانلودش باید پول بدی، این ۷ پایگاه و ابزار رایگان کمکت می‌کنن نسخه‌های قانونی و معتبرش رو پیدا کنی.',
-    excerptEn: 'If you need research papers or textbooks behind paywalls, these 7 open-access platforms and DOI tools help find free, legal full-texts.',
-    markdownFa: `## چرا نباید برای مقالات دانشگاهی پول دلاری داد؟
-در دنیای پژوهش دانشگاهی، بسیاری از نویسندگان و پژوهشگران نسخه‌های مقالات خود را به صورت دسترسی باز (Open Access) یا پیش‌چاپ (Preprint) در مخازن رسمی دانشگاه‌ها بارگذاری می‌کنند. با استفاده از پلتفرم‌ها و افزونه‌های تخصصی زیر، می‌توانید به جای پرداخت هزینه‌های سنگین دلاری، به سرعت نسخه معتبر و رایگان مقاله یا کتاب مرجع مورد نظرتان را به دست آورید:
+    excerptFa: 'با جستجوی هم‌زمان در OpenAlex، Semantic Scholar، arXiv و Crossref می‌توان فرادادهٔ پژوهش‌ها را مقایسه کرد و نسخهٔ آزاد را فقط از لینک تأییدشدهٔ منبع باز کرد.',
+    excerptEn: 'Search OpenAlex, Semantic Scholar, arXiv, and Crossref to compare scholarly metadata and open only full-text links confirmed by the source.',
+    markdownFa: `## جستجوی چندمنبعی
+هر پایگاه پوشش و نوع دادهٔ متفاوتی دارد. OpenAlex نمایهٔ گستردهٔ آثار و استنادات ارائه می‌کند؛ Semantic Scholar جستجوی مقاله و شبکهٔ استنادات دارد؛ arXiv پیش‌چاپ‌های علمی را میزبانی می‌کند؛ و Crossref فراداده و شناسه‌های DOI را ثبت می‌کند.
 
-## ۱. Unpaywall (unpaywall.org)
-افزونه‌ای قدرتمند برای مرورگرهای کروم و فایرفاکس است. به محض باز کردن صفحه یک مقاله پولی در سایت‌هایی مانند IEEE Xplore، ScienceDirect یا Springer، این افزونه بیش از ۵۰ هزار مخزن دانشگاهی را کاوش کرده و در صورت وجود نسخه قانونی رایگان، یک آیکون قفل سبز رنگ نمایش می‌دهد که با یک کلیک فایل PDF را تحویلتان می‌دهد.
+## چطور نتایج را بررسی کنیم؟
+عنوان، نویسندگان، سال نشر و DOI را در چند پایگاه تطبیق دهید. DOI به صفحهٔ رسمی اثر پیوند می‌دهد، اما دسترسی آزاد را تضمین نمی‌کند. اگر پایگاه لینکی با برچسب نسخهٔ آزاد ارائه کرد، دامنه و ناشر/مخزن آن را بررسی کنید. نبودن فایل آزاد به معنی مجاز بودن کپی از منابع غیررسمی نیست.
 
-## ۲. Open Access Button (openaccessbutton.org)
-سامانه‌ای ساده و کارآمد: کافی است لینک صفحه مقاله یا شناسه دیجیتال (DOI) را وارد کنید تا نسخه رایگان در مخازن جهانی جستجو شود. اگر نسخه‌ای پیدا نشود، به نویسنده مقاله ایمیلی ارسال می‌شود تا دسترسی رایگان به نسخه قانونی را فراهم کند.
+## استفاده از پیش‌چاپ
+نسخه‌های arXiv معمولاً پیش‌چاپ هستند و ممکن است داوری همتا نشده باشند یا با نسخهٔ نهایی تفاوت داشته باشند. برای استناد دانشگاهی، نسخهٔ منتشرشده و وضعیت داوری را در صفحهٔ ناشر یا DOI بررسی کنید.
 
-## ۳. PaperPanda (paperpanda.app)
-افزونه مرورگر مبتنی بر هوش مصنوعی برای دانلود سریع مقالات علمی. با یک کلیک در صفحات مقالات پولی، نسخه PDF باز را پیدا و دانلود می‌کند.
+## کمک هوش مصنوعی
+دستیار پژوهشی این سامانه فقط با فراداده و چکیده‌های بازیابی‌شده پاسخ می‌دهد و منابع را همراه پاسخ نشان می‌دهد. چکیده‌ها خلاصه‌اند؛ برای نتیجه‌گیری دقیق، متن کامل و روش‌شناسی مقاله را بخوانید.`,
+    markdownEn: `## Search across scholarly databases
+Each service has a different scope. OpenAlex indexes scholarly works and citations; Semantic Scholar provides paper search and citation graphs; arXiv hosts scientific preprints; and Crossref registers publication metadata and DOIs.
 
-## ۴. DOAJ - Directory of Open Access Journals (doaj.org)
-یکی از معتبرترین پایگاه‌های جهانی ژورنال‌های دسترسی آزاد. بیش از ۱۰ میلیون مقاله علمی داوری‌شده (Peer-reviewed) در زمینه‌های مهندسی، علوم پایه، پزشکی و علوم انسانی را به صورت کاملاً رایگان ارائه می‌دهد.
+## Verify the records
+Compare title, authors, publication year, and DOI across sources. A DOI points to the official work but does not guarantee open access. When a database provides an open-access link, verify its repository or publisher domain. Lack of a free copy does not authorize copying from unofficial sources.
 
-## ۵. OA.mg (oa.mg)
-موتور جست‌وجوی هوشمند نسل جدید برای مقالات علمی. امکان جستجوی مقالات، نویسندگان و ژورنال‌ها با لینک مستقیم به فایل‌های تمام‌متن قابل دسترس.
+## Understand preprints
+arXiv papers may not have been peer reviewed and may differ from their final published version. Check the publisher page or DOI for the version of record and review status before citing.
 
-## ۶. CORE (core.ac.uk)
-بزرگ‌ترین موتور جستجو و مجمع مقالات پژوهشی جهان با بیش از ۲۵۰ میلیون پژوهش دانشگاهی از هزاران مخزن دانشگاهی و پایگاه باز در سراسر کره زمین.
-
-## ۷. Library Genesis - LibGen (libgen.rs)
-پایگاهی شناخته‌شده در میان دانشجویان مهندسی برای پیدا کردن کتاب‌های مرجع (Textbook)، کتاب‌های حل‌المسائل و مقالات علمی تخصصی زبان اصلی. (تذکر: وضعیت حقوقی برخی عناوین یکسان نیست و بهتر است اولویت اول شما منابع Open Access رسمی باشد).
-
-## 📝 توصیه طلایی برای دسترسی سریع:
-برای دسترسی قانونی و مطمئن، بهتره همیشه اول سراغ منابع Open Access و نسخه‌های منتشرشده در مخازن رسمی دانشگاه‌ها بری. اگر شناسه DOI مقاله را داری، از Open Access Button یا موتور OA.mg استفاده کن تا در چند ثانیه فایل PDF را تحویل بگیری.`,
-    markdownEn: `## Open Access & Academic Literature
-Never let paywalls stop your university research. Over 50% of recent scholarly literature has free, legal Open Access versions in institutional repositories or pre-print archives.
-
-## 7 Essential Platforms & Tools
-1. **Unpaywall (unpaywall.org)**: Chrome & Firefox extension discovering legal free versions of scholarly research across 50,000+ university repositories.
-2. **Open Access Button (openaccessbutton.org)**: Instant free copy retrieval by DOI or URL, with automated author-request fallback.
-3. **PaperPanda (paperpanda.app)**: Fast 1-click academic paper downloader browser extension.
-4. **DOAJ (doaj.org)**: High quality, peer-reviewed open access journals with full-text search.
-5. **OA.mg (oa.mg)**: Search engine matching academic citations to open full-text repositories.
-6. **CORE (core.ac.uk)**: World's largest aggregator of open access research papers from thousands of academic institutions.
-7. **Library Genesis (libgen.rs)**: Comprehensive database for university textbooks, manuals, and technical references.`,
+## AI research assistance
+The research assistant grounds its response in retrieved metadata and abstracts and displays its sources. Abstracts are summaries; consult the full paper and methods before relying on a conclusion.`,
     takeawaysFa: [
-      'همیشه قبل از پرداخت پول، شناسه DOI را در Open Access Button یا OA.mg جستجو کنید.',
-      'افزونه Unpaywall به طور خودکار قفل سبز دانلود نسخه قانونی را در صفحات ژورنال‌ها نمایش می‌دهد.',
-      'پایگاه‌های CORE و DOAJ صدها میلیون مقاله داوری‌شده رایگان از مخازن دانشگاه‌های معتبر جهان دارند.',
-      'برای کتب مرجع مهندسی و تکست‌بوک‌های زبان اصلی، LibGen گزینه‌ای شناخته‌شده است.',
+      'عنوان، نویسندگان، سال و DOI را میان پایگاه‌ها تطبیق دهید.',
+      'پیش‌چاپ arXiv را با نسخهٔ نهاییِ داوری‌شده یکی ندانید.',
+      'لینک دسترسی آزاد را فقط از منبع معتبر و با مجوز روشن باز کنید.',
+      'خلاصهٔ AI جایگزین مطالعهٔ روش و متن کامل پژوهش نیست.',
     ],
     takeawaysEn: [
-      'Always check the DOI on Open Access Button or OA.mg before facing paywalls.',
-      'Unpaywall displays a green open-access lock automatically on paper landing pages.',
-      'CORE and DOAJ index hundreds of millions of peer-reviewed open papers from top universities.',
-      'For engineering textbooks and reference manuals, Library Genesis provides extensive coverage.',
+      'Cross-check titles, authors, years, and DOIs across databases.',
+      'Do not treat an arXiv preprint as the final peer-reviewed version.',
+      'Use open-access links only when the source provides a trustworthy link.',
+      'AI summaries do not replace reading a study’s methods and full text.',
     ],
     status: 'published',
   },
@@ -455,6 +370,19 @@ async function handleStaticApiFallback(
   init?: RequestInit
 ): Promise<Response> {
   const method = (init?.method || 'GET').toUpperCase();
+  if (
+    apiPath.startsWith('/api/ai/') ||
+    apiPath.startsWith('/api/admin/') ||
+    apiPath.startsWith('/api/chat/') ||
+    apiPath.startsWith('/api/account/') ||
+    apiPath.startsWith('/api/auth/') ||
+    apiPath.startsWith('/api/research/') ||
+    (apiPath.startsWith('/api/notes') && (method !== 'GET' || query.has('includeDrafts'))) ||
+    (apiPath.startsWith('/api/articles') && (method !== 'GET' || query.has('includeDrafts'))) ||
+    (apiPath.startsWith('/api/forum') && method !== 'GET')
+  ) {
+    return jsonResponse({ error: 'این عملیات به سرور احراز هویت‌شده نیاز دارد.' }, 503);
+  }
   let body: any = {};
   if (init?.body) {
     try {
@@ -477,7 +405,7 @@ async function handleStaticApiFallback(
 
     return jsonResponse({
       metrics: {
-        activeUsers: users.filter((u) => u.status === 'active').length * 214 + 38,
+        activeUsers: users.filter((u) => u.status === 'active').length,
         totalRegisteredUsers: users.length,
         uploadedNotes: notes.length,
         publishedArticles: articles.length,
@@ -1416,7 +1344,26 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
     const apiPath = parsedUrl.pathname;
 
     try {
-      const realResp = await originalFetch(input, init);
+      let authenticatedInit = init;
+      const method = (init?.method || 'GET').toUpperCase();
+      const needsAuth =
+        apiPath.startsWith('/api/ai/') ||
+        apiPath.startsWith('/api/admin/') ||
+        apiPath.startsWith('/api/chat/') ||
+        apiPath.startsWith('/api/account/') ||
+        apiPath.startsWith('/api/auth/') ||
+        (apiPath.startsWith('/api/notes') && (method !== 'GET' || parsedUrl.searchParams.has('includeDrafts'))) ||
+        (apiPath.startsWith('/api/articles') && (method !== 'GET' || parsedUrl.searchParams.has('includeDrafts'))) ||
+        (apiPath.startsWith('/api/forum') && method !== 'GET');
+      if (needsAuth) {
+        const token = await getFirebaseIdToken();
+        if (token) {
+          const headers = new Headers(init?.headers);
+          headers.set('Authorization', `Bearer ${token}`);
+          authenticatedInit = { ...init, headers };
+        }
+      }
+      const realResp = await originalFetch(input, authenticatedInit);
       const contentType = realResp.headers.get('content-type') || '';
       // If server responded with a non-404 JSON/stream response, use it
       if (realResp.status !== 404 && !contentType.includes('text/html')) {

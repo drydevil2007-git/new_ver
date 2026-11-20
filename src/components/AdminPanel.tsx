@@ -19,9 +19,9 @@ import {
   FileText,
   Newspaper,
   X,
-  KeyRound,
   Baby,
   Swords,
+  Sparkles,
 } from 'lucide-react';
 import { ENGINEERING_FIELDS } from '../data/coursesData';
 import {
@@ -92,6 +92,14 @@ interface AdminOverviewData {
   aiConfig: AiTuningConfig;
 }
 
+async function parseApiResponse<T>(response: Response): Promise<T> {
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || `Request failed (${response.status})`);
+  }
+  return data as T;
+}
+
 export const AdminPanel: React.FC<AdminPanelProps> = ({
   lang,
   courses,
@@ -107,6 +115,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const notify = (fa: string, en: string) => {
     onNotify?.(lang === 'fa' ? fa : en);
+  };
+  const reportAdminError = (error: unknown) => {
+    const detail = error instanceof Error ? error.message : String(error);
+    notify(`عملیات انجام نشد: ${detail}`, `Admin operation failed: ${detail}`);
   };
 
   // ============================================================================
@@ -137,6 +149,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [contentLoading, setContentLoading] = useState(false);
   const [editingArticle, setEditingArticle] = useState<ScientificArticle | null>(null);
   const [editingNote, setEditingNote] = useState<LectureNote | null>(null);
+  const [articleTopic, setArticleTopic] = useState('');
+  const [generatingArticle, setGeneratingArticle] = useState(false);
+  const [savingArticle, setSavingArticle] = useState(false);
+  const [newArticle, setNewArticle] = useState({
+    titleFa: '',
+    titleEn: '',
+    categoryFa: 'مهندسی عمومی',
+    categoryEn: 'General Engineering',
+    excerptFa: '',
+    excerptEn: '',
+    markdownFa: '',
+    markdownEn: '',
+    difficulty: 'intermediate' as DifficultyLevel,
+    takeawaysFa: [] as string[],
+    takeawaysEn: [] as string[],
+  });
 
   // ============================================================================
   // User Management & Modal State
@@ -156,27 +184,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     feynmanStyle: 'balanced',
     thinkingLevel: 'HIGH',
   });
-  const [geminiClientKey, setGeminiClientKey] = useState<string>(() => {
-    try {
-      return localStorage.getItem('dy_gemini_key') || '';
-    } catch {
-      return '';
-    }
-  });
-  const [showKeyText, setShowKeyText] = useState(false);
   const [savingAi, setSavingAi] = useState(false);
 
   const loadAdminOverview = async () => {
     setLoadingOverview(true);
     try {
       const resp = await fetch('/api/admin/overview');
-      const data: AdminOverviewData = await resp.json();
+      const data = await parseApiResponse<AdminOverviewData>(resp);
       if (data && data.metrics) {
         setOverview(data);
         if (data.aiConfig) setAiConfig(data.aiConfig);
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAdminError(error);
     } finally {
       setLoadingOverview(false);
     }
@@ -189,12 +209,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         fetch('/api/articles?includeDrafts=true'),
         fetch('/api/notes?includeDrafts=true'),
       ]);
-      const artJson = await artRes.json();
-      const noteJson = await noteRes.json();
+      const artJson = await parseApiResponse<{ articles?: ScientificArticle[] }>(artRes);
+      const noteJson = await parseApiResponse<{ notes?: LectureNote[] }>(noteRes);
       if (Array.isArray(artJson.articles)) setArticles(artJson.articles);
       if (Array.isArray(noteJson.notes)) setNotes(noteJson.notes);
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAdminError(error);
     } finally {
       setContentLoading(false);
     }
@@ -311,17 +331,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role }),
       });
-      const data = await resp.json();
+      const data = await parseApiResponse<{ user?: AdminUser; logs?: ActivityLog[] }>(resp);
       if (data.user && overview) {
         setOverview({
           ...overview,
-          users: overview.users.map((u) => (u.id === userId ? data.user : u)),
+          users: overview.users.map((u) => (u.id === userId ? data.user! : u)),
           logs: data.logs || overview.logs,
         });
         notify(`نقش ${data.user.name} به ${role} تغییر یافت.`, `Updated role for ${data.user.name} to ${role}.`);
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAdminError(error);
     }
   };
 
@@ -333,11 +353,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: nextStatus }),
       });
-      const data = await resp.json();
+      const data = await parseApiResponse<{ user?: AdminUser; logs?: ActivityLog[] }>(resp);
       if (data.user && overview) {
         setOverview({
           ...overview,
-          users: overview.users.map((u) => (u.id === user.id ? data.user : u)),
+          users: overview.users.map((u) => (u.id === user.id ? data.user! : u)),
           logs: data.logs || overview.logs,
         });
         notify(
@@ -345,8 +365,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           `User ${user.name} is now ${nextStatus}.`
         );
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAdminError(error);
     }
   };
 
@@ -366,25 +386,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           status: editingUser.status,
         }),
       });
-      const data = await resp.json();
+      const data = await parseApiResponse<{ user?: AdminUser; logs?: ActivityLog[] }>(resp);
       if (data.user && overview) {
         setOverview({
           ...overview,
-          users: overview.users.map((u) => (u.id === editingUser.id ? data.user : u)),
+          users: overview.users.map((u) => (u.id === editingUser.id ? data.user! : u)),
           logs: data.logs || overview.logs,
         });
         notify(`اطلاعات کاربر ${data.user.name} به‌روزرسانی شد.`, `Saved profile for ${data.user.name}.`);
         setEditingUser(null);
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAdminError(error);
     }
   };
 
   const handleDeleteUser = async (user: AdminUser) => {
     try {
       const resp = await fetch(`/api/admin/users/${user.id}`, { method: 'DELETE' });
-      const data = await resp.json();
+      const data = await parseApiResponse<{ ok?: boolean; logs?: ActivityLog[] }>(resp);
       if (data.ok && overview) {
         setOverview({
           ...overview,
@@ -393,8 +413,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         });
         notify(`کاربر ${user.name} حذف شد.`, `Removed user ${user.name}.`);
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAdminError(error);
     }
   };
 
@@ -411,7 +431,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           role: newUserRole,
         }),
       });
-      const data = await resp.json();
+      const data = await parseApiResponse<{ user?: AdminUser; logs?: ActivityLog[] }>(resp);
       if (data.user && overview) {
         setOverview({
           ...overview,
@@ -422,14 +442,80 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         setNewUserName('');
         setNewUserEmail('');
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAdminError(error);
     }
   };
 
   // ============================================================================
   // Articles & Notes Moderation Handlers
   // ============================================================================
+  const handleGenerateArticle = async () => {
+    if (!articleTopic.trim() || generatingArticle) return;
+    setGeneratingArticle(true);
+    try {
+      const response = await fetch('/api/admin/articles/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: articleTopic.trim(), lang }),
+      });
+      const data = await parseApiResponse<{ article?: Partial<ScientificArticle> }>(response);
+      if (!data.article?.titleFa || !data.article.markdownFa) {
+        throw new Error(lang === 'fa' ? 'مقاله تولیدشده ناقص است.' : 'The generated article is incomplete.');
+      }
+      setNewArticle((previous) => ({
+        ...previous,
+        ...data.article,
+        difficulty: data.article?.difficulty || previous.difficulty,
+        takeawaysFa: data.article?.takeawaysFa || [],
+        takeawaysEn: data.article?.takeawaysEn || [],
+      }));
+      notify('پیش‌نویس مقاله ساخته شد؛ قبل از انتشار آن را بازبینی کنید.', 'Draft generated. Review it before publishing.');
+    } catch (error) {
+      reportAdminError(error);
+    } finally {
+      setGeneratingArticle(false);
+    }
+  };
+
+  const handleCreateArticle = async (status: 'draft' | 'published') => {
+    if (!newArticle.titleFa.trim() || !newArticle.markdownFa.trim() || savingArticle) return;
+    setSavingArticle(true);
+    try {
+      const response = await fetch('/api/articles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...newArticle, status }),
+      });
+      const data = await parseApiResponse<{ article?: ScientificArticle; logs?: ActivityLog[] }>(response);
+      if (!data.article) throw new Error(lang === 'fa' ? 'مقاله ذخیره نشد.' : 'Article was not saved.');
+      setArticles((previous) => [data.article!, ...previous]);
+      if (overview && data.logs) setOverview({ ...overview, logs: data.logs });
+      setNewArticle({
+        titleFa: '',
+        titleEn: '',
+        categoryFa: 'مهندسی عمومی',
+        categoryEn: 'General Engineering',
+        excerptFa: '',
+        excerptEn: '',
+        markdownFa: '',
+        markdownEn: '',
+        difficulty: 'intermediate',
+        takeawaysFa: [],
+        takeawaysEn: [],
+      });
+      setArticleTopic('');
+      notify(
+        data.article.status === 'published' ? 'مقاله منتشر شد.' : 'مقاله به‌عنوان پیش‌نویس برای بازبینی ذخیره شد.',
+        data.article.status === 'published' ? 'Article published.' : 'Article saved as a draft for review.'
+      );
+    } catch (error) {
+      reportAdminError(error);
+    } finally {
+      setSavingArticle(false);
+    }
+  };
+
   const handleToggleArticleStatus = async (art: ScientificArticle) => {
     const nextStatus = art.status === 'draft' ? 'published' : 'draft';
     try {
@@ -438,17 +524,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: nextStatus }),
       });
-      const data = await resp.json();
+      const data = await parseApiResponse<{ article?: ScientificArticle; logs?: ActivityLog[] }>(resp);
       if (data.article) {
-        setArticles((prev) => prev.map((a) => (a.id === art.id ? data.article : a)));
+        setArticles((prev) => prev.map((a) => (a.id === art.id ? data.article! : a)));
         if (overview && data.logs) setOverview({ ...overview, logs: data.logs });
         notify(
           nextStatus === 'published' ? `مقاله «${art.titleFa}» منتشر شد.` : `مقاله «${art.titleFa}» به پیش‌نویس منتقل شد.`,
           `Article status set to ${nextStatus}.`
         );
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAdminError(error);
     }
   };
 
@@ -464,35 +550,41 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           categoryFa: editingArticle.categoryFa,
           difficulty: editingArticle.difficulty,
           authorFa: editingArticle.authorFa,
+          titleEn: editingArticle.titleEn,
+          categoryEn: editingArticle.categoryEn,
+          excerptEn: editingArticle.excerptEn,
+          markdownEn: editingArticle.markdownEn,
+          takeawaysFa: editingArticle.takeawaysFa,
+          takeawaysEn: editingArticle.takeawaysEn,
           readMinutes: editingArticle.readMinutes,
           excerptFa: editingArticle.excerptFa,
           markdownFa: editingArticle.markdownFa,
           status: editingArticle.status || 'published',
         }),
       });
-      const data = await resp.json();
+      const data = await parseApiResponse<{ article?: ScientificArticle; logs?: ActivityLog[] }>(resp);
       if (data.article) {
-        setArticles((prev) => prev.map((a) => (a.id === editingArticle.id ? data.article : a)));
+        setArticles((prev) => prev.map((a) => (a.id === editingArticle.id ? data.article! : a)));
         if (overview && data.logs) setOverview({ ...overview, logs: data.logs });
         setEditingArticle(null);
         notify('مقاله علمی با موفقیت ویرایش شد.', 'Article updated cleanly.');
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAdminError(error);
     }
   };
 
   const handleDeleteArticle = async (art: ScientificArticle) => {
     try {
       const resp = await fetch(`/api/articles/${art.id}`, { method: 'DELETE' });
-      const data = await resp.json();
+      const data = await parseApiResponse<{ ok?: boolean; logs?: ActivityLog[] }>(resp);
       if (data.ok) {
         setArticles((prev) => prev.filter((a) => a.id !== art.id));
         if (overview && data.logs) setOverview({ ...overview, logs: data.logs });
         notify(`مقاله «${art.titleFa}» حذف شد.`, 'Article deleted.');
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAdminError(error);
     }
   };
 
@@ -504,17 +596,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: nextStatus }),
       });
-      const data = await resp.json();
+      const data = await parseApiResponse<{ note?: LectureNote; logs?: ActivityLog[] }>(resp);
       if (data.note) {
-        setNotes((prev) => prev.map((n) => (n.id === note.id ? data.note : n)));
+        setNotes((prev) => prev.map((n) => (n.id === note.id ? data.note! : n)));
         if (overview && data.logs) setOverview({ ...overview, logs: data.logs });
         notify(
           nextStatus === 'published' ? `جزوه «${note.titleFa}» منتشر شد.` : `جزوه «${note.titleFa}» به پیش‌نویس رفت.`,
           `Note status set to ${nextStatus}.`
         );
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAdminError(error);
     }
   };
 
@@ -535,29 +627,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           status: editingNote.status || 'published',
         }),
       });
-      const data = await resp.json();
+      const data = await parseApiResponse<{ note?: LectureNote; logs?: ActivityLog[] }>(resp);
       if (data.note) {
-        setNotes((prev) => prev.map((n) => (n.id === editingNote.id ? data.note : n)));
+        setNotes((prev) => prev.map((n) => (n.id === editingNote.id ? data.note! : n)));
         if (overview && data.logs) setOverview({ ...overview, logs: data.logs });
         setEditingNote(null);
         notify('جزوه دانشجویی ویرایش شد.', 'Lecture note updated.');
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAdminError(error);
     }
   };
 
   const handleDeleteNote = async (note: LectureNote) => {
     try {
       const resp = await fetch(`/api/notes/${note.id}`, { method: 'DELETE' });
-      const data = await resp.json();
+      const data = await parseApiResponse<{ ok?: boolean; logs?: ActivityLog[] }>(resp);
       if (data.ok) {
         setNotes((prev) => prev.filter((n) => n.id !== note.id));
         if (overview && data.logs) setOverview({ ...overview, logs: data.logs });
         notify(`جزوه «${note.titleFa}» حذف شد.`, 'Lecture note deleted.');
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      reportAdminError(error);
     }
   };
 
@@ -569,11 +661,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setSavingAi(true);
     try {
       try {
-        if (geminiClientKey.trim()) {
-          localStorage.setItem('dy_gemini_key', geminiClientKey.trim());
-        } else {
-          localStorage.removeItem('dy_gemini_key');
-        }
         localStorage.setItem('dy_admin_ai_config', JSON.stringify(aiConfig));
       } catch {
         // ignore storage errors
@@ -584,16 +671,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(aiConfig),
       });
-      const data = await resp.json();
+      const data = await parseApiResponse<{ aiConfig?: AiTuningConfig; logs?: ActivityLog[] }>(resp);
       if (data.aiConfig) {
         setAiConfig(data.aiConfig);
         if (overview && data.logs) {
           setOverview({ ...overview, logs: data.logs });
         }
       }
-      notify('تنظیمات هسته هوش مصنوعی و کلید API با موفقیت ذخیره شد.', 'AI Engine & API configuration saved.');
-    } catch {
-      // ignore
+      notify('تنظیمات هسته هوش مصنوعی با موفقیت ذخیره شد.', 'AI Engine configuration saved.');
+    } catch (error) {
+      reportAdminError(error);
     } finally {
       setSavingAi(false);
     }
@@ -906,6 +993,112 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <Loader2 className="w-6 h-6 animate-spin text-sky-600" />
             </div>
           ) : (
+            <>
+            <section className="glass-surface rounded-3xl p-6 space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    {lang === 'fa' ? 'نوشتن و انتشار مقاله' : 'Write and publish an article'}
+                  </h3>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {lang === 'fa' ? 'پیش‌نویس دوزبانه بنویسید یا با کمک هوش مصنوعی بسازید؛ پیش از انتشار مطالب تولیدی را بررسی کنید.' : 'Write a bilingual draft or generate one with AI. Verify generated material before publishing.'}
+                  </p>
+                </div>
+                <Newspaper className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  value={articleTopic}
+                  onChange={(event) => setArticleTopic(event.target.value)}
+                  maxLength={300}
+                  placeholder={lang === 'fa' ? 'موضوع مقاله برای تولید پیش‌نویس علمی...' : 'Topic for an AI-assisted article draft...'}
+                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => void handleGenerateArticle()}
+                  disabled={generatingArticle || !articleTopic.trim()}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-violet-700 disabled:opacity-50 cursor-pointer"
+                >
+                  {generatingArticle ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                  {lang === 'fa' ? 'ساخت پیش‌نویس با AI' : 'Generate draft with AI'}
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input
+                  value={newArticle.titleFa}
+                  onChange={(event) => setNewArticle({ ...newArticle, titleFa: event.target.value })}
+                  placeholder={lang === 'fa' ? 'عنوان فارسی *' : 'Persian title *'}
+                  className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white"
+                />
+                <input
+                  value={newArticle.titleEn}
+                  onChange={(event) => setNewArticle({ ...newArticle, titleEn: event.target.value })}
+                  placeholder={lang === 'fa' ? 'عنوان انگلیسی' : 'English title'}
+                  className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white"
+                />
+                <input
+                  value={newArticle.categoryFa}
+                  onChange={(event) => setNewArticle({ ...newArticle, categoryFa: event.target.value })}
+                  placeholder={lang === 'fa' ? 'دسته‌بندی فارسی' : 'Persian category'}
+                  className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white"
+                />
+                <input
+                  value={newArticle.categoryEn}
+                  onChange={(event) => setNewArticle({ ...newArticle, categoryEn: event.target.value })}
+                  placeholder={lang === 'fa' ? 'دسته‌بندی انگلیسی' : 'English category'}
+                  className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white"
+                />
+                <textarea
+                  rows={2}
+                  value={newArticle.excerptFa}
+                  onChange={(event) => setNewArticle({ ...newArticle, excerptFa: event.target.value })}
+                  placeholder={lang === 'fa' ? 'خلاصه فارسی' : 'Persian summary'}
+                  className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 text-sm text-slate-900 dark:text-white"
+                />
+                <textarea
+                  rows={2}
+                  value={newArticle.excerptEn}
+                  onChange={(event) => setNewArticle({ ...newArticle, excerptEn: event.target.value })}
+                  placeholder={lang === 'fa' ? 'خلاصه انگلیسی' : 'English summary'}
+                  className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 text-sm text-slate-900 dark:text-white"
+                />
+                <textarea
+                  rows={8}
+                  value={newArticle.markdownFa}
+                  onChange={(event) => setNewArticle({ ...newArticle, markdownFa: event.target.value })}
+                  placeholder={lang === 'fa' ? 'متن مقاله فارسی (Markdown و LaTeX) *' : 'Persian article body (Markdown/LaTeX) *'}
+                  className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 text-sm text-slate-900 dark:text-white"
+                />
+                <textarea
+                  rows={8}
+                  value={newArticle.markdownEn}
+                  onChange={(event) => setNewArticle({ ...newArticle, markdownEn: event.target.value })}
+                  placeholder={lang === 'fa' ? 'متن مقاله انگلیسی (Markdown و LaTeX)' : 'English article body (Markdown/LaTeX)'}
+                  className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 text-sm text-slate-900 dark:text-white"
+                />
+              </div>
+              <div className="flex flex-wrap justify-end gap-2">
+                <button
+                  type="button"
+                  disabled={savingArticle || !newArticle.titleFa.trim() || !newArticle.markdownFa.trim()}
+                  onClick={() => void handleCreateArticle('draft')}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 disabled:opacity-50 cursor-pointer"
+                >
+                  <Save className="w-4 h-4" />{lang === 'fa' ? 'ذخیره پیش‌نویس' : 'Save draft'}
+                </button>
+                <button
+                  type="button"
+                  disabled={savingArticle || !newArticle.titleFa.trim() || !newArticle.markdownFa.trim()}
+                  onClick={() => void handleCreateArticle('published')}
+                  className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-sky-700 disabled:opacity-50 cursor-pointer"
+                >
+                  {savingArticle ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                  {lang === 'fa' ? 'انتشار مقاله' : 'Publish article'}
+                </button>
+              </div>
+            </section>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
               {/* Scientific Articles Moderator */}
               <div className="glass-surface rounded-3xl p-6 space-y-4">
@@ -1043,6 +1236,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
             </div>
+            </>
           )}
         </div>
       )}
@@ -1267,32 +1461,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
             </div>
 
-            {/* Client-Side Static Override API Key Settings */}
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-950/60 p-4 space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <label className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-200">
-                  <KeyRound className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-                  <span>
-                    {lang === 'fa' ? 'تنظیم کلید Gemini برای میزبانی استاتیک (اختیاری)' : 'Static Hosting Gemini Key Override (Optional)'}
-                  </span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowKeyText((s) => !s)}
-                  className="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
-                >
-                  {showKeyText ? (lang === 'fa' ? 'مخفی کردن' : 'Hide') : (lang === 'fa' ? 'نمایش' : 'Show')}
-                </button>
-              </div>
-              <input
-                type={showKeyText ? 'text' : 'password'}
-                dir="ltr"
-                value={geminiClientKey}
-                onChange={(e) => setGeminiClientKey(e.target.value)}
-                placeholder="AIza... (خالی = استفاده از کلید امن سرور)"
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-xs font-mono text-slate-900 dark:text-white"
-              />
-            </div>
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <button

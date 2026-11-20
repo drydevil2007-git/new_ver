@@ -2,7 +2,11 @@ import { initializeApp, getApps } from 'firebase/app';
 import {
   getAuth,
   GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   signInWithPopup,
+  sendPasswordResetEmail,
+  updateProfile,
   onAuthStateChanged,
   signOut,
   User,
@@ -52,8 +56,56 @@ export async function signInWithGoogleAccount(): Promise<GoogleAuthResult> {
   };
 }
 
+export async function signInWithEmail(email: string, password: string): Promise<User> {
+  const result = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+  return result.user;
+}
+
+export async function registerWithEmail(
+  name: string,
+  email: string,
+  password: string
+): Promise<User> {
+  const result = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+  await updateProfile(result.user, { displayName: name.trim() });
+  return result.user;
+}
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  await sendPasswordResetEmail(auth, email.trim().toLowerCase());
+}
+
 export function getGoogleAccessToken(): string | null {
   return cachedAccessToken;
+}
+
+export async function getFirebaseIdToken(): Promise<string | null> {
+  if (!auth.currentUser) return null;
+  try {
+    return await auth.currentUser.getIdToken();
+  } catch {
+    return null;
+  }
+}
+
+export async function getVerifiedAccountRole(): Promise<'student' | 'admin'> {
+  const token = await getFirebaseIdToken();
+  if (!token) return 'student';
+  let response: Response;
+  try {
+    response = await fetch('/api/auth/session', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    return 'student';
+  }
+  if (response.status === 404) return 'student';
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({})) as { error?: string };
+    throw new Error(data.error || 'Unable to verify your account.');
+  }
+  const data = await response.json() as { role?: string };
+  return data.role === 'admin' ? 'admin' : 'student';
 }
 
 export async function signOutGoogle(): Promise<void> {

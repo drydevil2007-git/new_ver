@@ -13,7 +13,14 @@ import {
   Loader2,
 } from 'lucide-react';
 import { Lang, UserRole, UserSession } from '../types/app';
-import { signInWithGoogleAccount } from '../lib/googleAuth';
+import {
+  getFirebaseIdToken,
+  getVerifiedAccountRole,
+  registerWithEmail,
+  requestPasswordReset,
+  signInWithEmail,
+  signInWithGoogleAccount,
+} from '../lib/googleAuth';
 
 interface AuthModalProps {
   lang: Lang;
@@ -22,20 +29,6 @@ interface AuthModalProps {
   onClose: () => void;
   onLoginSuccess: (user: UserSession, isNewRegistration?: boolean) => void;
 }
-
-interface StoredRegisteredUser extends UserSession {
-  password: string;
-}
-
-const REGISTERED_USERS_KEY = 'daneshyar_registered_users_v1';
-
-// Authorized system administrator accounts (recognized strictly upon standard email + password or verified Google sign-in)
-const AUTHORIZED_ADMIN_EMAILS = [
-  'hashssshdh@gmail.com',
-  'drydevil2007@gmail.com',
-  'admin@danshyar.ir',
-  'admin@gmail.com',
-];
 
 export const DEMO_PROFESSOR_PROFILE: UserSession = {
   id: 'prof-demo',
@@ -89,12 +82,84 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [regField, setRegField] = useState('');
   const [regRole, setRegRole] = useState<Exclude<UserRole, 'admin'>>('student');
 
-  const getStoredUsers = (): StoredRegisteredUser[] => {
+  React.useEffect(() => {
     try {
-      const raw = localStorage.getItem(REGISTERED_USERS_KEY);
-      return raw ? JSON.parse(raw) : [];
+      localStorage.removeItem('daneshyar_registered_users_v1');
     } catch {
-      return [];
+      // Ignore unavailable browser storage.
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setTab(initialTab);
+      setErrorMsg(null);
+    }
+  }, [initialTab, isOpen]);
+
+  const finishFirebaseLogin = async (
+    account: { uid: string; name: string; email: string; photoURL?: string | null },
+    preferredRole: Exclude<UserRole, 'admin'> = 'student',
+    isNewRegistration = false,
+    profile?: { university?: string; field?: string }
+  ) => {
+    const email = account.email.trim().toLowerCase();
+    const role = await getVerifiedAccountRole();
+    const storedProfile = (() => {
+      try {
+        return JSON.parse(localStorage.getItem(`daneshyar_profile_${account.uid}`) || '{}') as Partial<UserSession>;
+      } catch {
+        return {};
+      }
+    })();
+    const name = account.name.trim() || storedProfile.name || email.split('@')[0];
+    const session: UserSession = {
+      id: account.uid,
+      name,
+      email,
+      university: profile?.university || storedProfile.university || (lang === 'fa' ? 'دانشگاه سراسری' : 'University Campus'),
+      field: profile?.field || storedProfile.field || (lang === 'fa' ? 'مهندسی' : 'Engineering'),
+      role: role === 'admin' ? 'admin' : (storedProfile.role === 'professor' ? 'professor' : preferredRole),
+      avatarInitials: computeInitials(name),
+      joinedAt: storedProfile.joinedAt || new Date().toLocaleDateString(lang === 'fa' ? 'fa-IR' : 'en-US'),
+      photoURL: account.photoURL,
+    };
+
+    try {
+      localStorage.setItem(`daneshyar_profile_${account.uid}`, JSON.stringify(session));
+    } catch {
+      // The Firebase account remains usable without local profile caching.
+    }
+
+    const token = await getFirebaseIdToken();
+    let profileSyncFailed = !token;
+    if (token) {
+      try {
+        const response = await fetch('/api/account/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            name: session.name,
+            university: session.university,
+            major: session.field,
+            role: session.role === 'professor' ? 'Professor' : 'Student',
+          }),
+        });
+        profileSyncFailed = !response.ok;
+      } catch {
+        profileSyncFailed = true;
+      }
+    }
+
+    onLoginSuccess(session, isNewRegistration);
+    if (profileSyncFailed) {
+      setErrorMsg(
+        lang === 'fa'
+          ? 'ورود انجام شد، اما همگام‌سازی پروفایل با سرور ناموفق بود. اتصال سرور را بررسی و دوباره وارد شوید.'
+          : 'You are signed in, but your profile could not sync with the server. Check the server connection and sign in again.'
+      );
+    } else {
+      onClose();
     }
   };
 
@@ -103,55 +168,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setGoogleLoading(true);
     try {
       const gUser = await signInWithGoogleAccount();
-      const email = gUser.email.toLowerCase();
-      const isAuthorizedAdmin = AUTHORIZED_ADMIN_EMAILS.includes(email);
-
-      if (isAuthorizedAdmin) {
-        const adminSession: UserSession = {
-          id: `admin-${gUser.uid}`,
-          name: gUser.name || (lang === 'fa' ? 'مدیر ارشد سیستم' : 'System Administrator'),
-          email,
-          university: lang === 'fa' ? 'دانشگاه صنعتی شریف' : 'Sharif University',
-          field: lang === 'fa' ? 'مدیریت ارشد سیستم' : 'System Administration',
-          role: 'admin',
-          avatarInitials: computeInitials(gUser.name || 'مدیر ارشد'),
-          joinedAt: new Date().toLocaleDateString(lang === 'fa' ? 'fa-IR' : 'en-US'),
-          photoURL: gUser.photoURL,
-        };
-        onLoginSuccess(adminSession, false);
-        onClose();
-        return;
-      }
-
-      const existing = getStoredUsers().find((u) => u.email.toLowerCase() === email);
-      const userSession: UserSession = {
-        id: `google-${gUser.uid}`,
-        name: gUser.name || email.split('@')[0],
-        email,
-        university: existing?.university || (lang === 'fa' ? 'دانشگاه سراسری' : 'University Campus'),
-        field: existing?.field || (lang === 'fa' ? 'مهندسی' : 'Engineering'),
-        role: existing && existing.role !== 'admin' ? existing.role : 'student',
-        avatarInitials: computeInitials(gUser.name || email),
-        joinedAt: existing?.joinedAt || new Date().toLocaleDateString(lang === 'fa' ? 'fa-IR' : 'en-US'),
-        photoURL: gUser.photoURL,
-      };
-
-      fetch('/api/admin/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: userSession.name,
-          email: userSession.email,
-          university: userSession.university,
-          major: userSession.field,
-          role: userSession.role === 'professor' ? 'Professor' : 'Student',
-        }),
-      }).catch(() => {});
-
-      onLoginSuccess(userSession, false);
-      onClose();
-    } catch (err: any) {
-      const code = String(err?.code || '');
+      await finishFirebaseLogin(gUser);
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      const code = String((err as { code?: string })?.code || '');
       if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
         setErrorMsg(
           lang === 'fa'
@@ -164,11 +184,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             ? 'مرورگر پنجره ورود گوگل را مسدود کرد؛ لطفاً مجوز Pop-up را فعال کنید.'
             : 'Browser blocked the sign-in popup. Please allow popups for this site.'
         );
+      } else if (code === 'auth/unauthorized-domain') {
+        setErrorMsg(
+            lang === 'fa'
+              ? 'دامنه این سایت در تنظیمات Firebase مجاز نیست.'
+              : 'This site domain is not authorized in Firebase.'
+        );
       } else {
         setErrorMsg(
           lang === 'fa'
-            ? `خطا در ورود با حساب گوگل: ${err?.message || 'لطفاً دوباره تلاش کنید.'}`
-            : `Google Sign-In failed: ${err?.message || 'Please try again.'}`
+            ? `خطا در ورود با حساب گوگل: ${error.message || 'لطفاً دوباره تلاش کنید.'}`
+            : `Google Sign-In failed: ${error.message || 'Please try again.'}`
         );
       }
     } finally {
@@ -176,133 +202,115 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
-  const handleSignInSubmit = (e: React.FormEvent) => {
+  const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     const email = loginEmail.trim().toLowerCase();
-    const pass = loginPassword.trim();
+    const pass = loginPassword;
 
     if (!email || !pass) {
       setErrorMsg(
         lang === 'fa'
-          ? 'لطفاً ایمیل دانشگاهی و رمز عبور را وارد کنید.'
+          ? 'لطفاً ایمیل و رمز عبور را وارد کنید.'
           : 'Please enter both email and password.'
       );
       return;
     }
 
-    if (pass.length < 4) {
-      setErrorMsg(
-        lang === 'fa'
-          ? 'رمز عبور باید حداقل ۴ کاراکتر باشد.'
-          : 'Password must be at least 4 characters.'
-      );
-      return;
+    try {
+      setGoogleLoading(true);
+      const account = await signInWithEmail(email, pass);
+      await finishFirebaseLogin({
+        uid: account.uid,
+        name: account.displayName || email.split('@')[0],
+        email: account.email || email,
+        photoURL: account.photoURL,
+      });
+    } catch (err) {
+      const code = String((err as { code?: string })?.code || '');
+      const message =
+        code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found'
+          ? (lang === 'fa' ? 'ایمیل یا رمز عبور نادرست است.' : 'Email or password is incorrect.')
+          : code === 'auth/operation-not-allowed'
+          ? (lang === 'fa' ? 'ورود با ایمیل و رمز در Firebase فعال نیست.' : 'Email/password sign-in is disabled in Firebase.')
+          : code === 'auth/too-many-requests'
+          ? (lang === 'fa' ? 'تلاش‌های زیادی انجام شده؛ کمی بعد دوباره امتحان کنید.' : 'Too many attempts. Try again later.')
+          : lang === 'fa'
+          ? `ورود انجام نشد: ${err instanceof Error ? err.message : 'لطفاً دوباره تلاش کنید.'}`
+          : `Sign-in failed: ${err instanceof Error ? err.message : 'Please try again.'}`;
+      setErrorMsg(message);
+    } finally {
+      setGoogleLoading(false);
     }
-
-    // Recognize authorized administrator only after standard email + password entry
-    if (AUTHORIZED_ADMIN_EMAILS.includes(email)) {
-      const storedAdmin = getStoredUsers().find((u) => u.email.toLowerCase() === email);
-      if (storedAdmin && storedAdmin.password !== pass) {
-        setErrorMsg(lang === 'fa' ? 'رمز عبور نادرست است.' : 'Incorrect password.');
-        return;
-      }
-      const adminSession: UserSession = {
-        id: 'admin-owner',
-        name: storedAdmin?.name || (lang === 'fa' ? 'مدیر ارشد سیستم' : 'System Administrator'),
-        email,
-        university: storedAdmin?.university || (lang === 'fa' ? 'دانشگاه صنعتی شریف' : 'Sharif University'),
-        field: storedAdmin?.field || (lang === 'fa' ? 'مدیریت سیستم' : 'System Administration'),
-        role: 'admin',
-        avatarInitials: 'م ا',
-        joinedAt: storedAdmin?.joinedAt || '۱۴۰۳/۰۶/۰۱',
-      };
-      onLoginSuccess(adminSession, false);
-      onClose();
-      return;
-    }
-
-    const stored = getStoredUsers();
-    const matched = stored.find((u) => u.email.toLowerCase() === email);
-    if (matched) {
-      if (matched.password !== pass) {
-        setErrorMsg(lang === 'fa' ? 'رمز عبور نادرست است.' : 'Incorrect password.');
-        return;
-      }
-      const { password: _pwd, ...session } = matched;
-      onLoginSuccess({ ...session, role: session.role === 'admin' ? 'student' : session.role }, false);
-      onClose();
-      return;
-    }
-
-    const derivedName = email.split('@')[0].replace(/[._-]/g, ' ');
-    const studentSession: UserSession = {
-      id: `usr-${Date.now()}`,
-      name: derivedName.charAt(0).toUpperCase() + derivedName.slice(1),
-      email,
-      university: lang === 'fa' ? 'دانشگاه سراسری' : 'University Campus',
-      field: lang === 'fa' ? 'مهندسی' : 'Engineering',
-      role: 'student',
-      avatarInitials: computeInitials(derivedName),
-      joinedAt: new Date().toLocaleDateString(lang === 'fa' ? 'fa-IR' : 'en-US'),
-    };
-    onLoginSuccess(studentSession, false);
-    onClose();
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handlePasswordReset = async () => {
+    const email = loginEmail.trim().toLowerCase();
+    if (!email) {
+      setErrorMsg(lang === 'fa' ? 'ابتدا ایمیل خود را وارد کنید.' : 'Enter your email address first.');
+      return;
+    }
+    try {
+      await requestPasswordReset(email);
+      setErrorMsg(lang === 'fa' ? 'لینک بازنشانی رمز عبور برای ایمیل شما ارسال شد.' : 'Password reset link sent to your email.');
+    } catch (err) {
+      setErrorMsg(
+        lang === 'fa'
+          ? `ارسال لینک بازنشانی ناموفق بود: ${err instanceof Error ? err.message : 'دوباره تلاش کنید.'}`
+          : `Could not send reset link: ${err instanceof Error ? err.message : 'Please try again.'}`
+      );
+    }
+  };
+
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     const name = regName.trim();
     const email = regEmail.trim().toLowerCase();
-    const pass = regPassword.trim();
+    const pass = regPassword;
 
-    if (!name || !email || pass.length < 4) {
+    if (!name || !email || pass.length < 6) {
       setErrorMsg(
         lang === 'fa'
-          ? 'نام، ایمیل معتبر و رمز عبور حداقل ۴ کاراکتری الزامی است.'
-          : 'Name, valid email, and a password (min 4 chars) are required.'
+          ? 'نام، ایمیل معتبر و رمز عبور حداقل ۶ کاراکتری الزامی است.'
+          : 'Name, valid email, and a password (min 6 characters) are required.'
       );
       return;
     }
 
-    // Standard registration strictly assigns student or professor role
-    const session: UserSession = {
-      id: `usr-${Date.now()}`,
-      name,
-      email,
-      university: regUniversity.trim() || (lang === 'fa' ? 'دانشگاه صنعتی امیرکبیر' : 'Amirkabir University'),
-      field: regField.trim() || (lang === 'fa' ? 'مهندسی برق / کامپیوتر' : 'Engineering'),
-      role: regRole,
-      avatarInitials: computeInitials(name),
-      joinedAt: new Date().toLocaleDateString(lang === 'fa' ? 'fa-IR' : 'en-US'),
-    };
-
     try {
-      const existing = getStoredUsers().filter((u) => u.email.toLowerCase() !== email);
-      localStorage.setItem(
-        REGISTERED_USERS_KEY,
-        JSON.stringify([{ ...session, password: pass }, ...existing])
+      setGoogleLoading(true);
+      const account = await registerWithEmail(name, email, pass);
+      await finishFirebaseLogin(
+        {
+          uid: account.uid,
+          name: account.displayName || name,
+          email: account.email || email,
+          photoURL: account.photoURL,
+        },
+        regRole,
+        true,
+        {
+          university: regUniversity.trim() || (lang === 'fa' ? 'دانشگاه صنعتی امیرکبیر' : 'Amirkabir University'),
+          field: regField.trim() || (lang === 'fa' ? 'مهندسی برق / کامپیوتر' : 'Engineering'),
+        }
       );
-    } catch {
-      // ignore storage quota
+    } catch (err) {
+      const code = String((err as { code?: string })?.code || '');
+      setErrorMsg(
+        code === 'auth/email-already-in-use'
+          ? lang === 'fa' ? 'این ایمیل قبلاً ثبت شده است؛ وارد حساب شوید.' : 'This email is already registered. Sign in instead.'
+          : code === 'auth/operation-not-allowed'
+          ? lang === 'fa' ? 'ثبت‌نام با ایمیل در Firebase فعال نیست.' : 'Email/password sign-up is disabled in Firebase.'
+          : code === 'auth/weak-password'
+          ? lang === 'fa' ? 'رمز عبور ضعیف است؛ حداقل ۶ نویسه انتخاب کنید.' : 'Password is too weak; use at least 6 characters.'
+          : lang === 'fa'
+          ? `ثبت‌نام انجام نشد: ${err instanceof Error ? err.message : 'لطفاً دوباره تلاش کنید.'}`
+          : `Registration failed: ${err instanceof Error ? err.message : 'Please try again.'}`
+      );
+    } finally {
+      setGoogleLoading(false);
     }
-
-    // Sync new user with backend directory asynchronously
-    fetch('/api/admin/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: session.name,
-        email: session.email,
-        university: session.university,
-        major: session.field,
-        role: session.role === 'professor' ? 'Professor' : 'Student',
-      }),
-    }).catch(() => {});
-
-    onLoginSuccess(session, true);
-    onClose();
   };
 
   return (
@@ -475,10 +483,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
 
                 <button
-                  type="submit"
-                  className="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold transition-colors cursor-pointer shadow-sm"
+                  type="button"
+                  onClick={handlePasswordReset}
+                  className="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
                 >
-                  {lang === 'fa' ? 'ورود به حساب کاربری' : 'Sign In to DaneshYar'}
+                  {lang === 'fa' ? 'رمز عبور را فراموش کرده‌اید؟' : 'Forgot password?'}
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={googleLoading}
+                  className="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold transition-colors cursor-pointer shadow-sm disabled:opacity-60"
+                >
+                  {googleLoading
+                    ? lang === 'fa' ? 'در حال ورود...' : 'Signing in...'
+                    : lang === 'fa' ? 'ورود به حساب کاربری' : 'Sign In to DaneshYar'}
                 </button>
               </form>
             ) : (
@@ -545,6 +564,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         type="password"
                         dir="ltr"
                         required
+                        minLength={6}
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
                         placeholder="••••••••"
@@ -590,9 +610,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                 <button
                   type="submit"
-                  className="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold transition-colors cursor-pointer shadow-sm"
+                  disabled={googleLoading}
+                  className="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold transition-colors cursor-pointer shadow-sm disabled:opacity-60"
                 >
-                  {lang === 'fa' ? 'ایجاد حساب و ورود' : 'Create Account & Continue'}
+                  {googleLoading
+                    ? lang === 'fa' ? 'در حال ایجاد حساب...' : 'Creating account...'
+                    : lang === 'fa' ? 'ایجاد حساب و ورود' : 'Create Account & Continue'}
                 </button>
               </form>
             )}
@@ -602,8 +625,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                 <span>
                   {lang === 'fa'
-                    ? 'نشست شما به‌صورت امن با احراز هویت گوگل یا حساب محلی ذخیره می‌شود.'
-                    : 'Your session is securely persisted with Google Auth or local account storage.'}
+                    ? 'ورود با Firebase امن انجام می‌شود؛ رمز عبور روی این دستگاه ذخیره نمی‌شود.'
+                    : 'Sign-in is secured by Firebase; your password is never stored on this device.'}
                 </span>
               </span>
             </div>

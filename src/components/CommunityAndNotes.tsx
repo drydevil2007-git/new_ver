@@ -12,12 +12,19 @@ import {
   Hash,
   UserCheck,
   Sparkles,
+  Search,
+  UserPlus,
+  Circle,
+  CheckCheck,
 } from 'lucide-react';
-import { Lang, LeitnerCard } from '../types/app';
+import { Lang, LeitnerCard, UserSession } from '../types/app';
 import { LatexBlock, RichMathText } from './MathRenderer';
+import { getFirebaseIdToken } from '../lib/googleAuth';
 
 interface CommunityAndNotesProps {
   lang: Lang;
+  user: UserSession | null;
+  onRequestLogin: () => void;
   onGenerateFlashcardsFromNote: (
     cards: Omit<LeitnerCard, 'id' | 'box' | 'lastReviewedAt' | 'reviewCount'>[]
   ) => void;
@@ -41,6 +48,7 @@ interface LectureNote {
   previewFormula: string;
   contentSnippet: string;
   createdAt: string;
+  status?: 'published' | 'draft';
 }
 
 interface ForumReply {
@@ -76,6 +84,7 @@ interface AcademicChannel {
 interface AcademicChatMessage {
   id: string;
   channelId: string;
+  senderId?: string;
   sender: string;
   role: 'student' | 'professor' | 'ai-bot';
   text: string;
@@ -84,6 +93,8 @@ interface AcademicChatMessage {
 
 export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
   lang,
+  user,
+  onRequestLogin,
   onGenerateFlashcardsFromNote,
 }) => {
   const [subTab, setSubTab] = useState<'chat' | 'notes' | 'forum'>('chat');
@@ -92,10 +103,19 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
   const [channels, setChannels] = useState<AcademicChannel[]>([]);
   const [messagesByChannel, setMessagesByChannel] = useState<Record<string, AcademicChatMessage[]>>({});
   const [activeChannelId, setActiveChannelId] = useState<string>('ch-math');
-  const [chatSender, setChatSender] = useState('امیرحسین رضایی');
   const [chatInput, setChatInput] = useState('');
   const [sendingChat, setSendingChat] = useState(false);
+  const [chatSearch, setChatSearch] = useState('');
+  const [chatContacts, setChatContacts] = useState<Array<{ id: string; name: string; role: string; university: string }>>([]);
+  const [showContactPicker, setShowContactPicker] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const [unreadByChannel, setUnreadByChannel] = useState<Record<string, number>>({});
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
+  const activeChannelIdRef = useRef(activeChannelId);
+
+  useEffect(() => {
+    activeChannelIdRef.current = activeChannelId;
+  }, [activeChannelId]);
 
   // Lecture Notes State
   const [notes, setNotes] = useState<LectureNote[]>([]);
@@ -114,6 +134,7 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
   const [newThreadBody, setNewThreadBody] = useState('');
   const [newThreadCode, setNewThreadCode] = useState('MATH-201');
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [communityError, setCommunityError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/notes')
@@ -130,43 +151,87 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
       })
       .catch(() => {});
 
-    fetch('/api/chat/state')
-      .then((r) => r.json())
-      .then((d) => {
-        if (Array.isArray(d.channels)) setChannels(d.channels);
-        if (d.messagesByChannel) setMessagesByChannel(d.messagesByChannel);
-      })
-      .catch(() => {});
+  }, []);
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws/academic-chat`);
+  useEffect(() => {
+    let active = true;
+    let ws: WebSocket | null = null;
+    if (!user) {
+      setChannels([]);
+      setChatContacts([]);
+      setMessagesByChannel({});
+      return () => {
+        active = false;
+      };
+    }
 
-    ws.onmessage = (ev) => {
+    const connect = async () => {
+      setChatError(null);
       try {
-        const msg = JSON.parse(ev.data);
-        if (msg.type === 'chat:init') {
-          if (Array.isArray(msg.channels)) setChannels(msg.channels);
-          if (msg.messagesByChannel) setMessagesByChannel(msg.messagesByChannel);
-        } else if (msg.type === 'chat:message' && msg.message) {
-          const incoming: AcademicChatMessage = msg.message;
-          setMessagesByChannel((prev) => {
-            const existing = prev[incoming.channelId] || [];
-            if (existing.some((m) => m.id === incoming.id)) return prev;
-            return {
-              ...prev,
-              [incoming.channelId]: [...existing, incoming],
-            };
-          });
+        const token = await getFirebaseIdToken();
+        if (!token) throw new Error(lang === 'fa' ? 'نشست ورود منقضی شده است.' : 'Your sign-in session has expired.');
+        const [stateResponse, contactsResponse] = await Promise.all([
+          fetch('/api/chat/state'),
+          fetch('/api/chat/contacts'),
+        ]);
+        if (!stateResponse.ok || !contactsResponse.ok) {
+          throw new Error(lang === 'fa' ? 'دریافت گفتگوها ناموفق بود.' : 'Could not load your conversations.');
         }
-      } catch {
-        // ignore
+        const [state, contactsData] = await Promise.all([stateResponse.json(), contactsResponse.json()]);
+        if (!active) return;
+        if (Array.isArray(state.channels)) {
+          setChannels(state.channels);
+          if (!state.channels.some((channel: AcademicChannel) => channel.id === activeChannelId)) {
+            setActiveChannelId('ch-math');
+          }
+        }
+        if (state.messagesByChannel) setMessagesByChannel(state.messagesByChannel);
+        if (Array.isArray(contactsData.contacts)) setChatContacts(contactsData.contacts);
+
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(
+          `${protocol}//${window.location.host}/ws/academic-chat?token=${encodeURIComponent(token)}`
+        );
+        ws.onmessage = (ev) => {
+          try {
+            const event = JSON.parse(ev.data);
+            if (event.type === 'chat:init') {
+              if (Array.isArray(event.channels)) setChannels(event.channels);
+              if (event.messagesByChannel) setMessagesByChannel(event.messagesByChannel);
+            } else if (event.type === 'chat:message' && event.message) {
+              const incoming: AcademicChatMessage = event.message;
+              setMessagesByChannel((prev) => {
+                const existing = prev[incoming.channelId] || [];
+                if (existing.some((message) => message.id === incoming.id)) return prev;
+                return { ...prev, [incoming.channelId]: [...existing, incoming] };
+              });
+              if (incoming.senderId !== user.id && incoming.channelId !== activeChannelIdRef.current) {
+                setUnreadByChannel((prev) => ({
+                  ...prev,
+                  [incoming.channelId]: (prev[incoming.channelId] || 0) + 1,
+                }));
+              }
+            }
+          } catch {
+            setChatError(lang === 'fa' ? 'پیام دریافتی قابل پردازش نیست.' : 'Could not process an incoming message.');
+          }
+        };
+        ws.onerror = () => {
+          if (active) setChatError(lang === 'fa' ? 'اتصال زنده چت برقرار نشد.' : 'Live chat connection failed.');
+        };
+      } catch (error) {
+        if (active) {
+          setChatError(error instanceof Error ? error.message : String(error));
+        }
       }
     };
 
+    void connect();
     return () => {
-      ws.close();
+      active = false;
+      ws?.close();
     };
-  }, []);
+  }, [user?.id, lang]);
 
   const activeChannel = useMemo(
     () => channels.find((c) => c.id === activeChannelId) || channels[0] || null,
@@ -187,23 +252,23 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
   const handleSendChat = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = chatInput.trim();
-    if (!text || sendingChat) return;
-    setChatInput('');
+    if (!text || sendingChat || !user) return;
     setSendingChat(true);
+    setChatError(null);
     try {
       const resp = await fetch('/api/chat/message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           channelId: activeChannelId,
-          sender: chatSender.trim() || (lang === 'fa' ? 'دانشجو' : 'Student'),
-          role: 'student',
           text,
           lang,
         }),
       });
       const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Message could not be sent.');
       if (data.message) {
+        setChatInput('');
         setMessagesByChannel((prev) => {
           const cur = prev[activeChannelId] || [];
           const next = cur.some((m) => m.id === data.message.id) ? cur : [...cur, data.message];
@@ -214,10 +279,25 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
           return { ...prev, [activeChannelId]: withBot };
         });
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      setChatError(error instanceof Error ? error.message : String(error));
     } finally {
       setSendingChat(false);
+    }
+  };
+
+  const handleOpenDirectMessage = async (contact: (typeof chatContacts)[number]) => {
+    try {
+      const resp = await fetch(`/api/chat/direct/${encodeURIComponent(contact.id)}`, { method: 'POST' });
+      const data = await resp.json();
+      if (!resp.ok || !data.channel) throw new Error(data.error || 'Conversation could not be opened.');
+      setChannels((prev) => prev.some((channel) => channel.id === data.channel.id) ? prev : [...prev, data.channel]);
+      setMessagesByChannel((prev) => ({ ...prev, [data.channel.id]: data.messages || prev[data.channel.id] || [] }));
+      setActiveChannelId(data.channel.id);
+      setUnreadByChannel((prev) => ({ ...prev, [data.channel.id]: 0 }));
+      setShowContactPicker(false);
+    } catch (error) {
+      setChatError(error instanceof Error ? error.message : String(error));
     }
   };
 
@@ -237,17 +317,23 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
         body: JSON.stringify({ stars }),
       });
       const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Could not rate this note.');
       if (data.note) {
         setNotes((prev) => prev.map((n) => (n.id === noteId ? data.note : n)));
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      setCommunityError(error instanceof Error ? error.message : String(error));
     }
   };
 
   const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newNoteTitle.trim()) return;
+    if (!user) {
+      onRequestLogin();
+      return;
+    }
+    setCommunityError(null);
     try {
       const resp = await fetch('/api/notes', {
         method: 'POST',
@@ -259,14 +345,15 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
         }),
       });
       const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Could not submit the note.');
       if (data.note) {
         setNotes((prev) => [data.note, ...prev]);
         setNewNoteTitle('');
         setNewNoteSummary('');
         setShowAddNote(false);
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      setCommunityError(error instanceof Error ? error.message : String(error));
     }
   };
 
@@ -307,6 +394,11 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
   const handleCreateThread = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newThreadTitle.trim() || !newThreadBody.trim()) return;
+    if (!user) {
+      onRequestLogin();
+      return;
+    }
+    setCommunityError(null);
     try {
       const resp = await fetch('/api/forum', {
         method: 'POST',
@@ -318,20 +410,26 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
         }),
       });
       const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Could not post the question.');
       if (data.thread) {
         setThreads((prev) => [data.thread, ...prev]);
         setNewThreadTitle('');
         setNewThreadBody('');
         setShowNewThread(false);
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      setCommunityError(error instanceof Error ? error.message : String(error));
     }
   };
 
   const handleReplyThread = async (threadId: string) => {
     const text = (replyDrafts[threadId] || '').trim();
     if (!text) return;
+    if (!user) {
+      onRequestLogin();
+      return;
+    }
+    setCommunityError(null);
     try {
       const resp = await fetch(`/api/forum/${threadId}/reply`, {
         method: 'POST',
@@ -339,24 +437,31 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
         body: JSON.stringify({ text }),
       });
       const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Could not post the reply.');
       if (data.thread) {
         setThreads((prev) => prev.map((t) => (t.id === threadId ? data.thread : t)));
         setReplyDrafts((prev) => ({ ...prev, [threadId]: '' }));
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      setCommunityError(error instanceof Error ? error.message : String(error));
     }
   };
 
   const handleUpvoteThread = async (threadId: string) => {
+    if (!user) {
+      onRequestLogin();
+      return;
+    }
+    setCommunityError(null);
     try {
       const resp = await fetch(`/api/forum/${threadId}/upvote`, { method: 'POST' });
       const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Could not upvote the question.');
       if (data.thread) {
         setThreads((prev) => prev.map((t) => (t.id === threadId ? data.thread : t)));
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      setCommunityError(error instanceof Error ? error.message : String(error));
     }
   };
 
@@ -373,6 +478,10 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
 
   const studyChannels = channels.filter((c) => c.type === 'channel');
   const dmChannels = channels.filter((c) => c.type === 'dm');
+  const visibleChatChannels = channels.filter((channel) => {
+    const name = lang === 'fa' ? channel.nameFa : channel.nameEn;
+    return name.toLowerCase().includes(chatSearch.trim().toLowerCase());
+  });
 
   return (
     <div className="space-y-6">
@@ -432,93 +541,135 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
       {/* TAB 1: Real-Time Academic Chat Channels & @دانشیار Bot                 */}
       {/* ===================================================================== */}
       {subTab === 'chat' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        !user ? (
+          <div className="glass-surface rounded-3xl p-10 text-center space-y-4">
+            <MessageSquare className="w-10 h-10 mx-auto text-sky-500" />
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              {lang === 'fa' ? 'برای ورود به گفتگوی دانشجویی وارد شوید' : 'Sign in to join the student chat'}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {lang === 'fa' ? 'گفتگوها و پیام‌های خصوصی فقط برای حساب‌های واردشده در دسترس هستند.' : 'Channels and private messages are available to signed-in members only.'}
+            </p>
+            <button type="button" onClick={onRequestLogin} className="px-5 py-2.5 rounded-xl bg-sky-600 text-white text-sm font-semibold cursor-pointer">
+              {lang === 'fa' ? 'ورود یا ثبت‌نام' : 'Sign in or register'}
+            </button>
+          </div>
+        ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
           {/* Channels & DMs Sidebar */}
-          <aside className="lg:col-span-4 glass-surface rounded-3xl p-5 space-y-5 flex flex-col justify-between">
-            <div className="space-y-5">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  {lang === 'fa' ? 'نام نمایشی شما در گفتگو' : 'Your Display Name'}
-                </label>
+          <aside className="lg:col-span-4 glass-surface rounded-3xl overflow-hidden flex flex-col min-h-[580px] max-h-[720px]">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="font-bold text-slate-900 dark:text-white truncate">{user.name}</div>
+                  <div className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400">
+                    <Circle className="w-2 h-2 fill-current" />
+                    {lang === 'fa' ? 'حساب تأییدشده' : 'Verified account'}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowContactPicker((value) => !value)}
+                  className="p-2 rounded-xl bg-sky-600 text-white hover:bg-sky-700 cursor-pointer"
+                  title={lang === 'fa' ? 'گفتگوی جدید' : 'New chat'}
+                >
+                  <UserPlus className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="relative">
+                <Search className="w-4 h-4 absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
-                  type="text"
-                  value={chatSender}
-                  onChange={(e) => setChatSender(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/85 dark:bg-slate-900/85 px-3.5 py-2 text-xs sm:text-sm text-slate-900 dark:text-white"
+                  value={chatSearch}
+                  onChange={(event) => setChatSearch(event.target.value)}
+                  placeholder={lang === 'fa' ? 'جستجوی گفتگوها' : 'Search chats'}
+                  className="w-full rounded-xl bg-slate-100 dark:bg-slate-800 ps-9 pe-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-sky-500"
                 />
-              </div>
-
-              <div className="space-y-2">
-                <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                  {lang === 'fa' ? 'کانال‌های تخصصی دروس' : 'Course Study Channels'}
-                </div>
-                <div className="space-y-1">
-                  {studyChannels.map((ch) => {
-                    const active = ch.id === activeChannelId;
-                    const count = (messagesByChannel[ch.id] || []).length;
-                    return (
-                      <button
-                        key={ch.id}
-                        type="button"
-                        onClick={() => setActiveChannelId(ch.id)}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
-                          active
-                            ? 'bg-sky-600 text-white font-semibold'
-                            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80'
-                        }`}
-                      >
-                        <span className="truncate">{lang === 'fa' ? ch.nameFa : ch.nameEn}</span>
-                        <span className={`font-mono text-[11px] tabular-nums ${active ? 'text-sky-100' : 'text-slate-400'}`}>
-                          {count}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                  {lang === 'fa' ? 'پیام‌های مستقیم (استاد و هم‌گروهی)' : 'Direct Messages'}
-                </div>
-                <div className="space-y-1">
-                  {dmChannels.map((dm) => {
-                    const active = dm.id === activeChannelId;
-                    return (
-                      <button
-                        key={dm.id}
-                        type="button"
-                        onClick={() => setActiveChannelId(dm.id)}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
-                          active
-                            ? 'bg-sky-600 text-white font-semibold'
-                            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80'
-                        }`}
-                      >
-                        <UserCheck className="w-4 h-4 shrink-0" />
-                        <span className="truncate text-start">{lang === 'fa' ? dm.nameFa : dm.nameEn}</span>
-                      </button>
-                    );
-                  })}
-                </div>
               </div>
             </div>
 
-            <div className="rounded-2xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200/70 dark:border-sky-800/60 p-4 space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold text-sky-700 dark:text-sky-400">
-                <Sparkles className="w-4 h-4" />
-                <span>{lang === 'fa' ? 'فراخوانی ربات هوشمند در چت' : 'In-Thread AI Assistant'}</span>
+            {showContactPicker && (
+              <div className="p-3 border-b border-slate-200 dark:border-slate-800 max-h-52 overflow-y-auto">
+                <div className="px-2 pb-2 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                  {lang === 'fa' ? 'شروع گفتگوی خصوصی' : 'Start a private conversation'}
+                </div>
+                {chatContacts.length ? chatContacts.map((contact) => (
+                  <button
+                    key={contact.id}
+                    type="button"
+                    onClick={() => void handleOpenDirectMessage(contact)}
+                    className="w-full flex items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-start hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                  >
+                    <span className="truncate text-xs font-semibold text-slate-800 dark:text-slate-100">{contact.name}</span>
+                    <span className="text-[10px] text-slate-400">{contact.role}</span>
+                  </button>
+                )) : (
+                  <p className="px-2 py-2 text-xs text-slate-500">
+                    {lang === 'fa' ? 'هنوز کاربر دیگری برای گفتگو ثبت‌نام نکرده است.' : 'No other members have joined yet.'}
+                  </p>
+                )}
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                {lang === 'fa'
-                  ? 'در هر کانال عبارت @دانشیار را در پیام خود بنویسید تا پاسخ ریاضی و مهندسی با LaTeX مستقیم داخل گفتگو ارسال شود.'
-                  : 'Mention @دانشیار anywhere in a channel message to summon an instant LaTeX-formatted explanation directly in the thread.'}
-              </p>
+            )}
+
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+              <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                {lang === 'fa' ? 'کانال‌های درسی' : 'Study channels'}
+              </div>
+              {visibleChatChannels.filter((channel) => channel.type === 'channel').map((channel) => {
+                const active = channel.id === activeChannelId;
+                const messages = messagesByChannel[channel.id] || [];
+                const latest = messages[messages.length - 1];
+                return (
+                  <button
+                    key={channel.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveChannelId(channel.id);
+                      setUnreadByChannel((prev) => ({ ...prev, [channel.id]: 0 }));
+                    }}
+                    className={`w-full rounded-xl px-3 py-3 text-start transition-colors cursor-pointer ${active ? 'bg-sky-100 dark:bg-sky-950/60' : 'hover:bg-slate-100 dark:hover:bg-slate-800/70'}`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`truncate text-xs font-bold ${active ? 'text-sky-700 dark:text-sky-300' : 'text-slate-800 dark:text-slate-100'}`}>
+                        {lang === 'fa' ? channel.nameFa : channel.nameEn}
+                      </span>
+                      {unreadByChannel[channel.id] ? <span className="min-w-5 rounded-full bg-sky-600 px-1.5 py-0.5 text-center text-[10px] font-bold text-white">{unreadByChannel[channel.id]}</span> : null}
+                    </div>
+                    <div className="mt-1 truncate text-[11px] text-slate-500 dark:text-slate-400">
+                      {latest?.text || channel.courseCode}
+                    </div>
+                  </button>
+                );
+              })}
+              <div className="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                {lang === 'fa' ? 'گفتگوهای خصوصی' : 'Private chats'}
+              </div>
+              {visibleChatChannels.filter((channel) => channel.type === 'dm').map((channel) => {
+                const active = channel.id === activeChannelId;
+                const messages = messagesByChannel[channel.id] || [];
+                const latest = messages[messages.length - 1];
+                return (
+                  <button
+                    key={channel.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveChannelId(channel.id);
+                      setUnreadByChannel((prev) => ({ ...prev, [channel.id]: 0 }));
+                    }}
+                    className={`w-full rounded-xl px-3 py-3 text-start transition-colors cursor-pointer ${active ? 'bg-sky-100 dark:bg-sky-950/60' : 'hover:bg-slate-100 dark:hover:bg-slate-800/70'}`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`truncate text-xs font-bold ${active ? 'text-sky-700 dark:text-sky-300' : 'text-slate-800 dark:text-slate-100'}`}>{lang === 'fa' ? channel.nameFa : channel.nameEn}</span>
+                      {unreadByChannel[channel.id] ? <span className="min-w-5 rounded-full bg-sky-600 px-1.5 py-0.5 text-center text-[10px] font-bold text-white">{unreadByChannel[channel.id]}</span> : null}
+                    </div>
+                    <div className="mt-1 truncate text-[11px] text-slate-500 dark:text-slate-400">{latest?.text || (lang === 'fa' ? 'گفتگوی جدید' : 'New conversation')}</div>
+                  </button>
+                );
+              })}
             </div>
           </aside>
 
           {/* Active Chat Stream */}
-          <div className="lg:col-span-8 glass-surface rounded-3xl p-5 sm:p-6 flex flex-col justify-between min-h-[540px] max-h-[680px]">
+          <div className="lg:col-span-8 glass-surface rounded-3xl overflow-hidden flex flex-col min-h-[580px] max-h-[720px]">
             <div className="pb-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
@@ -546,47 +697,35 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
               </button>
             </div>
 
-            <div ref={chatScrollRef} className="flex-1 overflow-y-auto py-4 space-y-3 pe-1">
+            {chatError && (
+              <div className="mx-4 mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
+                {chatError}
+              </div>
+            )}
+
+            <div ref={chatScrollRef} className="flex-1 overflow-y-auto bg-slate-100/60 dark:bg-slate-950/30 p-4 sm:p-6 space-y-3">
               {activeMessages.map((msg) => {
                 const isBot = msg.role === 'ai-bot';
                 const isProf = msg.role === 'professor';
+                const isMine = msg.senderId === user.id;
                 return (
                   <div
                     key={msg.id}
-                    className={`rounded-2xl p-4 space-y-1.5 border ${
-                      isBot
-                        ? 'bg-sky-50/85 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800/70'
-                        : isProf
-                        ? 'bg-emerald-50/75 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60'
-                        : 'bg-white/75 dark:bg-slate-900/70 border-slate-200/80 dark:border-slate-800'
-                    }`}
+                    className={`flex ${isMine ? 'justify-end' : isBot ? 'justify-center' : 'justify-start'}`}
                   >
-                    <div className="flex items-center justify-between gap-2 text-xs">
-                      <div className="flex items-center gap-2 font-bold">
+                    <div className={`max-w-[88%] sm:max-w-[78%] rounded-2xl px-3.5 py-2.5 shadow-sm ${isMine ? 'rounded-br-sm bg-sky-600 text-white' : isBot ? 'border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/60 text-slate-800 dark:text-slate-100' : 'rounded-bl-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100'}`}>
+                      <div className="flex items-center justify-between gap-4 pb-1 text-[10px]">
                         <span
-                          className={
-                            isBot
-                              ? 'text-sky-700 dark:text-sky-400'
-                              : isProf
-                              ? 'text-emerald-700 dark:text-emerald-400'
-                              : 'text-slate-900 dark:text-white'
-                          }
+                          className={`font-bold ${isBot ? 'text-sky-700 dark:text-sky-300' : isProf && !isMine ? 'text-emerald-700 dark:text-emerald-300' : isMine ? 'text-sky-100' : 'text-slate-600 dark:text-slate-300'}`}
                         >
                           {msg.sender}
                         </span>
-                        <span className="font-normal text-slate-400">·</span>
-                        <span className="font-normal text-slate-500 dark:text-slate-400">
-                          {isBot
-                            ? lang === 'fa' ? 'ربات هوش مصنوعی' : 'AI Assistant'
-                            : isProf
-                            ? lang === 'fa' ? 'استاد' : 'Professor'
-                            : lang === 'fa' ? 'دانشجو' : 'Student'}
-                        </span>
+                        <span className={isMine ? 'text-sky-100' : 'text-slate-400'}>{msg.timestamp}</span>
                       </div>
-                      <span className="text-[11px] font-mono text-slate-400">{msg.timestamp}</span>
-                    </div>
-                    <div className="text-xs sm:text-sm text-slate-800 dark:text-slate-100 leading-relaxed">
-                      <RichMathText text={msg.text} />
+                      <div className={`text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words ${isMine ? '[&_p]:text-white' : ''}`}>
+                        <RichMathText text={msg.text} />
+                      </div>
+                      {isMine && <div className="mt-1 flex justify-end text-sky-100"><CheckCheck className="w-3 h-3" /></div>}
                     </div>
                   </div>
                 );
@@ -600,7 +739,7 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
               )}
             </div>
 
-            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -641,6 +780,7 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
             </div>
           </div>
         </div>
+        )
       )}
 
       {/* ===================================================================== */}
@@ -648,6 +788,11 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
       {/* ===================================================================== */}
       {subTab === 'forum' && (
         <div className="space-y-5">
+          {communityError && (
+            <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
+              {communityError}
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <p className="text-sm text-slate-600 dark:text-slate-300">
               {lang === 'fa'
@@ -772,6 +917,11 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
       {/* ===================================================================== */}
       {subTab === 'notes' && (
         <div className="space-y-5">
+          {communityError && (
+            <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
+              {communityError}
+            </div>
+          )}
           <div className="glass-surface rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
             <input
               type="text"
@@ -830,7 +980,7 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
                 type="submit"
                 className="px-4 py-2 rounded-xl bg-sky-600 text-white text-xs font-semibold cursor-pointer"
               >
-                {lang === 'fa' ? 'انتشار در مخزن جزوات' : 'Publish Note'}
+                {lang === 'fa' ? 'ارسال برای بازبینی' : 'Submit for Review'}
               </button>
             </form>
           )}
@@ -843,6 +993,11 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
                   <div className="space-y-3">
                     <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                       <span className="font-mono font-semibold text-sky-700 dark:text-sky-400">{note.courseCode}</span>
+                      {note.status === 'draft' && (
+                        <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">
+                          {lang === 'fa' ? 'در انتظار بازبینی' : 'Pending review'}
+                        </span>
+                      )}
                       <span aria-hidden="true">·</span>
                       <span>{lang === 'fa' ? note.fieldFa : note.fieldEn}</span>
                       <span aria-hidden="true">·</span>

@@ -19,12 +19,35 @@ import {
   Trash2,
   Globe,
   AlertTriangle,
+  Loader2,
+  Sparkles,
 } from 'lucide-react';
 import { DifficultyLevel, Lang, ScientificArticle, ScientificResourceItem } from '../types/app';
 import { RichMathText } from './MathRenderer';
 
 interface ArticlesHubProps {
   lang: Lang;
+  onRequestLogin: () => void;
+}
+
+interface ResearchPaper {
+  id: string;
+  source: 'OpenAlex' | 'Semantic Scholar' | 'arXiv' | 'Crossref';
+  title: string;
+  authors: string[];
+  year?: number;
+  abstract?: string;
+  doi?: string;
+  url: string;
+  openAccessUrl?: string;
+  citationCount?: number;
+}
+
+interface ResearchProvider {
+  source: ResearchPaper['source'];
+  status: 'ok' | 'unavailable';
+  count: number;
+  error?: string;
 }
 
 const GLOBAL_LIBRARY_RESOURCES: ScientificResourceItem[] = [
@@ -38,8 +61,8 @@ const GLOBAL_LIBRARY_RESOURCES: ScientificResourceItem[] = [
     year: '2021',
     summaryFa: 'تکست‌بوک شماره یک مدارهای الکتریکی در دانشگاه‌های ایران و جهان؛ تحلیل گره و مش، مدارهای RLC و تبدیل لاپلاس.',
     summaryEn: 'Definitive circuit theory textbook covering complete nodal/mesh and RLC transient analysis.',
-    downloadUrl: 'https://libgen.rs/search.php?req=Fundamentals+of+Electric+Circuits+Alexander+Sadiku',
-    platform: 'LibGen',
+    downloadUrl: 'https://books.google.com/books?q=Fundamentals+of+Electric+Circuits+Alexander+Sadiku',
+    platform: 'GoogleBooks',
     isLegalOpenAccess: false,
   },
   {
@@ -52,8 +75,8 @@ const GLOBAL_LIBRARY_RESOURCES: ScientificResourceItem[] = [
     year: '1997',
     summaryFa: 'کتاب مرجع دانشگاه MIT، شریف و تهران برای سیستم‌های LTI، کانولوشن، فوریه و لاپلاس.',
     summaryEn: 'Standard university textbook for continuous and discrete LTI systems, convolution, and Fourier/Z transforms.',
-    downloadUrl: 'https://libgen.rs/search.php?req=Signals+and+Systems+Oppenheim+Willsky',
-    platform: 'LibGen',
+    downloadUrl: 'https://books.google.com/books?q=Signals+and+Systems+Oppenheim+Willsky',
+    platform: 'GoogleBooks',
     isLegalOpenAccess: false,
   },
   {
@@ -66,8 +89,8 @@ const GLOBAL_LIBRARY_RESOURCES: ScientificResourceItem[] = [
     year: '2010',
     summaryFa: 'کتاب جامع کنترل خطی؛ مکان ریشه‌ها (Root Locus)، نمودار بود، پایداری نایکویست و فضای حالت.',
     summaryEn: 'Comprehensive guide covering classical feedback, Bode/Nyquist stability criteria, and modern state-space control.',
-    downloadUrl: 'https://libgen.rs/search.php?req=Modern+Control+Engineering+Ogata',
-    platform: 'LibGen',
+    downloadUrl: 'https://books.google.com/books?q=Modern+Control+Engineering+Ogata',
+    platform: 'GoogleBooks',
     isLegalOpenAccess: false,
   },
   {
@@ -80,8 +103,8 @@ const GLOBAL_LIBRARY_RESOURCES: ScientificResourceItem[] = [
     year: '2022',
     summaryFa: 'معتبرترین مرجع جهانی الگوریتم‌ها؛ پیچیدگی زمانی، درخت‌ها، برنامه‌نویسی پویا و الگوریتم‌های گراف.',
     summaryEn: 'The international standard textbook on algorithmic design, dynamic programming, and graph theory.',
-    downloadUrl: 'https://libgen.rs/search.php?req=Introduction+to+Algorithms+Cormen+Leiserson+Rivest+Stein',
-    platform: 'LibGen',
+    downloadUrl: 'https://books.google.com/books?q=Introduction+to+Algorithms+Cormen+Leiserson+Rivest+Stein',
+    platform: 'GoogleBooks',
     isLegalOpenAccess: false,
   },
   {
@@ -94,8 +117,8 @@ const GLOBAL_LIBRARY_RESOURCES: ScientificResourceItem[] = [
     year: '2020',
     summaryFa: 'کتاب مرجع شماره یک دانشگاه‌های جهان در هوش مصنوعی؛ عامل‌های هوشمند، یادگیری عمیق و منطق.',
     summaryEn: 'Leading university AI text covering rational agents, probabilistic reasoning, and deep learning.',
-    downloadUrl: 'https://libgen.rs/search.php?req=Artificial+Intelligence+A+Modern+Approach+Russell+Norvig',
-    platform: 'LibGen',
+    downloadUrl: 'https://books.google.com/books?q=Artificial+Intelligence+A+Modern+Approach+Russell+Norvig',
+    platform: 'GoogleBooks',
     isLegalOpenAccess: false,
   },
   {
@@ -138,8 +161,8 @@ const GLOBAL_LIBRARY_RESOURCES: ScientificResourceItem[] = [
     year: '2020',
     summaryFa: 'محبوب‌ترین کتاب ریاضی عمومی ۱ و ۲ مهندسی؛ انتگرال‌های چندگانه، میدان‌های برداری، استوکس و دیورژانس.',
     summaryEn: 'Premier multivariable calculus reference covering limits, vector fields, and surface integrals.',
-    downloadUrl: 'https://libgen.rs/search.php?req=Calculus+Early+Transcendentals+James+Stewart',
-    platform: 'LibGen',
+    downloadUrl: 'https://books.google.com/books?q=Calculus+Early+Transcendentals+James+Stewart',
+    platform: 'GoogleBooks',
     isLegalOpenAccess: false,
   },
   {
@@ -152,8 +175,8 @@ const GLOBAL_LIBRARY_RESOURCES: ScientificResourceItem[] = [
     year: '2021',
     summaryFa: 'مرجع بی‌رقیب فیزیک پایه دانشگاهی؛ مکانیک نیوتنی، امواج، الکترومغناطیس و نورشناسی.',
     summaryEn: 'World standard physics text spanning mechanics, thermodynamics, and electromagnetism.',
-    downloadUrl: 'https://libgen.rs/search.php?req=Fundamentals+of+Physics+Halliday+Resnick+Walker',
-    platform: 'LibGen',
+    downloadUrl: 'https://books.google.com/books?q=Fundamentals+of+Physics+Halliday+Resnick+Walker',
+    platform: 'GoogleBooks',
     isLegalOpenAccess: false,
   },
   {
@@ -166,13 +189,13 @@ const GLOBAL_LIBRARY_RESOURCES: ScientificResourceItem[] = [
     year: '2019',
     summaryFa: 'مرجع ترمودینامیک مهندسی؛ قانون اول و دوم، محاسبه اگزرژی، چرخه‌های کارنو، رانکین و برایتون.',
     summaryEn: 'Standard engineering thermodynamics reference on power cycles, entropy, and energy systems.',
-    downloadUrl: 'https://libgen.rs/search.php?req=Thermodynamics+An+Engineering+Approach+Cengel+Boles',
-    platform: 'LibGen',
+    downloadUrl: 'https://books.google.com/books?q=Thermodynamics+An+Engineering+Approach+Cengel+Boles',
+    platform: 'GoogleBooks',
     isLegalOpenAccess: false,
   },
 ];
 
-export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
+export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang, onRequestLogin }) => {
   const [hubTab, setHubTab] = useState<'articles' | 'library'>('articles');
   const [articles, setArticles] = useState<ScientificArticle[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -182,6 +205,12 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
 
   // Library State
   const [libSearchQuery, setLibSearchQuery] = useState('');
+  const [researchPapers, setResearchPapers] = useState<ResearchPaper[]>([]);
+  const [researchProviders, setResearchProviders] = useState<ResearchProvider[]>([]);
+  const [researchLoading, setResearchLoading] = useState(false);
+  const [researchError, setResearchError] = useState('');
+  const [researchAnswer, setResearchAnswer] = useState<{ answer: string; limitations: string; sources: ResearchPaper[] } | null>(null);
+  const [researchAnswerLoading, setResearchAnswerLoading] = useState(false);
   const [libTypeFilter, setLibTypeFilter] = useState<'all' | 'book' | 'paper'>('all');
   const [libDoiInput, setLibDoiInput] = useState('');
   const [showAddLibModal, setShowAddLibModal] = useState(false);
@@ -202,8 +231,75 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
   const [newLibYear, setNewLibYear] = useState('2024');
   const [newLibSummary, setNewLibSummary] = useState('');
   const [newLibUrl, setNewLibUrl] = useState('');
-  const [newLibPlatform, setNewLibPlatform] = useState<ScientificResourceItem['platform']>('LibGen');
+  const [newLibPlatform, setNewLibPlatform] = useState<ScientificResourceItem['platform']>('GoogleBooks');
   const [newLibDoi, setNewLibDoi] = useState('');
+
+  const getResourceSearchUrl = (platform: ScientificResourceItem['platform'], query: string) => {
+    const encoded = encodeURIComponent(query);
+    switch (platform) {
+      case 'GoogleBooks': return `https://books.google.com/books?q=${encoded}`;
+      case 'OpenAlex': return `https://openalex.org/works?search=${encoded}`;
+      case 'Semantic Scholar': return `https://www.semanticscholar.org/search?q=${encoded}`;
+      case 'arXiv': return `https://arxiv.org/search/?query=${encoded}&searchtype=all`;
+      case 'Crossref': return `https://search.crossref.org/?q=${encoded}`;
+      case 'DOAJ': return `https://doaj.org/search/articles?ref=doaj&q=${encoded}`;
+      case 'OA.mg': return `https://oa.mg/search?q=${encoded}`;
+      case 'Unpaywall': return `https://unpaywall.org/`;
+      case 'OpenAccessButton': return `https://openaccessbutton.org/`;
+      case 'PaperPanda': return `https://paperpanda.app/`;
+      default: return `https://core.ac.uk/search?q=${encoded}`;
+    }
+  };
+
+  const handleResearchSearch = async () => {
+    const query = libSearchQuery.trim();
+    if (query.length < 2 || researchLoading) return;
+    setResearchLoading(true);
+    setResearchError('');
+    setResearchAnswer(null);
+    try {
+      const response = await fetch(`/api/research/search?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Academic search failed.');
+      setResearchPapers(Array.isArray(data.papers) ? data.papers : []);
+      setResearchProviders(Array.isArray(data.sources) ? data.sources : []);
+    } catch (error) {
+      setResearchError(error instanceof Error ? error.message : String(error));
+      setResearchPapers([]);
+      setResearchProviders([]);
+    } finally {
+      setResearchLoading(false);
+    }
+  };
+
+  const handleResearchSynthesis = async () => {
+    const query = libSearchQuery.trim();
+    if (query.length < 3 || researchAnswerLoading) return;
+    setResearchAnswerLoading(true);
+    setResearchError('');
+    try {
+      const response = await fetch('/api/ai/research-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, lang }),
+      });
+      const data = await response.json();
+      if (response.status === 401) {
+        onRequestLogin();
+        throw new Error(lang === 'fa' ? 'برای پاسخ پژوهشی هوش مصنوعی ابتدا وارد حساب شوید.' : 'Sign in to use the AI research assistant.');
+      }
+      if (!response.ok) throw new Error(data.error || 'Research synthesis failed.');
+      setResearchAnswer({
+        answer: data.answer,
+        limitations: data.limitations,
+        sources: Array.isArray(data.sources) ? data.sources : [],
+      });
+    } catch (error) {
+      setResearchError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setResearchAnswerLoading(false);
+    }
+  };
 
   const handleSaveLibResource = (e: React.FormEvent) => {
     e.preventDefault();
@@ -220,13 +316,9 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
       summaryFa: newLibSummary.trim() || (lang === 'fa' ? 'منبع تکمیلی اضافه شده به کتابخانه' : 'Added library resource'),
       summaryEn: newLibSummary.trim() || 'Added library resource',
       doi: newLibDoi.trim() || undefined,
-      downloadUrl:
-        newLibUrl.trim() ||
-        (newLibPlatform === 'LibGen'
-          ? `https://libgen.rs/search.php?req=${encodeURIComponent(newLibTitleEn || newLibTitleFa)}`
-          : `https://core.ac.uk/search?q=${encodeURIComponent(newLibTitleEn || newLibTitleFa)}`),
+      downloadUrl: newLibUrl.trim() || getResourceSearchUrl(newLibPlatform, newLibTitleEn || newLibTitleFa),
       platform: newLibPlatform,
-      isLegalOpenAccess: newLibPlatform !== 'LibGen',
+      isLegalOpenAccess: false,
     };
 
     const next = [item, ...customLibResources];
@@ -276,9 +368,10 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
   const [titleFa, setTitleFa] = useState('');
   const [categoryFa, setCategoryFa] = useState('برق و کنترل');
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('intermediate');
-  const [authorFa, setAuthorFa] = useState('امیرحسین رضایی');
   const [readMinutes, setReadMinutes] = useState(6);
   const [excerptFa, setExcerptFa] = useState('');
+  const [articleNotice, setArticleNotice] = useState('');
+  const [submittingArticle, setSubmittingArticle] = useState(false);
   const [markdownFa, setMarkdownFa] = useState(
     '## مقدمه و ایده اصلی\nدر تحلیل مهندسی، رابطه زیر پایه مدل‌سازی سیستم است:\n\n$$\\frac{d^2y}{dt^2} + 2\\zeta\\omega_n\\frac{dy}{dt} + \\omega_n^2 y = \\omega_n^2 u(t)$$\n\n## نکات پیاده‌سازی\nبا تنظیم ضریب میرایی $\\zeta$ می‌توان فراجهش (Overshoot) پاسخ پله را کنترل کرد.'
   );
@@ -318,7 +411,8 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
 
   const handlePublishArticle = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!titleFa.trim() || !markdownFa.trim()) return;
+    if (!titleFa.trim() || !markdownFa.trim() || submittingArticle) return;
+    setSubmittingArticle(true);
     try {
       const takeawaysFa = takeawaysInput
         .split('\n')
@@ -333,7 +427,6 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
           categoryFa,
           categoryEn: categoryFa,
           difficulty,
-          authorFa,
           readMinutes,
           excerptFa,
           markdownFa,
@@ -345,17 +438,24 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
       });
       const data = await resp.json();
       if (data.article) {
-        setArticles((prev) => [data.article, ...prev]);
+        setArticleNotice(
+          lang === 'fa'
+            ? 'مقاله برای بازبینی مدیر ارسال شد و پس از تأیید در فهرست منتشرشده قرار می‌گیرد.'
+            : 'Your article was submitted for administrator review and will appear after approval.'
+        );
         setShowEditor(false);
         setTitleFa('');
         setExcerptFa('');
         setCodeTitle('');
         setCodeBody('');
         setTakeawaysInput('');
-        setActiveArticle(data.article);
+      } else {
+        throw new Error(data.error || (lang === 'fa' ? 'ارسال مقاله انجام نشد.' : 'Article submission failed.'));
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      setArticleNotice(error instanceof Error ? error.message : (lang === 'fa' ? 'ارسال مقاله انجام نشد.' : 'Article submission failed.'));
+    } finally {
+      setSubmittingArticle(false);
     }
   };
 
@@ -405,8 +505,8 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
             {hubTab === 'library'
               ? lang === 'fa'
-                ? 'کتابخانه کتب مرجع و مقالات علمی (۷ پایگاه)'
-                : 'Scientific Books & Academic Papers Library (7 Hubs)'
+                ? 'کتابخانهٔ علمی و جستجوی مقاله'
+                : 'Academic Library & Paper Search'
               : lang === 'fa'
               ? 'مجله علمی و مقالات مهندسی دانشیار'
               : 'Scientific Articles & Engineering Publication Hub'}
@@ -414,8 +514,8 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             {hubTab === 'library'
               ? lang === 'fa'
-                ? 'دانلود رایگان و قانونی کتب مرجع دانشگاهی، تکست‌بوک‌های زبان اصلی و مقالات ISI از طریق LibGen، CORE، DOAJ و OA.mg'
-                : 'Free and legal access to academic textbooks, reference books, and ISI papers via LibGen, CORE, DOAJ, and OA.mg'
+                ? 'جستجوی منابع پژوهشی در OpenAlex، Semantic Scholar، arXiv و Crossref؛ دسترسی آزاد فقط در صورت تأیید منبع نمایش داده می‌شود.'
+                : 'Search OpenAlex, Semantic Scholar, arXiv, and Crossref. Open-access links are only shown when confirmed by the source.'
               : lang === 'fa'
               ? 'راهنماهای عمیق مهندسی با فرمول‌های LaTeX، قطعه کدهای آزمایشگاهی و نکات کلیدی امتحان'
               : 'In-depth engineering guides with KaTeX derivations, annotated code snippets, and key takeaways'}
@@ -434,11 +534,14 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
         ) : (
           <button
             type="button"
-            onClick={() => setShowEditor(true)}
+            onClick={() => {
+              setArticleNotice('');
+              setShowEditor(true);
+            }}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-semibold self-start cursor-pointer shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            <span>{lang === 'fa' ? 'انتشار مقاله جدید' : 'Publish Guide'}</span>
+            <span>{lang === 'fa' ? 'ارسال مقاله برای بازبینی' : 'Submit a Guide for Review'}</span>
           </button>
         )}
       </div>
@@ -474,7 +577,7 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
           }`}
         >
           <Library className="w-4 h-4" />
-          <span>{lang === 'fa' ? 'مرجع دانلود کتب و مقالات (۷ پایگاه)' : 'Books & Papers Library (7 Platforms)'}</span>
+          <span>{lang === 'fa' ? 'کتابخانه و جستجوی مقالات' : 'Library & Paper Search'}</span>
           <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 font-bold">
             رایگان
           </span>
@@ -484,6 +587,11 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
       {/* VIEW 1: Articles Mode */}
       {hubTab === 'articles' && (
         <>
+          {articleNotice && (
+            <div role="status" className="rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/40 px-4 py-3 text-sm text-sky-800 dark:text-sky-200">
+              {articleNotice}
+            </div>
+          )}
           {/* Full Article View */}
       {activeArticle ? (
         <article className="glass-surface rounded-3xl p-6 sm:p-10 space-y-6">
@@ -595,8 +703,8 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
               </div>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 {lang === 'fa'
-                  ? 'نیازی به پرداخت دلاری برای مقالات ISI و کتاب‌های مرجع نیست؛ از Unpaywall، Open Access Button، CORE، DOAJ، OA.mg، PaperPanda و LibGen استفاده کنید.'
-                  : 'Bypass academic paywalls legally with open-access repositories and automated DOI retrieval tools.'}
+                  ? 'برای مطالعهٔ قانونی، نسخه‌های آزاد و مجاز مقاله را از مخزن ناشر یا سازمان نویسندگان بررسی کنید.'
+                  : 'Use publisher or institutional repositories for lawful open-access copies.'}
               </p>
             </div>
 
@@ -733,7 +841,7 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
                     : 'Open Access Textbooks & Research Papers Repository'}
                 </h3>
                 <p className="text-xs text-sky-700 dark:text-sky-300 font-semibold mt-0.5">
-                  CORE · OA.mg · DOAJ · Library Genesis · Unpaywall · Open Access Button · PaperPanda
+                  OpenAlex · Semantic Scholar · arXiv · Crossref
                 </p>
               </div>
             </div>
@@ -750,8 +858,8 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
 
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-4xl">
             {lang === 'fa'
-              ? 'دیگر نیازی به پرداخت دلاری برای دانلود مقالات ISI و کتاب‌های مرجع نیست. در این بخش مهم‌ترین تکست‌بوک‌های مهندسی و علوم پایه به همراه مقالات کلیدی اضافه شده‌اند و می‌توانید با استفاده از ۷ پایگاه دسترسی آزاد جهانی به بیش از ۲۵۰ میلیون پژوهش رسمی دیگر دسترسی داشته باشید.'
-              : 'Access hundreds of millions of peer-reviewed papers and university textbooks directly without commercial paywalls.'}
+              ? 'مقاله‌های علمی را مستقیماً در چهار پایگاه OpenAlex، Semantic Scholar، arXiv و Crossref جستجو کنید. نتایج و لینک نسخهٔ آزاد فقط وقتی خود منبع آن را ارائه کند نمایش داده می‌شود.'
+              : 'Search OpenAlex, Semantic Scholar, arXiv, and Crossref directly. Open-access links are shown only when provided by the source.'}
           </p>
         </div>
 
@@ -812,6 +920,110 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
             </button>
           </div>
         </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void handleResearchSearch()}
+            disabled={researchLoading || libSearchQuery.trim().length < 2}
+            className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-sky-700 disabled:opacity-50 cursor-pointer"
+          >
+            {researchLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            {lang === 'fa' ? 'جستجوی زنده در چهار پایگاه' : 'Search four academic databases'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleResearchSynthesis()}
+            disabled={researchAnswerLoading || libSearchQuery.trim().length < 3}
+            className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-violet-700 disabled:opacity-50 cursor-pointer"
+          >
+            {researchAnswerLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {lang === 'fa' ? 'پاسخ مستند با هوش مصنوعی' : 'AI answer with citations'}
+          </button>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">
+            {lang === 'fa' ? 'برای قابلیت AI ورود لازم است.' : 'AI answers require sign-in.'}
+          </span>
+        </div>
+
+        {researchError && (
+          <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
+            {researchError}
+          </div>
+        )}
+
+        {researchProviders.length > 0 && (
+          <div className="flex flex-wrap gap-2" aria-label={lang === 'fa' ? 'وضعیت پایگاه‌ها' : 'Database status'}>
+            {researchProviders.map((provider) => (
+              <span
+                key={provider.source}
+                className={`rounded-lg px-2.5 py-1 text-[10px] font-semibold ${
+                  provider.status === 'ok'
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
+                    : 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300'
+                }`}
+              >
+                {provider.source}: {provider.status === 'ok'
+                  ? `${provider.count} ${lang === 'fa' ? 'نتیجه' : 'results'}`
+                  : (lang === 'fa' ? 'موقتاً در دسترس نیست' : 'temporarily unavailable')}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {researchAnswer && (
+          <section className="glass-surface rounded-2xl border border-violet-200 dark:border-violet-900 p-5 space-y-3">
+            <h4 className="flex items-center gap-2 text-sm font-bold text-violet-800 dark:text-violet-300">
+              <Sparkles className="w-4 h-4" />
+              {lang === 'fa' ? 'جمع‌بندی پژوهش‌محور' : 'Research-grounded synthesis'}
+            </h4>
+            <div className="text-sm leading-7 text-slate-800 dark:text-slate-100 whitespace-pre-wrap">{researchAnswer.answer}</div>
+            {researchAnswer.limitations && (
+              <p className="text-xs leading-6 text-slate-600 dark:text-slate-400">
+                <strong>{lang === 'fa' ? 'محدودیت‌ها: ' : 'Limitations: '}</strong>{researchAnswer.limitations}
+              </p>
+            )}
+            <div className="space-y-1 border-t border-slate-200 dark:border-slate-800 pt-3">
+              <div className="text-xs font-bold text-slate-700 dark:text-slate-200">{lang === 'fa' ? 'منابع استفاده‌شده' : 'Sources used'}</div>
+              {researchAnswer.sources.map((paper, index) => (
+                <a key={`${paper.source}-${paper.id}`} href={paper.url} target="_blank" rel="noreferrer" className="block text-xs text-sky-700 dark:text-sky-300 hover:underline">
+                  [{index + 1}] {paper.title} · {paper.source}{paper.year ? ` · ${paper.year}` : ''}
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {researchPapers.length > 0 && (
+          <section className="space-y-3">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+              {lang === 'fa' ? `نتایج جستجو (${researchPapers.length})` : `Search results (${researchPapers.length})`}
+            </h4>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {researchPapers.map((paper) => (
+                <article key={`${paper.source}-${paper.id}`} className="glass-surface rounded-2xl p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <a href={paper.url} target="_blank" rel="noreferrer" className="text-sm font-bold text-sky-700 dark:text-sky-300 hover:underline">
+                      {paper.title}
+                    </a>
+                    <span className="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                      {paper.source}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {[paper.authors.join(', '), paper.year, paper.citationCount != null ? `${paper.citationCount} citations` : null, paper.doi ? `DOI: ${paper.doi}` : null].filter(Boolean).join(' · ')}
+                  </div>
+                  {paper.abstract && <p className="text-xs leading-5 text-slate-700 dark:text-slate-300 line-clamp-4">{paper.abstract}</p>}
+                  {paper.openAccessUrl && (
+                    <a href={paper.openAccessUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 hover:underline">
+                      <Download className="w-3 h-3" />
+                      {lang === 'fa' ? 'نسخهٔ دسترسی آزاد' : 'Open-access version'}
+                    </a>
+                  )}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Resources Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -888,8 +1100,8 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
                     <span>
                       {isBook
                         ? lang === 'fa'
-                          ? `دریافت کتاب (${res.platform})`
-                          : `Download Book (${res.platform})`
+                          ? `جستجوی کتاب (${res.platform})`
+                          : `Find Book (${res.platform})`
                         : lang === 'fa'
                         ? `دریافت مقاله (${res.platform})`
                         : `Download Paper (${res.platform})`}
@@ -919,73 +1131,73 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
           <div className="space-y-1">
             <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Globe className="w-4 h-4 text-sky-600" />
-              <span>{lang === 'fa' ? 'کاوش مستقیم در ۷ پایگاه علمی دسترسی آزاد' : 'Direct Search on 7 Open Access Hubs'}</span>
+              <span>{lang === 'fa' ? 'پایگاه‌های پژوهشی' : 'Research databases'}</span>
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400">
               {lang === 'fa'
-                ? 'برای جستجوی هر موضوع یا کتاب خاص، روی هر کدام از موتورهای جستجو کلیک کنید:'
-                : 'Click any engine to launch deep academic search:'}
+                ? 'جستجوی مستقیم در پایگاه‌های علمی معتبر:'
+                : 'Search these scholarly databases directly:'}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <a
-              href={`https://core.ac.uk/search?q=${encodeURIComponent(libSearchQuery || 'engineering')}`}
+              href={`https://openalex.org/works?search=${encodeURIComponent(libSearchQuery || 'engineering')}`}
               target="_blank"
               rel="noreferrer"
               className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 hover:border-emerald-500 hover:bg-emerald-50/20 transition-all space-y-1"
             >
               <div className="flex items-center justify-between font-bold text-xs text-slate-900 dark:text-white">
-                <span>CORE</span>
+                <span>OpenAlex</span>
                 <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                {lang === 'fa' ? 'بزرگ‌ترین مجمع مقالات دانشگاهی (۲۵۰M+)' : '250M+ open papers'}
+                {lang === 'fa' ? 'جستجوی فرادادهٔ پژوهش و استنادات' : 'Research metadata and citations'}
               </p>
             </a>
 
             <a
-              href={`https://oa.mg/search?q=${encodeURIComponent(libSearchQuery || 'engineering')}`}
+              href={`https://www.semanticscholar.org/search?q=${encodeURIComponent(libSearchQuery || 'engineering')}`}
               target="_blank"
               rel="noreferrer"
               className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 hover:border-sky-500 hover:bg-sky-50/20 transition-all space-y-1"
             >
               <div className="flex items-center justify-between font-bold text-xs text-slate-900 dark:text-white">
-                <span>OA.mg</span>
+                <span>Semantic Scholar</span>
                 <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                {lang === 'fa' ? 'موتور جستجوی مقالات علمی با هوش مصنوعی' : 'Smart paper search engine'}
+                {lang === 'fa' ? 'جستجوی مقاله و شبکهٔ استنادات' : 'Paper search and citation graph'}
               </p>
             </a>
 
             <a
-              href={`https://doaj.org/search/articles?ref=doaj&q=${encodeURIComponent(libSearchQuery || 'engineering')}`}
+              href={`https://arxiv.org/search/?query=${encodeURIComponent(libSearchQuery || 'engineering')}&searchtype=all`}
               target="_blank"
               rel="noreferrer"
               className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 hover:border-purple-500 hover:bg-purple-50/20 transition-all space-y-1"
             >
               <div className="flex items-center justify-between font-bold text-xs text-slate-900 dark:text-white">
-                <span>DOAJ</span>
+                <span>arXiv</span>
                 <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                {lang === 'fa' ? 'دایرکتوری ژورنال‌های داوری‌شده معتبر' : 'Peer-reviewed open journals'}
+                {lang === 'fa' ? 'پیش‌چاپ‌های علمی با متن آزاد' : 'Open scientific preprints'}
               </p>
             </a>
 
             <a
-              href={`https://libgen.rs/search.php?req=${encodeURIComponent(libSearchQuery || 'engineering')}`}
+              href={`https://search.crossref.org/?q=${encodeURIComponent(libSearchQuery || 'engineering')}`}
               target="_blank"
               rel="noreferrer"
               className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 hover:border-amber-500 hover:bg-amber-50/20 transition-all space-y-1"
             >
               <div className="flex items-center justify-between font-bold text-xs text-slate-900 dark:text-white">
-                <span>Library Genesis</span>
+                <span>Crossref</span>
                 <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                {lang === 'fa' ? 'دانلود کتاب‌های مرجع و تکست‌بوک‌ها' : 'Textbooks & reference manuals'}
+                {lang === 'fa' ? 'جستجوی DOI و فرادادهٔ نشر' : 'DOI and publication metadata'}
               </p>
             </a>
           </div>
@@ -1187,7 +1399,11 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
                   onChange={(e) => setNewLibPlatform(e.target.value as any)}
                   className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs"
                 >
-                  <option value="LibGen">Library Genesis (LibGen)</option>
+                  <option value="GoogleBooks">Google Books</option>
+                  <option value="OpenAlex">OpenAlex</option>
+                  <option value="Semantic Scholar">Semantic Scholar</option>
+                  <option value="arXiv">arXiv</option>
+                  <option value="Crossref">Crossref</option>
                   <option value="CORE">CORE (مخازن رسمی)</option>
                   <option value="DOAJ">DOAJ (دسترسی آزاد)</option>
                   <option value="OA.mg">OA.mg (جستجوی هوشمند)</option>
@@ -1240,7 +1456,7 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
           >
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                {lang === 'fa' ? 'ویرایشگر انتشار مقاله علمی جدید' : 'Publish New Engineering Guide'}
+                {lang === 'fa' ? 'ارسال مقاله برای بازبینی' : 'Submit an Engineering Guide for Review'}
               </h3>
               <button
                 type="button"
@@ -1276,13 +1492,6 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
                 <option value="intermediate">{lang === 'fa' ? 'تخصصی' : 'Intermediate'}</option>
                 <option value="advanced">{lang === 'fa' ? 'پیشرفته' : 'Advanced'}</option>
               </select>
-              <input
-                type="text"
-                value={authorFa}
-                onChange={(e) => setAuthorFa(e.target.value)}
-                placeholder={lang === 'fa' ? 'نام نویسنده' : 'Author'}
-                className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3.5 py-2 text-sm text-slate-900 dark:text-white"
-              />
               <input
                 type="number"
                 min={1}
@@ -1353,9 +1562,12 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-semibold cursor-pointer"
+                disabled={submittingArticle}
+                className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-semibold disabled:opacity-50 cursor-pointer"
               >
-                {lang === 'fa' ? 'انتشار در مجله علمی' : 'Publish Article'}
+                {submittingArticle
+                  ? lang === 'fa' ? 'در حال ارسال...' : 'Submitting...'
+                  : lang === 'fa' ? 'ارسال برای بازبینی' : 'Submit for Review'}
               </button>
             </div>
           </form>

@@ -227,7 +227,7 @@ export interface ScientificResourceItem {
   summaryEn: string;
   doi?: string;
   downloadUrl: string;
-  platform: 'LibGen' | 'CORE' | 'DOAJ' | 'OA.mg' | 'arXiv' | 'Unpaywall' | 'OpenAccessButton' | 'PaperPanda';
+  platform: 'GoogleBooks' | 'OpenAlex' | 'Semantic Scholar' | 'arXiv' | 'Crossref' | 'CORE' | 'DOAJ' | 'OA.mg' | 'Unpaywall' | 'OpenAccessButton' | 'PaperPanda';
   isLegalOpenAccess: boolean;
 }
 

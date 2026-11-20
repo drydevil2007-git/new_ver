@@ -84,7 +84,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   const [newResYear, setNewResYear] = useState('2023');
   const [newResSummary, setNewResSummary] = useState('');
   const [newResUrl, setNewResUrl] = useState('');
-  const [newResPlatform, setNewResPlatform] = useState<ScientificResourceItem['platform']>('LibGen');
+  const [newResPlatform, setNewResPlatform] = useState<ScientificResourceItem['platform']>('GoogleBooks');
   const [newResDoi, setNewResDoi] = useState('');
 
   useEffect(() => {
@@ -120,11 +120,11 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
       doi: newResDoi.trim() || undefined,
       downloadUrl:
         newResUrl.trim() ||
-        (newResPlatform === 'LibGen'
-          ? `https://libgen.rs/search.php?req=${encodeURIComponent(newResTitleEn || newResTitleFa)}`
-          : `https://core.ac.uk/search?q=${encodeURIComponent(newResTitleEn || newResTitleFa)}`),
+        (newResPlatform === 'GoogleBooks'
+          ? `https://books.google.com/books?q=${encodeURIComponent(newResTitleEn || newResTitleFa)}`
+          : `https://openalex.org/works?search=${encodeURIComponent(newResTitleEn || newResTitleFa)}`),
       platform: newResPlatform,
-      isLegalOpenAccess: newResPlatform !== 'LibGen',
+      isLegalOpenAccess: false,
     };
 
     const next = [item, ...customResources];
@@ -579,7 +579,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 {lang === 'fa'
                   ? `برای مطالعه عمیق درس «${course.titleFa}»، کتاب‌های مرجع و مقالات کلیدی در زیر اضافه شده‌اند. همچنین می‌توانید با ۷ پلتفرم رسمی دسترسی آزاد به بیش از ۲۵۰ میلیون پژوهش و کتاب دیگر دسترسی داشته باشید.`
-                  : `Curated textbooks and landmark papers for "${course.titleEn}" are provided below with 1-click download links via LibGen, CORE, DOAJ, and OA.mg.`}
+                  : `Curated references for "${course.titleEn}" are listed below alongside direct searches in scholarly databases.`}
               </p>
             </div>
 
@@ -819,9 +819,9 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-sky-600 shrink-0 mt-0.5" />
                 </a>
 
-                {/* 4. Library Genesis */}
+                {/* 4. Crossref */}
                 <a
-                  href={`https://libgen.rs/search.php?req=${encodeURIComponent(paperSearchQuery)}`}
+                  href={`https://search.crossref.org/?q=${encodeURIComponent(paperSearchQuery)}`}
                   target="_blank"
                   rel="noreferrer"
                   className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 p-3.5 flex items-start justify-between gap-3 hover:border-sky-500 hover:bg-sky-50/50 dark:hover:bg-sky-950/20 transition-all cursor-pointer"
@@ -829,7 +829,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5">
                       <span className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400">
-                        Library Genesis (LibGen)
+                        Crossref
                       </span>
                       <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
                         کتاب‌های مرجع و تکست‌بوک
@@ -837,8 +837,8 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                     </div>
                     <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                       {lang === 'fa'
-                        ? 'پایگاه شناخته‌شده برای یافتن کتاب‌های مرجع درسی، تکست‌بوک‌های زبان اصلی و مقالات.'
-                        : 'Well-known archive for course reference books, textbooks, and academic papers.'}
+                        ? 'جستجوی DOI و فرادادهٔ مقاله در ثبت‌کنندهٔ رسمی Crossref.'
+                        : 'Search DOI and publication metadata in the Crossref registry.'}
                     </p>
                   </div>
                   <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-sky-600 shrink-0 mt-0.5" />
@@ -1184,7 +1184,11 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                     onChange={(e) => setNewResPlatform(e.target.value as any)}
                     className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs"
                   >
-                    <option value="LibGen">Library Genesis (LibGen)</option>
+                    <option value="GoogleBooks">Google Books</option>
+                    <option value="OpenAlex">OpenAlex</option>
+                    <option value="Semantic Scholar">Semantic Scholar</option>
+                    <option value="arXiv">arXiv</option>
+                    <option value="Crossref">Crossref</option>
                     <option value="CORE">CORE (مخازن رسمی)</option>
                     <option value="DOAJ">DOAJ (دسترسی آزاد)</option>
                     <option value="OA.mg">OA.mg (جستجوی هوشمند)</option>

@@ -32,7 +32,8 @@ import {
   DEMO_PROFESSOR_PROFILE,
   DEMO_STUDENT_PROFILE,
 } from './components/AuthModal';
-import { signOutGoogle } from './lib/googleAuth';
+import { auth, getVerifiedAccountRole, signOutGoogle } from './lib/googleAuth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { ENGINEERING_COURSES } from './data/coursesData';
 import { DANESH_REELS, buildReelForCourse } from './data/reelsAndCourseDetails';
 import {
@@ -126,14 +127,7 @@ export default function App() {
   } | null>(null);
 
   // Persistent User Authentication Session + Auth Modal + Toast + Quick Switcher
-  const [user, setUser] = useState<UserSession | null>(() => {
-    try {
-      const saved = localStorage.getItem('daneshyar_user_session_v1');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState<UserSession | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [demoSwitcherOpen, setDemoSwitcherOpen] = useState(false);
   const [toast, setToast] = useState<{ id: number; message: string } | null>(null);
@@ -145,6 +139,44 @@ export default function App() {
       setToast((prev) => (prev?.id === id ? null : prev));
     }, 3600);
   };
+
+  useEffect(() => {
+    return onAuthStateChanged(auth, async (account) => {
+      if (!account) {
+        setUser((current) =>
+          current?.id === 'student-demo' || current?.id === 'prof-demo' ? current : null
+        );
+        return;
+      }
+
+      try {
+        const role = await getVerifiedAccountRole();
+        if (auth.currentUser?.uid !== account.uid) return;
+        let profile: Partial<UserSession> = {};
+        try {
+          profile = JSON.parse(
+            localStorage.getItem(`daneshyar_profile_${account.uid}`) || '{}'
+          ) as Partial<UserSession>;
+        } catch {
+          profile = {};
+        }
+        const name = account.displayName || profile.name || account.email?.split('@')[0] || 'Student';
+        setUser({
+          id: account.uid,
+          name,
+          email: account.email || '',
+          university: profile.university || (lang === 'fa' ? 'دانشگاه سراسری' : 'University Campus'),
+          field: profile.field || (lang === 'fa' ? 'مهندسی' : 'Engineering'),
+          role: role === 'admin' ? 'admin' : profile.role === 'professor' ? 'professor' : 'student',
+          avatarInitials: name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase(),
+          joinedAt: profile.joinedAt || new Date().toLocaleDateString(lang === 'fa' ? 'fa-IR' : 'en-US'),
+          photoURL: account.photoURL,
+        });
+      } catch {
+        if (auth.currentUser?.uid === account.uid) setUser(null);
+      }
+    });
+  }, [lang]);
 
   useEffect(() => {
     try {
@@ -512,7 +544,9 @@ export default function App() {
             />
           )}
 
-          {activeSection === 'articles' && <ArticlesHub lang={lang} />}
+          {activeSection === 'articles' && (
+            <ArticlesHub lang={lang} onRequestLogin={() => setAuthModalOpen(true)} />
+          )}
 
           {activeSection === 'study-deck' && (
             <StudyDeckHub
@@ -531,7 +565,12 @@ export default function App() {
           {activeSection === 'study-rooms' && <StudyRoomsAndTools lang={lang} />}
 
           {activeSection === 'community' && (
-            <CommunityAndNotes lang={lang} onGenerateFlashcardsFromNote={handleAddCards} />
+            <CommunityAndNotes
+              lang={lang}
+              user={user}
+              onRequestLogin={() => setAuthModalOpen(true)}
+              onGenerateFlashcardsFromNote={handleAddCards}
+            />
           )}
 
           {activeSection === 'campus' && <CampusVoiceHub lang={lang} />}

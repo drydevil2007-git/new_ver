@@ -18,6 +18,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { Lang, LeitnerCard } from '../types/app';
+import { getFirebaseIdToken } from '../lib/googleAuth';
 import { LatexBlock } from './MathRenderer';
 
 export type DeckTab = 'flashcards' | 'quiz' | 'voice';
@@ -372,10 +373,12 @@ export const StudyDeckHub: React.FC<StudyDeckHubProps> = ({
       outputCtxRef.current = outputCtx;
       nextPlayTimeRef.current = outputCtx.currentTime;
 
+      const token = await getFirebaseIdToken();
+      if (!token) throw new Error(lang === 'fa' ? 'لطفاً وارد حساب کاربری شوید.' : 'Please sign in first.');
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const wsUrl = `${protocol}//${window.location.host}/ws/voice-coach?lang=${encodeURIComponent(
         lang
-      )}&topic=${encodeURIComponent(coachTopic)}&mode=${encodeURIComponent(coachMode)}`;
+      )}&topic=${encodeURIComponent(coachTopic)}&mode=${encodeURIComponent(coachMode)}&token=${encodeURIComponent(token)}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
