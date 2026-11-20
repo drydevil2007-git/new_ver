@@ -118,19 +118,21 @@ export interface ExamSprintData {
   weakSpots: WeakSpotItem[];
 }
 
-const PRESET_COURSES = [
-  {
-    code: 'EE-201',
-    titleFa: 'مدارهای الکتریکی ۱ (گره، مش، تونن و RLC مرتبه دوم)',
-    titleEn: 'Electric Circuits I (Nodal, Mesh, Thevenin & RLC)',
-    days: 5,
-    sampleFile: 'جزوه_جامع_مدار_دانشگاه_شریف_جلسات_۱_تا_۸.pdf',
-    notesSnippet: `قضایای تونن و نورتن: هر شبکه خطی دو قطبی را می‌توان با یک منبع ولتاژ تونن سری با مقاومت معادل یا منبع جریان نورتن موازی جایگزین کرد.
-مدارهای مرتبه اول: پاسخ کامل برابر است با پاسخ حالت ماندگار بعلاوه پاسخ گذرا: x(t) = x(infinity) + [x(0+) - x(infinity)] * e^(-t/tau).
-مدارهای مرتبه دوم سری RLC: ضریب تضعیف آلفا برابر R / (2L) و فرکانس تشدید طبیعی امگا صفر برابر 1 / sqrt(LC) است. اگر آلفا کمتر از امگا صفر باشد سیستم زیرمیرا و نوسانی خواهد بود.`,
-  },
+export interface PresetCourseItem {
+  code: string;
+  faculty: 'math' | 'cs' | 'ee' | 'me';
+  titleFa: string;
+  titleEn: string;
+  days: number;
+  sampleFile: string;
+  notesSnippet: string;
+}
+
+const PRESET_COURSES: PresetCourseItem[] = [
+  // 1. Math & Basic Sciences
   {
     code: 'MATH-102',
+    faculty: 'math',
     titleFa: 'ریاضی عمومی ۲ (انتگرال‌های چندگانه، استوکس و دیورژانس)',
     titleEn: 'Calculus II (Multiple Integrals, Stokes & Divergence)',
     days: 7,
@@ -141,14 +143,175 @@ const PRESET_COURSES = [
 قضیه استوکس: شار کرل میدان F از سطح باز برابر با انتگرال خطی F روی مرز بسته آن سطح است.`,
   },
   {
+    code: 'MATH-201',
+    faculty: 'math',
+    titleFa: 'معادلات دیفرانسیل (مرتبه اول، مرتبه دوم و تبدیل لاپلاس)',
+    titleEn: 'Differential Equations (ODEs & Laplace Transforms)',
+    days: 6,
+    sampleFile: 'جزوه_معادلات_دیفرانسیل_شریف_تبدیل_لاپلاس.pdf',
+    notesSnippet: `معادلات خطی مرتبه اول: با عامل انتگرال‌ساز mu(x) = exp(int P(x)dx) به فرمول حل تحلیلی y = (1/mu) * int(mu * Q(x)dx) می‌رسیم.
+معادلات مرتبه دوم با ضرایب ثابت: معادله مشخصه ar^2 + br + c = 0 تشکیل شده و ریشه‌ها حالت‌های حقیقی، مضاعف یا مختلط مزدوج را رقم می‌زنند.
+تبدیل لاپلاس: L{y'} = sY(s) - y(0) و L{y''} = s^2Y(s) - sy(0) - y'(0)؛ مشتق‌گیری زمانی را به ضرب جبری در حوزه s تبدیل می‌کند.`,
+  },
+  {
+    code: 'MATH-205',
+    faculty: 'math',
+    titleFa: 'ریاضیات مهندسی پیشرفته (سری فوریه، PDE و متغیر مختلط)',
+    titleEn: 'Advanced Engineering Math (Fourier, PDE & Complex)',
+    days: 7,
+    sampleFile: 'فرمول_نامه_ریاضی_مهندسی_تهران_سری_فوریه.pdf',
+    notesSnippet: `سری فوریه مثلثاتی: بسط توابع متناوب با دوره تناوب 2L به سری سینوس و کسینوس با ضرایب a_n و b_n.
+معادله موج و گرما (PDE): حل به روش جداسازی متغیرها u(x,t) = X(x)*T(t) و اعمال شرایط مرزی همگن دیریکله یا فون نویمان.
+انتگرال‌گیری کانتوری مختصات مختلط: قضیه مانده کوشی برابر است با 2*pi*i در مجموع مانده‌های قطب‌های داخل کانتور بسته.`,
+  },
+  {
+    code: 'PHYS-102',
+    faculty: 'math',
+    titleFa: 'فیزیک ۲ (الکتریسیته و مغناطیس و قوانین ماکسول)',
+    titleEn: 'Physics II (Electromagnetism & Maxwell Equations)',
+    days: 6,
+    sampleFile: 'خلاصه_فیزیک_۲_هالیدی_امیرکبیر_ماکسول.pdf',
+    notesSnippet: `قانون گاوس برای میدان الکتریکی: شار خروجی از سطح بسته برابر Q_enclosed / epsilon_0 است.
+قانون القای فارادی: نیروی محرکه الکتریکی القایی برابر منفی مشتق زمانی شار مغناطیسی است: emf = -d(Phi_B)/dt.
+قانون آمپر-ماکسول: انتگرال خطی B برابر است با mu_0 در جریان رسانش بعلاوه جریان جابجایی ماکسول mu_0*epsilon_0*d(Phi_E)/dt.`,
+  },
+
+  // 2. Computer Science & AI
+  {
+    code: 'CS-201',
+    faculty: 'cs',
+    titleFa: 'ساختمان داده‌ها (درخت‌های AVL، هیپ و جدول هش)',
+    titleEn: 'Data Structures (AVL Trees, Heaps & Hashing)',
+    days: 6,
+    sampleFile: 'جزوه_ساختمان_داده_دانشگاه_شریف_درخت_ها.pdf',
+    notesSnippet: `درخت جستجوی دودویی خودمتوازن (AVL): فاکتور توازن هر گره بین -1 و +1 حفظ می‌شود با چرخش‌های ساده چپ/راست یا چپ-راست/راست-چپ در O(log n).
+صف اولویت و هرم (Binary Min/Max Heap): ساختار هرم کامل با آرایه در O(n) ساخته می‌شود و درج و حذف مینیمم در O(log n) انجام می‌گردد.
+جدول درهم‌سازی (Hash Table): حل برخورد با زنجیره‌بندی (Chaining) یا آدرس‌دهی باز (Open Addressing/Linear Probing) با امید دسترسی O(1).`,
+  },
+  {
+    code: 'CS-301',
+    faculty: 'cs',
+    titleFa: 'طراحی و تحلیل الگوریتم‌ها (پویا، حریصانه و گراف)',
+    titleEn: 'Algorithm Design (Dynamic Programming & Graphs)',
+    days: 7,
+    sampleFile: 'خلاصه_طراحی_الگوریتم_CLRS_دانشگاه_تهران.pdf',
+    notesSnippet: `برنامه‌نویسی پویا (DP): شرط زیرساختار بهینه و زیرمسائل هم‌پوشان؛ حل مسائلی مانند کوله‌پشتی 0/1، بزرگترین زیردنباله مشترک (LCS) و ضرب زنجیره‌ای ماتریس‌ها.
+الگوریتم‌های حریصانه: انتخاب بهینه محلی که به بهینه سراسری می‌رسد؛ کدگذاری هافمن و الگوریتم‌های درخت پوشای مینیمم (کروسکال و پریم).
+کوتاه‌ترین مسیر در گراف: دایکسترا در O((V+E) log V) با اوزان نامنفی؛ بلمن-فورد در O(V*E) برای شناسایی دور منفی؛ فلوید-وارشال در O(V^3).`,
+  },
+  {
+    code: 'CS-320',
+    faculty: 'cs',
+    titleFa: 'هوش مصنوعی و یادگیری ماشین (جستجوی A* و شبکه‌های عصبی)',
+    titleEn: 'Artificial Intelligence & Machine Learning',
+    days: 6,
+    sampleFile: 'جزوه_هوش_مصنوعی_راسل_نورویک_شریف.pdf',
+    notesSnippet: `جستجوی آگاهانه A*: تابع ارزیابی f(n) = g(n) + h(n). اگر هیوریستیک h(n) سازگار (Consistent) و پذیرفتنی (Admissible) باشد، A* تضمین بهینگی دارد.
+بازی‌ها و هرس آلفا-بتا: الگوریتم Minimax با هرس آلفا-بتا زیردرخت‌های غیرضروری را بدون تغییر نتیجه حذف می‌کند.
+گرادیان نزولی و شبکه‌های عصبی: به‌روزرسانی وزن‌ها با گرادیان خطای تابع زیان w = w - eta * grad(Loss) و الگوریتم پس‌انتشار خطا (Backpropagation).`,
+  },
+  {
+    code: 'CS-330',
+    faculty: 'cs',
+    titleFa: 'سیستم‌های عامل (زمان‌بندی، ددلاک و حافظه مجازی)',
+    titleEn: 'Operating Systems (Scheduling, Deadlocks & Virtual Memory)',
+    days: 5,
+    sampleFile: 'جزوه_سیستم_های_عامل_سیلبرشاتس_امیرکبیر.pdf',
+    notesSnippet: `الگوریتم‌های زمان‌بندی CPU: نوبت گردشی (Round Robin)، کوتاه‌ترین کار بعدی (SJF) و صف‌های بازخوردی چندسطحی (MLFQ).
+شرایط چهارگانه بن‌بست (Deadlock): تصاحب و انتظار، محرومیت متقابل، عدم بازپس‌گیری و انتظار چرخه‌ای؛ الگوریتم بانکداران دایکسترا برای اجتناب از بن‌بست.
+حافظه مجازی و صفحه‌بندی (Paging): ترجمه آدرس منطقی به فیزیکی با TLB و الگوریتم‌های تعویض صفحه (LRU, FIFO, Clock).`,
+  },
+
+  // 3. Electrical & Electronics
+  {
+    code: 'EE-201',
+    faculty: 'ee',
+    titleFa: 'مدارهای الکتریکی ۱ (گره، مش، تونن و RLC مرتبه دوم)',
+    titleEn: 'Electric Circuits I (Nodal, Mesh, Thevenin & RLC)',
+    days: 5,
+    sampleFile: 'جزوه_جامع_مدار_دانشگاه_شریف_جلسات_۱_تا_۸.pdf',
+    notesSnippet: `قضایای تونن و نورتن: هر شبکه خطی دو قطبی را می‌توان با یک منبع ولتاژ تونن سری با مقاومت معادل یا منبع جریان نورتن موازی جایگزین کرد.
+مدارهای مرتبه اول: پاسخ کامل برابر است با پاسخ حالت ماندگار بعلاوه پاسخ گذرا: x(t) = x(infinity) + [x(0+) - x(infinity)] * e^(-t/tau).
+مدارهای مرتبه دوم سری RLC: ضریب تضعیف آلفا برابر R / (2L) و فرکانس تشدید طبیعی امگا صفر برابر 1 / sqrt(LC) است. اگر آلفا کمتر از امگا صفر باشد سیستم زیرمیرا و نوسانی خواهد بود.`,
+  },
+  {
+    code: 'EE-230',
+    faculty: 'ee',
+    titleFa: 'سیگنال‌ها و سیستم‌ها (کانولوشن، فوریه و تبدیل Z)',
+    titleEn: 'Signals & Systems (Convolution, Fourier & Z-Transform)',
+    days: 7,
+    sampleFile: 'جزوه_سیگنال_اوپنهایم_دانشگاه_شریف.pdf',
+    notesSnippet: `سیستم‌های خطی تغییرناپذیر با زمان (LTI): پاسخ سیستم با انتگرال کانولوشن ورودی و پاسخ ضربه تعیین می‌شود: y(t) = x(t) * h(t).
+قضیه نمونه‌برداری نایکویست: فرکانس نمونه‌برداری باید حداقل دو برابر حداکثر فرکانس سیگنال باشد (f_s >= 2 * f_max) تا از تداخل فرکانسی (Aliasing) جلوگیری شود.
+تبدیل Z و ناحیه همگرایی (ROC): بررسی پایداری سیستم گسسته بر اساس قرار گرفتن دایره واحد داخل ROC.`,
+  },
+  {
     code: 'EE-341',
-    titleFa: 'سیستم‌های کنترل خطی (مکان ریشه‌ها و پایداری)',
+    faculty: 'ee',
+    titleFa: 'سیستم‌های کنترل خطی (مکان ریشه‌ها، بود و نایکویست)',
     titleEn: 'Linear Control Systems (Root Locus & Nyquist)',
-    days: 4,
-    sampleFile: 'جزوه_کنترل_خطی_مکان_هندسی_ریشه‌ها.pdf',
-    notesSnippet: `معیار پایداری راث-هرویتز: تعداد تغییر علامت در ستون اول جدول راث برابر تعداد قطب‌های نیم‌صفحه راست است.
-مکان ریشه‌ها: مکان صفرهای سیستم مداربسته با تغییر بهره K رسم می‌شود. زوایای مجانب‌ها برابر (2k+1)*180 / (n-m) است.
-حاشیه فاز و حاشیه بهره: معیارهای پایداری نسبی در حوزه فرکانس هستند که از نمودارهای بود و نایکویست به دست می‌آیند.`,
+    days: 5,
+    sampleFile: 'جزوه_کنترل_خطی_اوگاتا_دانشگاه_تهران.pdf',
+    notesSnippet: `معیار پایداری راث-هرویتز: تعداد تغییر علامت در ستون اول جدول راث برابر تعداد قطب‌های نیم‌صفحه راست سیستم است.
+مکان هندسی ریشه‌ها (Root Locus): مسیر قطب‌های حلقه بسته با تغییر بهره K؛ شرط زاویه و اندازه برای قرار گرفتن روی مکان.
+پایداری در حوزه فرکانس: حاشیه فاز (PM) و حاشیه بهره (GM) در نمودارهای بود و معیار دور زدن نقطه منفی یک در نمودار نایکویست.`,
+  },
+  {
+    code: 'EE-221',
+    faculty: 'ee',
+    titleFa: 'الکترونیک ۱ (مدارهای دیودی، بایاس BJT و ترانزیستور MOSFET)',
+    titleEn: 'Electronics I (Diodes, BJT & MOSFET Amplifiers)',
+    days: 5,
+    sampleFile: 'جزوه_الکترونیک_۱_میکروالکترونیک_رضوی_شریف.pdf',
+    notesSnippet: `مدارهای یکسوساز و دیودی: یکسوساز نیم‌موج و تمام‌موج پل، مدارهای برش‌دهنده و کلمپر با خازن.
+ترانزیستور اثر میدان MOSFET: ناحیه اشباع (Saturation) با رابطه جریان I_D = 0.5 * mu_n * C_ox * (W/L) * (V_GS - V_th)^2 به شرط V_DS >= V_GS - V_th.
+تقویت‌کننده سورس مشترک و امیتر مشترک: محاسبه ضریب هدایت انتقال g_m و بهره ولتاژ سیگنال کوچک A_v = -g_m * R_D.`,
+  },
+
+  // 4. Mechanical, Civil & Industrial
+  {
+    code: 'ME-201',
+    faculty: 'me',
+    titleFa: 'مقاومت مصالح ۱ (تنش، کرنش، خمش تیرها و دایره موهر)',
+    titleEn: 'Mechanics of Materials (Stress, Strain & Mohr Circle)',
+    days: 6,
+    sampleFile: 'جزوه_مقاومت_مصالح_بیر_جانسون_امیرکبیر.pdf',
+    notesSnippet: `تنش عمودی و برشی در المان: قانون هوک تک‌محوره sigma = E * epsilon و برشی tau = G * gamma.
+تنش خمشی در تیرها: رابطه الاستیک خمش sigma = -M * y / I_z که در آن I_z ممان اینرسی سطح مقطع حول تار خنثی است.
+دایره موهر و تنش‌های اصلی: تعیین حداکثر تنش نرمال sigma_1,2 و حداکثر تنش برشی tau_max با دوران محورهای مختصات.`,
+  },
+  {
+    code: 'ME-204',
+    faculty: 'me',
+    titleFa: 'ترمودینامیک مهندسی (قانون اول و دوم و چرخه‌های توان)',
+    titleEn: 'Engineering Thermodynamics (Laws, Entropy & Cycles)',
+    days: 6,
+    sampleFile: 'خلاصه_ترمودینامیک_سنجل_دانشگاه_تهران.pdf',
+    notesSnippet: `قانون اول ترمودینامیک برای حجم کنترل: تغییرات انرژی برابر است با گرمای ورودی منهای کار خروجی بعلاوه تغییرات آنتالپی جریان جرم.
+قانون دوم و نامساوی کلازیوس: بازده هیچ چرخه‌ای نمی‌تواند از چرخه کارنو بیشتر باشد: eta_Carnot = 1 - T_L / T_H.
+تولید آنتروپی و برگشت‌ناپذیری: S_gen >= 0؛ آنتروپی کل جهان در هر فرآیند واقعی افزایش می‌یابد.`,
+  },
+  {
+    code: 'ME-301',
+    faculty: 'me',
+    titleFa: 'مکانیک سیالات (معادله برنولی و ناویر-استوکس)',
+    titleEn: 'Fluid Mechanics (Bernoulli & Navier-Stokes)',
+    days: 6,
+    sampleFile: 'جزوه_مکانیک_سیالات_فاکس_دانشگاه_شریف.pdf',
+    notesSnippet: `معادله برنولی برای جریان ایده‌آل و تراکم‌ناپذیر: P + 0.5 * rho * V^2 + rho * g * z = ثابت در امتداد خط جریان.
+قضیه انتقال رینولدز (RTT): تبدیل توصیف لاگرانژی به اویلری برای بقای جرم، اندازه حرکت خطی و انرژی در حجم کنترل.
+جریان آرام در لوله‌ها (هاگن-پوازی): افت فشار متناسب با طول لوله و عکس توان چهارم قطر: Delta P = 128 * mu * L * Q / (pi * D^4).`,
+  },
+  {
+    code: 'IE-201',
+    faculty: 'me',
+    titleFa: 'تحقیق در عملیات ۱ (برنامه‌ریزی خطی و جدول سیمپلکس)',
+    titleEn: 'Operations Research I (Linear Programming & Simplex)',
+    days: 5,
+    sampleFile: 'جزوه_تحقیق_در_عملیات_تاها_دانشگاه_صنعتی_شریف.pdf',
+    notesSnippet: `مدل‌سازی برنامه‌ریزی خطی (LP): تابع هدف بیشینه‌سازی سود یا کمینه‌سازی هزینه تحت قیود تساوی و نامساوی خطی.
+الگوریتم سیمپلکس تابلویی: ورود متغیر با بیشترین ضریب مثبت در سطر z (روش ماکزیمم‌سازی) و خروج متغیر بر اساس کمترین نسبت مقادیر مثبت سمت راست (RHS test).
+نظریه دوگانگی (Duality): مقدار بهینه مسئله اولیه با مقدار بهینه مسئله دوگان برابر است (قضیه دوگانگی قوی) و قیمت سایه‌ای منابع.`,
   },
 ];
 
@@ -159,6 +322,7 @@ export const ExamSprintHub: React.FC<ExamSprintHubProps> = ({
   initialCourseCode,
 }) => {
   // Setup inputs
+  const [selectedFaculty, setSelectedFaculty] = useState<'all' | 'math' | 'cs' | 'ee' | 'me'>('all');
   const [selectedCourse, setSelectedCourse] = useState(initialCourseCode || 'EE-201');
   const [courseCustomTitle, setCourseCustomTitle] = useState('مدارهای الکتریکی ۱');
   const [daysCount, setDaysCount] = useState(5);
@@ -322,22 +486,47 @@ export const ExamSprintHub: React.FC<ExamSprintHubProps> = ({
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-slate-500">{lang === 'fa' ? 'انتخاب سریع درس:' : 'Quick Presets:'}</span>
-            {PRESET_COURSES.map((preset) => (
-              <button
-                key={preset.code}
-                type="button"
-                onClick={() => handlePresetSelect(preset.code)}
-                className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  selectedCourse === preset.code
-                    ? 'bg-sky-600 text-white shadow-sm'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                {preset.code}
-              </button>
-            ))}
+          <div className="flex flex-col gap-2.5 max-w-2xl">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-xs font-bold text-slate-500 me-1">{lang === 'fa' ? 'دسته‌بندی دروس:' : 'Faculties:'}</span>
+              {[
+                { id: 'all' as const, fa: 'همه دروس (۱۶)', en: 'All (16)' },
+                { id: 'math' as const, fa: 'ریاضی و فیزیک (۴)', en: 'Math & Physics (4)' },
+                { id: 'cs' as const, fa: 'کامپیوتر و هوش مصنوعی (۴)', en: 'Computer & AI (4)' },
+                { id: 'ee' as const, fa: 'برق و الکترونیک (۴)', en: 'Electrical (4)' },
+                { id: 'me' as const, fa: 'مکانیک و صنایع (۴)', en: 'Mechanical & IE (4)' },
+              ].map((fac) => (
+                <button
+                  key={fac.id}
+                  type="button"
+                  onClick={() => setSelectedFaculty(fac.id)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                    selectedFaculty === fac.id
+                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                  }`}
+                >
+                  {lang === 'fa' ? fac.fa : fac.en}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5 max-h-24 overflow-y-auto p-1 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800">
+              {PRESET_COURSES.filter((p) => selectedFaculty === 'all' || p.faculty === selectedFaculty).map((preset) => (
+                <button
+                  key={preset.code}
+                  type="button"
+                  onClick={() => handlePresetSelect(preset.code)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    selectedCourse === preset.code
+                      ? 'bg-sky-600 text-white shadow-xs'
+                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
+                  }`}
+                >
+                  <span className="font-bold">{preset.code}:</span> {lang === 'fa' ? preset.titleFa.split('(')[0] : preset.titleEn.split('(')[0]}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
