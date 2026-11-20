@@ -10,6 +10,7 @@ export type NavSection =
   | 'community'
   | 'campus'
   | 'mercury'
+  | 'mausbot'
   | 'study-deck'
   | 'study-rooms'
   | 'admin';
@@ -422,4 +423,91 @@ export interface MercuryMessage {
     details: string;
   };
 }
+
+// -------------------------------------------------------------
+// OpenMausBot (Grok Bot Alternative - Multi-Bot Team & Sandbox VM)
+// -------------------------------------------------------------
+export type MausModelId =
+  | 'gemini-2.5-flash'
+  | 'gemini-2.5-pro'
+  | 'claude-3-7-sonnet'
+  | 'gpt-4o'
+  | 'grok-3'
+  | 'deepseek-r1'
+  | 'ollama-local';
+
+export interface MausVMFile {
+  name: string;
+  size: string;
+  isDir?: boolean;
+  modified: string;
+}
+
+export interface MausVMState {
+  hostname: string;
+  os: string;
+  cpuPercent: number;
+  ramPercent: number;
+  diskPercent: number;
+  runningProcess?: string;
+  openPorts: number[];
+  workspaceFiles: MausVMFile[];
+  lastTerminalLines: string[];
+  screenPreviewUrl?: string;
+}
+
+export interface MausBotProfile {
+  id: string;
+  name: string;
+  avatar: string;
+  role: string;
+  description: string;
+  model: MausModelId;
+  status: 'idle' | 'running' | 'thinking' | 'waiting-approval';
+  vm: MausVMState;
+  color: string;
+  systemPrompt: string;
+  tags: string[];
+  createdByUser?: boolean;
+}
+
+export interface MausApprovalCard {
+  id: string;
+  botId: string;
+  botName: string;
+  toolName: 'bash' | 'fs_write' | 'web_fetch' | 'port_bind';
+  commandOrPath: string;
+  previewDiff?: string;
+  dangerLevel: 'low' | 'medium' | 'high';
+  status: 'pending' | 'allowed' | 'denied';
+  timestamp: string;
+  details: string;
+}
+
+export interface MausRoom {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  memberBotIds: string[];
+  lastActive: string;
+  isRoom: true;
+}
+
+export interface MausMessage {
+  id: string;
+  targetType: 'bot' | 'room';
+  targetId: string;
+  sender: 'user' | 'bot' | 'system';
+  botId?: string;
+  botName?: string;
+  botAvatar?: string;
+  content: string;
+  timestamp: string;
+  approvalId?: string;
+  approvalCard?: MausApprovalCard;
+  terminalOutput?: string[];
+  modelUsed?: MausModelId;
+}
+
 

@@ -15,6 +15,7 @@ import {
   Box,
   Target,
   Cpu,
+  Bot,
 } from 'lucide-react';
 import { Lang, NavSection } from '../types/app';
 import { ENGINEERING_COURSES, ENGINEERING_FIELDS } from '../data/coursesData';
@@ -114,6 +115,15 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({
       descFa: 'عامل هوشمند با شخصیت قابل ویرایش (SOUL.md)، حافظه مغز دوم، ناوگان ربات‌های تخصصی (ارشمیدس، تورینگ، اویلر، هیپاتیا) و نظارت بر امنیت.',
       descEn: 'Persistent second-brain memory, editable soul, autonomous specialist bot fleet, and permission-gated execution.',
       action: () => onNavigate('mercury'),
+    },
+    {
+      id: 'mausbot',
+      icon: Bot,
+      titleFa: '🐭 فلیت ربات‌های اوپن‌ماوس‌بات (OpenMausBot)',
+      titleEn: '🐭 OpenMausBot Autonomous Fleet & Sandboxed VMs',
+      descFa: 'تیم بات‌های هوش مصنوعی با کامپیوتر ایزوله اختصاصی (VM)، کارت‌های تایید مجوز (Approval Cards)، اتاق‌های چندرباته و پشتیبانی از مدل‌های Claude، Gemini، Grok و DeepSeek.',
+      descEn: 'Your AI team in a chat app. Every bot gets an isolated computer sandbox, interactive approval cards for dangerous actions, and multi-bot collaborative rooms.',
+      action: () => onNavigate('mausbot'),
     },
     {
       id: 'campus',

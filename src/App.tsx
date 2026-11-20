@@ -25,6 +25,7 @@ import { StudyRoomsAndTools } from './components/StudyRoomsAndTools';
 import { CommunityAndNotes } from './components/CommunityAndNotes';
 import { CampusVoiceHub } from './components/CampusVoiceHub';
 import { MercuryAgentHub } from './components/MercuryAgentHub';
+import { OpenMausBotHub } from './components/OpenMausBotHub';
 import { ArticlesHub } from './components/ArticlesHub';
 import { AdminPanel } from './components/AdminPanel';
 import { DaneshReelsModal } from './components/DaneshReelsModal';
@@ -556,6 +557,8 @@ export default function App() {
           {activeSection === 'campus' && <CampusVoiceHub lang={lang} />}
 
           {activeSection === 'mercury' && <MercuryAgentHub lang={lang} onNavigate={setActiveSection} />}
+
+          {activeSection === 'mausbot' && <OpenMausBotHub lang={lang} onNavigate={setActiveSection} />}
 
           {activeSection === 'admin' && user?.role === 'admin' && (
             <AdminPanel

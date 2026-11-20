@@ -770,6 +770,256 @@ const INITIAL_MERCURY_MESSAGES = [
   },
 ];
 
+// ============================================================================
+// OpenMausBot (Grok Bot Alternative - Multi-Agent Fleet & Sandbox VM Hub)
+// ============================================================================
+const INITIAL_MAUS_BOTS = [
+  {
+    id: 'maus-architect',
+    name: 'Maus Architect',
+    avatar: '📐',
+    role: 'معمار نرم‌افزار و سیستم‌های توزیع‌شده',
+    description: 'تحلیل معماری، میکروسرویس‌ها، طراحی پایگاه‌داده و زیرساخت ابری با شبیه‌ساز ترمینال اختصاصی',
+    model: 'gemini-2.5-pro',
+    status: 'idle',
+    color: '#06b6d4',
+    systemPrompt: 'You are Maus Architect, an expert distributed systems engineer and software architect. Provide rigorous structural diagrams, clean scalable patterns, and terminal-ready deployment plans.',
+    tags: ['Architecture', 'Kubernetes', 'Microservices', 'Database'],
+    vm: {
+      hostname: 'maus-vm-architect.local',
+      os: 'Ubuntu 24.04 LTS (Sandbox)',
+      cpuPercent: 14,
+      ramPercent: 32,
+      diskPercent: 41,
+      runningProcess: 'docker compose -f infra.yml up -d',
+      openPorts: [3000, 8080, 5432],
+      workspaceFiles: [
+        { name: 'docker-compose.yml', size: '2.4 KB', modified: '5m ago' },
+        { name: 'architecture-spec.md', size: '6.1 KB', modified: '18m ago' },
+        { name: 'k8s-deployment.yaml', size: '3.8 KB', modified: '1h ago' },
+      ],
+      lastTerminalLines: [
+        '$ maus-vm-architect:~$ cd ~/workspace/infra',
+        '$ docker compose up -d postgres redis gateway',
+        '[+] Running 3/3: Container gateway Started (healthy)',
+        '[+] All ports bound: 3000 -> 8080. Architecture verified.',
+      ],
+    },
+  },
+  {
+    id: 'maus-runner',
+    name: 'Code Runner & Tester',
+    avatar: '⚡',
+    role: 'اجراکننده کد، دیباگر و تست خودکار',
+    description: 'اجرای اسکریپت‌های پایتون، تایپ‌اسکریپت و C++ درون سندباکس ایزوله و بازخورد خط‌به‌خط',
+    model: 'claude-3-7-sonnet',
+    status: 'idle',
+    color: '#10b981',
+    systemPrompt: 'You are Maus Code Runner, an automated execution and test engine. You test code, benchmark performance, and provide diffs with exact safety approvals.',
+    tags: ['Python', 'TypeScript', 'Pytest', 'Runtime'],
+    vm: {
+      hostname: 'maus-vm-runner.local',
+      os: 'Debian 12 Bookworm (Isolated)',
+      cpuPercent: 8,
+      ramPercent: 24,
+      diskPercent: 29,
+      runningProcess: 'pytest --color=yes -v',
+      openPorts: [5000, 8000],
+      workspaceFiles: [
+        { name: 'solution_benchmark.py', size: '3.2 KB', modified: '3m ago' },
+        { name: 'test_suites.py', size: '4.7 KB', modified: '12m ago' },
+        { name: 'benchmark_results.json', size: '1.2 KB', modified: '2m ago' },
+      ],
+      lastTerminalLines: [
+        '$ maus-runner:~$ python3 -m pytest tests/test_perf.py',
+        'collected 12 items',
+        'tests/test_perf.py::test_dynamic_programming PASSED [ 50% ]',
+        'tests/test_perf.py::test_memory_leak PASSED [ 100% ]',
+        '== 12 passed in 0.42s ==',
+      ],
+    },
+  },
+  {
+    id: 'maus-scout',
+    name: 'Research Scout',
+    avatar: '🌐',
+    role: 'جستجوگر اسناد، مقالات و منابع متن‌باز',
+    description: 'کاوش در مخازن گیت‌هاب، مقالات arXiv و مستندات کتابخانه‌ها با جمع‌آوری شواهد و خلاصه تحلیلی',
+    model: 'gemini-2.5-flash',
+    status: 'idle',
+    color: '#8b5cf6',
+    systemPrompt: 'You are Maus Research Scout. Investigate open-source repositories, academic papers, and API specs. Synthesize comprehensive summaries with citations.',
+    tags: ['Web Scraping', 'arXiv', 'Docs', 'Synthesizer'],
+    vm: {
+      hostname: 'maus-vm-scout.local',
+      os: 'Arch Linux (Minimal Sandbox)',
+      cpuPercent: 12,
+      ramPercent: 28,
+      diskPercent: 35,
+      runningProcess: 'crawler --target arxiv.org --depth 2',
+      openPorts: [9090],
+      workspaceFiles: [
+        { name: 'arxiv_survey.json', size: '15.4 KB', modified: '8m ago' },
+        { name: 'github_trending_rag.md', size: '7.8 KB', modified: '25m ago' },
+        { name: 'citations.bib', size: '2.1 KB', modified: '1h ago' },
+      ],
+      lastTerminalLines: [
+        '$ maus-scout:~$ curl -s https://export.arxiv.org/api/query?search_query=cat:cs.AI',
+        'HTTP/2 200 OK - Fetched 25 relevant preprint abstracts.',
+        'Extracted: "Speculative Decoding in Open-Weights LLMs"',
+        'Saved to ~/workspace/arxiv_survey.json',
+      ],
+    },
+  },
+  {
+    id: 'maus-math-ta',
+    name: 'Math & Physics TA',
+    avatar: '🧮',
+    role: 'دستیار آموزشی ریاضی مهندسی و فیزیک تحلیلی',
+    description: 'اثبات قضایا، مشتق‌گیری و انتگرال‌گیری تحلیلی با نمادگذاری گام‌به‌گام LaTeX و رسم توابع',
+    model: 'deepseek-r1',
+    status: 'idle',
+    color: '#f59e0b',
+    systemPrompt: 'You are Maus Math & Physics TA. Solve challenging calculus, differential equations, Fourier transforms, and mechanics problems step-by-step with clean KaTeX LaTeX.',
+    tags: ['Calculus', 'Differential Equations', 'Fourier', 'LaTeX'],
+    vm: {
+      hostname: 'maus-vm-math.local',
+      os: 'Alpine Linux (SymPy & NumPy Engine)',
+      cpuPercent: 5,
+      ramPercent: 19,
+      diskPercent: 22,
+      runningProcess: 'python3 -m sympy.notebook',
+      openPorts: [8888],
+      workspaceFiles: [
+        { name: 'symbolic_solver.py', size: '5.1 KB', modified: '15m ago' },
+        { name: 'fourier_derivation.tex', size: '8.4 KB', modified: '32m ago' },
+        { name: 'eigen_analysis.npz', size: '24.0 KB', modified: '2h ago' },
+      ],
+      lastTerminalLines: [
+        '$ maus-math:~$ python3 -c "import sympy as sp; x=sp.Symbol(\'x\'); print(sp.integrate(sp.sin(x)**2, x))"',
+        'x/2 - sin(x)*cos(x)/2',
+        'Verification: derivative gives sin^2(x) identically.',
+      ],
+    },
+  },
+  {
+    id: 'maus-grok-sentinel',
+    name: 'Grok Sentinel',
+    avatar: '🛡️',
+    role: 'نگهبان امنیتی کد و اعتبارسنجی مجوزها',
+    description: 'بررسی آسیب‌پذیری‌های امنیتی، تزریق فرمان‌های شل، نشت کلیدها و کنترل کارت‌های تأیید (Approval Cards)',
+    model: 'grok-3',
+    status: 'idle',
+    color: '#ef4444',
+    systemPrompt: 'You are Grok Sentinel, a security auditor and approval inspector in OpenMausBot. Intercept risky commands, evaluate blast radius, and formulate explicit Allow/Deny approval cards.',
+    tags: ['Security', 'Vulnerability', 'Sandboxing', 'Approvals'],
+    vm: {
+      hostname: 'maus-vm-security.local',
+      os: 'Hardened Linux (gVisor Sandbox)',
+      cpuPercent: 9,
+      ramPercent: 22,
+      diskPercent: 30,
+      runningProcess: 'auditd --monitor-syscalls',
+      openPorts: [4444],
+      workspaceFiles: [
+        { name: 'security_audit.log', size: '12.8 KB', modified: '1m ago' },
+        { name: 'cve_database.json', size: '45.2 KB', modified: '4h ago' },
+        { name: 'sandbox_rules.seccomp', size: '3.1 KB', modified: '1d ago' },
+      ],
+      lastTerminalLines: [
+        '$ maus-sentinel:~$ auditd --active-scan',
+        '[SEC-OK] No privilege escalation detected.',
+        '[APPROVAL-GUARD] 1 pending sensitive shell action awaiting user decision.',
+      ],
+    },
+  },
+];
+
+const INITIAL_MAUS_ROOMS = [
+  {
+    id: 'room-engineering-war-room',
+    title: 'اتاق فرمان مهندسی (War Room)',
+    description: 'همکاری چندرباته معمار سیستم، تست‌کننده کد و نگهبان امنیت روی پروژه‌های دانشگاهی و صنعتی',
+    icon: '🚀',
+    memberBotIds: ['maus-architect', 'maus-runner', 'maus-grok-sentinel'],
+    lastActive: 'هم‌اکنون',
+    isRoom: true,
+  },
+  {
+    id: 'room-exam-prep-arena',
+    title: 'تالار ماراتن امتحانات و حل تمرین',
+    description: 'حل هم‌زمان مسائل ریاضی مهندسی، مرور مقالات مرجع و اجرای تست‌های کلاسی با اعضای رباتیک',
+    icon: '📚',
+    memberBotIds: ['maus-math-ta', 'maus-scout', 'maus-runner'],
+    lastActive: '۱۰ دقیقه پیش',
+    isRoom: true,
+  },
+];
+
+const INITIAL_MAUS_APPROVALS = [
+  {
+    id: 'appr-init-1',
+    botId: 'maus-runner',
+    botName: 'Code Runner & Tester',
+    toolName: 'bash' as const,
+    commandOrPath: 'pip install -r requirements.txt && pytest tests/test_core.py',
+    dangerLevel: 'medium' as const,
+    status: 'pending' as const,
+    timestamp: 'هم‌اکنون',
+    details: 'نصب بسته‌های پایتون و اجرای تست‌های خودکار هسته پردازش سیگنال درون کانتینر ایزوله.',
+    previewDiff: `+ numpy>=1.26.0\n+ scipy>=1.11.0\n+ pytest>=8.0.0\n! running automated test runner with sandboxed bash`,
+  },
+];
+
+const INITIAL_MAUS_MESSAGES = [
+  {
+    id: 'maus-msg-1',
+    targetType: 'bot' as const,
+    targetId: 'maus-architect',
+    sender: 'bot' as const,
+    botId: 'maus-architect',
+    botName: 'Maus Architect',
+    botAvatar: '📐',
+    content: 'سلام! به هاب OpenMausBot دانشیار خوش آمدید. من معمار سیستم و ربات اختصاصی شما هستم. ماشین مجازی من با دسترسی ایزوله داکر، پورت‌های ۳۰۰۰ و ۸۰۸۰ و مخزن کد آماده طراحی و بررسی است. چه سیستمی را طراحی کنیم؟',
+    timestamp: 'هم‌اکنون',
+    modelUsed: 'gemini-2.5-pro' as const,
+  },
+  {
+    id: 'maus-msg-2',
+    targetType: 'bot' as const,
+    targetId: 'maus-runner',
+    sender: 'bot' as const,
+    botId: 'maus-runner',
+    botName: 'Code Runner & Tester',
+    botAvatar: '⚡',
+    content: 'سلام! محیط سندباکس من آماده اجرای تست‌ها و بنچمارک کدهای شماست. یک دستور با کارت تأیید (Approval Card) در انتظار پاسخ شماست.',
+    timestamp: 'هم‌اکنون',
+    approvalId: 'appr-init-1',
+    approvalCard: INITIAL_MAUS_APPROVALS[0],
+    modelUsed: 'claude-3-7-sonnet' as const,
+  },
+  {
+    id: 'maus-msg-3',
+    targetType: 'room' as const,
+    targetId: 'room-engineering-war-room',
+    sender: 'system' as const,
+    content: '🚀 اتاق چندرباته «اتاق فرمان مهندسی» آماده همکاری است. اعضا: Maus Architect, Code Runner, Grok Sentinel.',
+    timestamp: 'هم‌اکنون',
+  },
+  {
+    id: 'maus-msg-4',
+    targetType: 'room' as const,
+    targetId: 'room-engineering-war-room',
+    sender: 'bot' as const,
+    botId: 'maus-architect',
+    botName: 'Maus Architect',
+    botAvatar: '📐',
+    content: 'کانتینرهای زیرساخت اولیه بالا آمدند. پیشنهاد می‌کنم ابتدا تست یکپارچه‌سازی را توسط @Code Runner اجرا کنیم و قبل از هر انتشار، از @Grok Sentinel مجوز امنیتی بگیریم.',
+    timestamp: 'هم‌اکنون',
+    modelUsed: 'gemini-2.5-pro' as const,
+  },
+];
+
 const INITIAL_ROOMS = [
   {
     id: 'room-math-prep',
@@ -1485,6 +1735,293 @@ Format your response as a valid JSON object:
     Object.assign(permissions, body);
     setLocal('dy_mercury_permissions', permissions);
     return jsonResponse({ permissions });
+  }
+
+  // ==========================================================================
+  // OpenMausBot (Grok Bot Alternative - Multi-Agent Fleet, VM Sandboxes & Approvals)
+  // ==========================================================================
+  if (apiPath === '/api/mausbot/state') {
+    const bots = getLocal<any[]>('dy_maus_bots', INITIAL_MAUS_BOTS);
+    const rooms = getLocal<any[]>('dy_maus_rooms', INITIAL_MAUS_ROOMS);
+    const approvals = getLocal<any[]>('dy_maus_approvals', INITIAL_MAUS_APPROVALS);
+    const messages = getLocal<any[]>('dy_maus_messages', INITIAL_MAUS_MESSAGES);
+    return jsonResponse({ bots, rooms, approvals, messages });
+  }
+
+  if (apiPath === '/api/mausbot/chat' && method === 'POST') {
+    const { targetType, targetId, prompt, requestedModel } = body;
+    const promptText = (prompt || '').trim();
+    if (!promptText) {
+      return jsonResponse({ error: 'پیام خالی است.' }, 400);
+    }
+
+    const bots = getLocal<any[]>('dy_maus_bots', INITIAL_MAUS_BOTS);
+    const rooms = getLocal<any[]>('dy_maus_rooms', INITIAL_MAUS_ROOMS);
+    let approvals = getLocal<any[]>('dy_maus_approvals', INITIAL_MAUS_APPROVALS);
+    let messages = getLocal<any[]>('dy_maus_messages', INITIAL_MAUS_MESSAGES);
+
+    const userMessage: any = {
+      id: `maus-user-${Date.now()}`,
+      targetType: targetType || 'bot',
+      targetId: targetId || bots[0].id,
+      sender: 'user',
+      content: promptText,
+      timestamp: new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
+    };
+    messages.push(userMessage);
+
+    let respondingBot = bots.find((b) => b.id === targetId);
+    let room = null;
+    if (targetType === 'room') {
+      room = rooms.find((r) => r.id === targetId);
+      const mentionedBot = bots.find((b) =>
+        promptText.toLowerCase().includes(`@${b.name.toLowerCase()}`) ||
+        promptText.includes(`@${b.name}`) ||
+        promptText.toLowerCase().includes(b.name.toLowerCase())
+      );
+      respondingBot = mentionedBot || (room ? bots.find((b) => room.memberBotIds.includes(b.id)) : bots[0]);
+    }
+    if (!respondingBot) respondingBot = bots[0];
+
+    const modelToUse = requestedModel || respondingBot.model || 'gemini-2.5-flash';
+
+    const isRiskyAction =
+      promptText.toLowerCase().includes('run') ||
+      promptText.toLowerCase().includes('exec') ||
+      promptText.toLowerCase().includes('deploy') ||
+      promptText.toLowerCase().includes('install') ||
+      promptText.toLowerCase().includes('delete') ||
+      promptText.toLowerCase().includes('build') ||
+      promptText.includes('اجرا') ||
+      promptText.includes('تست') ||
+      promptText.includes('نصب') ||
+      promptText.includes('دیپلوی');
+
+    let createdApproval: any = null;
+    if (isRiskyAction) {
+      createdApproval = {
+        id: `appr-${Date.now()}`,
+        botId: respondingBot.id,
+        botName: respondingBot.name,
+        toolName: promptText.includes('نصب') ? 'bash' : 'bash',
+        commandOrPath: promptText.includes('تست')
+          ? 'pytest tests/test_auto.py --durations=3'
+          : promptText.includes('دیپلوی')
+          ? 'docker compose -f infra.yml up -d --build'
+          : `bash -c "${promptText.slice(0, 45)}"`,
+        dangerLevel: promptText.includes('حذف') || promptText.includes('دیپلوی') ? 'high' : 'medium',
+        status: 'pending',
+        timestamp: new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
+        details: `درخواست اجرای دستور درون محیط ایزوله ${respondingBot.name} بر پایه مدل ${modelToUse}.`,
+        previewDiff: `+ RUN command via Sandboxed Container\n! target: ${respondingBot.vm?.hostname || 'sandbox-vm'}\n? status: awaiting user approval`,
+      };
+      approvals.unshift(createdApproval);
+      setLocal('dy_maus_approvals', approvals);
+    }
+
+    let botReplyText = '';
+    try {
+      const systemInstruction = `You are ${respondingBot.name}, an AI bot in the OpenMausBot fleet inside DaneshYar.
+Role: ${respondingBot.role}
+VM Hostname: ${respondingBot.vm?.hostname || 'maus-vm'}
+Active Model: ${modelToUse}
+Tags: ${respondingBot.tags?.join(', ') || ''}
+${respondingBot.systemPrompt}
+Always reply helpfully, concisely and professionally in Persian (unless the user explicitly speaks English). If formulas are needed, use LaTeX with $...$ or $$...$$.
+If an approval card was generated, mention that you prepared the action and it requires user authorization before executing.`;
+
+      botReplyText = await callGemini(promptText, systemInstruction);
+    } catch {
+      botReplyText = `من ${respondingBot.name} هستم. پیام شما دریافت شد و ماشین ایزوله من در حال بررسی درخواست است. ${
+        createdApproval ? 'کارت تأیید (Approval Card) برای مجوز اجرای دستور صادر شد؛ لطفاً تایید یا رد کنید.' : 'محیط سندباکس و منابع پردازشی در وضعیت پایدار قرار دارند.'
+      }`;
+    }
+
+    if (respondingBot.vm) {
+      const newLine = `$ ${respondingBot.name.toLowerCase()}:~$ task --cmd "${promptText.slice(0, 30)}..."`;
+      const resultLine = createdApproval
+        ? `[APPROVAL-WAIT] Action ${createdApproval.id} created. Waiting for user decision.`
+        : `[TASK-OK] Execution evaluated by ${modelToUse}.`;
+      respondingBot.vm.lastTerminalLines = [
+        ...(respondingBot.vm.lastTerminalLines || []).slice(-8),
+        newLine,
+        resultLine,
+      ];
+      respondingBot.vm.cpuPercent = Math.min(95, Math.floor(Math.random() * 40 + 20));
+      respondingBot.vm.ramPercent = Math.min(90, Math.floor(Math.random() * 30 + 35));
+    }
+
+    const botMessage: any = {
+      id: `maus-bot-${Date.now()}`,
+      targetType: targetType || 'bot',
+      targetId: targetId || respondingBot.id,
+      sender: 'bot',
+      botId: respondingBot.id,
+      botName: respondingBot.name,
+      botAvatar: respondingBot.avatar,
+      content: botReplyText,
+      timestamp: new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
+      modelUsed: modelToUse,
+      approvalId: createdApproval ? createdApproval.id : undefined,
+      approvalCard: createdApproval || undefined,
+    };
+    messages.push(botMessage);
+
+    messages = messages.slice(-150);
+    setLocal('dy_maus_messages', messages);
+    setLocal('dy_maus_bots', bots);
+
+    return jsonResponse({
+      userMessage,
+      botMessage,
+      approvalCard: createdApproval,
+      botVM: respondingBot.vm,
+      bots,
+    });
+  }
+
+  if (apiPath.startsWith('/api/mausbot/approvals/') && apiPath.endsWith('/decide') && method === 'POST') {
+    const approvalId = apiPath.split('/')[4];
+    const decision = body.decision; // 'allow' | 'deny'
+    const approvals = getLocal<any[]>('dy_maus_approvals', INITIAL_MAUS_APPROVALS);
+    const bots = getLocal<any[]>('dy_maus_bots', INITIAL_MAUS_BOTS);
+    let messages = getLocal<any[]>('dy_maus_messages', INITIAL_MAUS_MESSAGES);
+
+    const approval = approvals.find((a) => a.id === approvalId);
+    if (!approval) {
+      return jsonResponse({ error: 'کارت تایید یافت نشد.' }, 404);
+    }
+
+    approval.status = decision === 'allow' ? 'allowed' : 'denied';
+    setLocal('dy_maus_approvals', approvals);
+
+    const bot = bots.find((b) => b.id === approval.botId) || bots[0];
+
+    if (bot && bot.vm) {
+      if (decision === 'allow') {
+        bot.vm.lastTerminalLines.push(`$ sudo sandbox-exec "${approval.commandOrPath}"`);
+        bot.vm.lastTerminalLines.push(`[SUCCESS] Exit code 0. Command executed inside sandbox.`);
+        bot.vm.runningProcess = approval.commandOrPath;
+      } else {
+        bot.vm.lastTerminalLines.push(`$ sandbox-guard: Action [${approval.commandOrPath}] was DENIED by user.`);
+      }
+      setLocal('dy_maus_bots', bots);
+    }
+
+    const resMsg: any = {
+      id: `maus-sys-${Date.now()}`,
+      targetType: 'bot',
+      targetId: bot.id,
+      sender: 'system',
+      content:
+        decision === 'allow'
+          ? `✅ مجوز تایید شد: دستور «${approval.commandOrPath}» با موفقیت درون محیط ایزوله ${bot.name} اجرا شد.`
+          : `🛑 درخواست رد شد: اجرای دستور «${approval.commandOrPath}» توسط کاربر متوقف گردید.`,
+      timestamp: new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
+    };
+    messages.push(resMsg);
+    setLocal('dy_maus_messages', messages);
+
+    return jsonResponse({
+      success: true,
+      approval,
+      message: resMsg,
+      updatedVM: bot?.vm,
+      bots,
+    });
+  }
+
+  if (apiPath === '/api/mausbot/bots/create' && method === 'POST') {
+    const bots = getLocal<any[]>('dy_maus_bots', INITIAL_MAUS_BOTS);
+    const newBot = {
+      id: `bot-custom-${Date.now()}`,
+      name: body.name || 'Custom Agent',
+      avatar: body.avatar || '🤖',
+      role: body.role || 'دستیار تخصصی جدید',
+      description: body.description || 'ربات سفارشی ساخته‌شده توسط کاربر در فلیت OpenMausBot',
+      model: body.model || 'gemini-2.5-flash',
+      status: 'idle',
+      color: body.color || '#3b82f6',
+      systemPrompt: body.systemPrompt || 'You are an intelligent custom assistant inside OpenMausBot.',
+      tags: body.tags || ['Custom', 'Sandbox'],
+      createdByUser: true,
+      vm: {
+        hostname: `${(body.name || 'agent').toLowerCase().replace(/\s+/g, '-')}-vm.local`,
+        os: 'Linux Container (Alpine Isolated)',
+        cpuPercent: 5,
+        ramPercent: 18,
+        diskPercent: 20,
+        runningProcess: 'sh -c "idle"',
+        openPorts: [3000],
+        workspaceFiles: [
+          { name: 'README.md', size: '1.2 KB', modified: 'just now' },
+          { name: 'task_runner.sh', size: '512 B', modified: 'just now' },
+        ],
+        lastTerminalLines: [
+          `$ bootloader: initialized VM sandbox for ${body.name || 'Agent'}`,
+          `$ Ready for commands and sandboxed execution.`,
+        ],
+      },
+    };
+    bots.push(newBot);
+    setLocal('dy_maus_bots', bots);
+    return jsonResponse({ success: true, bot: newBot, bots });
+  }
+
+  if (apiPath === '/api/mausbot/rooms/create' && method === 'POST') {
+    const rooms = getLocal<any[]>('dy_maus_rooms', INITIAL_MAUS_ROOMS);
+    const newRoom = {
+      id: `room-${Date.now()}`,
+      title: body.title || 'اتاق همکاری جدید',
+      description: body.description || 'کانال گفتگوی گروهی با چند هوش مصنوعی هم‌زمان',
+      icon: body.icon || '💬',
+      memberBotIds: body.memberBotIds || ['maus-architect', 'maus-runner'],
+      lastActive: 'هم‌اکنون',
+      isRoom: true,
+    };
+    rooms.push(newRoom);
+    setLocal('dy_maus_rooms', rooms);
+    return jsonResponse({ success: true, room: newRoom, rooms });
+  }
+
+  if (apiPath.startsWith('/api/mausbot/bots/') && apiPath.endsWith('/model') && method === 'POST') {
+    const botId = apiPath.split('/')[4];
+    const { model } = body;
+    const bots = getLocal<any[]>('dy_maus_bots', INITIAL_MAUS_BOTS);
+    const bot = bots.find((b) => b.id === botId);
+    if (bot && model) {
+      bot.model = model;
+      setLocal('dy_maus_bots', bots);
+      return jsonResponse({ success: true, bot });
+    }
+    return jsonResponse({ error: 'ربات یافت نشد' }, 404);
+  }
+
+  if (apiPath.startsWith('/api/mausbot/vm/') && apiPath.endsWith('/command') && method === 'POST') {
+    const botId = apiPath.split('/')[4];
+    const { command } = body;
+    const bots = getLocal<any[]>('dy_maus_bots', INITIAL_MAUS_BOTS);
+    const bot = bots.find((b) => b.id === botId);
+    if (!bot || !bot.vm) {
+      return jsonResponse({ error: 'ماشین مجازی ربات یافت نشد' }, 404);
+    }
+    const cleanCmd = (command || '').trim();
+    bot.vm.lastTerminalLines.push(`$ ${cleanCmd}`);
+
+    if (cleanCmd.startsWith('ls')) {
+      bot.vm.lastTerminalLines.push(bot.vm.workspaceFiles.map((f: any) => f.name).join('  '));
+    } else if (cleanCmd.startsWith('uname')) {
+      bot.vm.lastTerminalLines.push(`Linux ${bot.vm.hostname} 6.6.0-generic #1 SMP x86_64 GNU/Linux`);
+    } else if (cleanCmd.startsWith('top') || cleanCmd.startsWith('ps')) {
+      bot.vm.lastTerminalLines.push(`PID USER  PR NI VIRT RES SHR S %CPU %MEM TIME+ COMMAND`);
+      bot.vm.lastTerminalLines.push(`  1 root  20  0 4.2M 1.1M 0.9M S  0.0  0.1 0:00 init`);
+      bot.vm.lastTerminalLines.push(` 42 maus  20  0 250M  85M  32M S ${bot.vm.cpuPercent}% ${bot.vm.ramPercent}% 1:12 ${bot.vm.runningProcess || 'agent-daemon'}`);
+    } else {
+      bot.vm.lastTerminalLines.push(`[SANDBOX EXEC] exit 0: ${cleanCmd}`);
+    }
+    bot.vm.lastTerminalLines = bot.vm.lastTerminalLines.slice(-15);
+    setLocal('dy_maus_bots', bots);
+    return jsonResponse({ success: true, vm: bot.vm });
   }
 
   // --------------------------------------------------------------------------
