@@ -9,6 +9,7 @@ export type NavSection =
   | 'articles'
   | 'community'
   | 'campus'
+  | 'mercury'
   | 'study-deck'
   | 'study-rooms'
   | 'admin';
@@ -338,5 +339,87 @@ export interface AiPerspectiveSummary {
   conPoints: string[];
   ethicsLens: string;
   balancedTakeaway: string;
+}
+
+// ============================================================================
+// Mercury Agent Architecture Types (Soul-Driven Autonomous Agent & Second Brain)
+// Inspired by cosmicstack-labs/mercury-agent
+// ============================================================================
+export type MercuryBotId = 'archimedes' | 'turing' | 'euler' | 'hypatia';
+
+export interface MercuryBot {
+  id: MercuryBotId;
+  nameFa: string;
+  nameEn: string;
+  roleFa: string;
+  roleEn: string;
+  avatarIcon: string;
+  status: 'idle' | 'running' | 'scheduled';
+  scheduleCron: string;
+  deliverablesFolder: string;
+  skills: string[];
+  lastRunAt?: string;
+  dailyBudgetTokens: number;
+  usedTokensToday: number;
+  personaSummary: string;
+  recentDeliverables: Array<{
+    id: string;
+    titleFa: string;
+    titleEn: string;
+    fileName: string;
+    createdAt: string;
+    summary: string;
+  }>;
+}
+
+export type MercuryFactCategory = 'preference' | 'academic_goal' | 'weakness' | 'strength' | 'project';
+
+export interface MercuryFact {
+  id: string;
+  category: MercuryFactCategory;
+  statementFa: string;
+  statementEn: string;
+  confidence: number;
+  source: string;
+  createdAt: string;
+}
+
+export interface MercurySoulConfig {
+  soulMarkdown: string;
+  personaMarkdown: string;
+  tasteMarkdown: string;
+  heartbeatMarkdown: string;
+}
+
+export interface MercuryPermissionConfig {
+  askBeforeShell: boolean;
+  askBeforeFileWrite: boolean;
+  ssrfGuardEnabled: boolean;
+  scopedFolders: string[];
+  blockedShellCommands: string[];
+  dailyTokenLimit: number;
+  tokensConsumedToday: number;
+  tokenSaverActive: boolean;
+}
+
+export interface MercuryMessage {
+  id: string;
+  sender: 'user' | 'agent' | 'bot' | 'system';
+  botId?: MercuryBotId;
+  text: string;
+  timestamp: string;
+  thoughtProcess?: string;
+  toolCalls?: Array<{
+    id: string;
+    toolName: string;
+    args: Record<string, any>;
+    result?: string;
+    status: 'pending' | 'approved' | 'rejected' | 'completed';
+  }>;
+  pendingApproval?: {
+    id: string;
+    action: string;
+    details: string;
+  };
 }
 

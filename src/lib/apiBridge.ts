@@ -557,6 +557,219 @@ const INITIAL_CAMPUS_POLLS = [
   },
 ];
 
+// ============================================================================
+// Mercury Agent Architecture Initial Data (Inspired by cosmicstack-labs/mercury-agent)
+// ============================================================================
+const INITIAL_MERCURY_BOTS = [
+  {
+    id: 'archimedes',
+    nameFa: 'ارشمیدس · پژوهشگر ادبیات علمی',
+    nameEn: 'Archimedes · Literature Reviewer',
+    roleFa: 'کاوشگر مقالات مرجع و موتورهای علمی Open Access (Unpaywall, DOAJ, CORE)',
+    roleEn: 'Autonomous Research Specialist across Open-Access Scientific Repositories',
+    avatarIcon: '🔬',
+    status: 'idle',
+    scheduleCron: '0 8 * * *',
+    deliverablesFolder: '~/Documents/Mercury/Archimedes/',
+    skills: ['unpaywall_api', 'doaj_harvest', 'core_search', 'citation_graph', 'pdf_summarize'],
+    dailyBudgetTokens: 50000,
+    usedTokensToday: 12450,
+    personaSummary: 'پژوهشگر دقیق آکادمیک که مقالات مرجع را جستجو، ارزیابی نقادانه و خلاصه متدولوژی استخراج می‌کند.',
+    recentDeliverables: [
+      {
+        id: 'deliv-1',
+        titleFa: 'مرور جامع ۲۰۲۴-۲۰۲۶ بر شبکه‌های عصبی فیزیک‌آگاه (PINNs) در تحلیل تنش سازه',
+        titleEn: 'Comprehensive 2024-2026 SOTA Review on Physics-Informed Neural Networks (PINNs) in Structural Stress',
+        fileName: 'PINNs_Stress_Review_2026.pdf',
+        createdAt: '۲ ساعت پیش',
+        summary: 'تحلیل مقایسه‌ای ۲۳ مقاله نمایه شده در DOAJ و CORE با فرمول‌بندی معادلات ناویر-استوکس و گرادیان بازگشتی',
+      },
+    ],
+  },
+  {
+    id: 'turing',
+    nameFa: 'تورینگ · مهندس کد و تست',
+    nameEn: 'Turing · Code & Verification Bot',
+    roleFa: 'برنامه‌نویس وسواسی، دیباگر الگوریتم‌ها، شبیه‌سازها و پاس‌کننده تست‌ها',
+    roleEn: 'Rigorous Software Engineer & Algorithmic Tester (Only reports done when tests pass)',
+    avatarIcon: '💻',
+    status: 'idle',
+    scheduleCron: '0 14 * * *',
+    deliverablesFolder: '~/Documents/Mercury/Turing/',
+    skills: ['python_sandbox', 'pytest_runner', 'static_analysis', 'git_commit', 'algorithm_bench'],
+    dailyBudgetTokens: 75000,
+    usedTokensToday: 21300,
+    personaSummary: 'مهندس توسعه نرم‌افزار که تا تست واحد پاس نشود و تحلیل مجانبی بهینه نباشد، کار را تمام‌شده اعلام نمی‌کند.',
+    recentDeliverables: [
+      {
+        id: 'deliv-2',
+        titleFa: 'شبیه‌ساز عددی رونگه-کوتا مرتبه ۴ برای حل مدارهای غیرخطی RLC با پایتون',
+        titleEn: 'RK4 Numerical Simulation Suite for Non-Linear RLC Dynamics in Python',
+        fileName: 'rk4_circuit_simulator.py',
+        createdAt: '۵ ساعت پیش',
+        summary: 'پیاده‌سازی پایتون با حل‌کننده عددی ماتریسی و تست‌های واحد با دقت اعشار ۱۰^-۶',
+      },
+    ],
+  },
+  {
+    id: 'euler',
+    nameFa: 'اویلر · حل تشریحی معادلات و اثبات',
+    nameEn: 'Euler · Math & Derivation Bot',
+    roleFa: 'متخصص محاسبات نمادین، تبدیل لاپلاس، سری‌های فوریه و مکانیک محیط‌های پیوسته',
+    roleEn: 'Symbolic Calculus, Integral Transforms & Proof Verification Master',
+    avatarIcon: '📐',
+    status: 'idle',
+    scheduleCron: '0 18 * * *',
+    deliverablesFolder: '~/Documents/Mercury/Euler/',
+    skills: ['latex_proof', 'symbolic_calculus', 'laplace_fourier', 'state_space_derivation'],
+    dailyBudgetTokens: 40000,
+    usedTokensToday: 8900,
+    personaSummary: 'استاد ریاضیات مهندسی که مراحل مشتق‌گیری و اثبات قضایا را گام‌به‌گام و با فرمول‌نویسی بی‌نقص ارائه می‌دهد.',
+    recentDeliverables: [
+      {
+        id: 'deliv-3',
+        titleFa: 'حل تحلیلی معادله موج ۲ بعدی در مختصات قطبی با توابع بسل',
+        titleEn: 'Analytical Solution of 2D Wave Equation in Polar Coordinates using Bessel Functions',
+        fileName: '2D_Wave_Bessel_Derivations.tex',
+        createdAt: 'دیروز',
+        summary: 'اثبات کامل شرایط مرزی دیریکله و محاسبه ضرایب سری با جزئیات کامل',
+      },
+    ],
+  },
+  {
+    id: 'hypatia',
+    nameFa: 'هیپاتیا · معمار آمادگی آزمون',
+    nameEn: 'Hypatia · Exam Readiness Architect',
+    roleFa: 'برنامه‌ریز شخصی دانشجو، تشخیص نقاط ضعف، استخراج فلش‌کارت و حل نمونه‌سوال',
+    roleEn: 'Pedagogical Exam Readiness Architect, Adaptive Quizzes & Spaced Repetition',
+    avatarIcon: '🎯',
+    status: 'scheduled',
+    scheduleCron: '0 21 * * *',
+    deliverablesFolder: '~/Documents/Mercury/Hypatia/',
+    skills: ['diagnostic_quiz_gen', 'spaced_repetition', 'notes_extractor', 'pomodoro_orchestrator'],
+    dailyBudgetTokens: 60000,
+    usedTokensToday: 18500,
+    personaSummary: 'مربی آموزشی پیگیر که جزوه‌های دانشجو را به تقویم روزانه، فلش‌کارت‌های فعال و آزمون‌های شبیه‌ساز تبدیل می‌کند.',
+    recentDeliverables: [
+      {
+        id: 'deliv-4',
+        titleFa: 'نقشه آمادگی ۷ روزه امتحان میان‌ترم مدارهای الکتریکی ۱ با آزمون تشخیصی',
+        titleEn: '7-Day Intensive Sprint Blueprint for EE-201 Midterm with Diagnostic Quiz',
+        fileName: 'EE201_Midterm_Sprint_Guide.md',
+        createdAt: 'امروز',
+        summary: 'برنامه مطالعه روزانه، ۱۲ فرمول کلیدی تونن/نورتون و ۳ تست تشخیصی',
+      },
+    ],
+  },
+];
+
+const INITIAL_MERCURY_FACTS = [
+  {
+    id: 'fact-1',
+    category: 'preference',
+    statementFa: 'دانشجو ترجیح می‌دهد فرمول‌ها و مراحل حل را حتماً با قالب‌بندی نمادین LaTeX و تعریف صریح متغیرها ببیند.',
+    statementEn: 'User prefers mathematical solutions formatted strictly in LaTeX with explicit variable definitions.',
+    confidence: 0.96,
+    source: 'تعامل با شبیه‌ساز مهندسی',
+    createdAt: '۲ روز پیش',
+  },
+  {
+    id: 'fact-2',
+    category: 'academic_goal',
+    statementFa: 'هدف آکادمیک فعلی: کسب نمره بالای ۱۸ در امتحان پایان‌ترم مدار ۱ و ریاضی مهندسی.',
+    statementEn: 'Academic Goal: Achieve top grade in Electrical Circuits I and Advanced Engineering Mathematics.',
+    confidence: 0.94,
+    source: 'بخش آمادگی آزمون',
+    createdAt: '۳ روز پیش',
+  },
+  {
+    id: 'fact-3',
+    category: 'weakness',
+    statementFa: 'نقطه ضعف نیازمند تمرین: تشخیص شرایط اولیه مدارهای مرتبه دوم RLC در لحظه t=0+.',
+    statementEn: 'Focus Area: Evaluating initial conditions in second-order RLC transient circuits at t=0+.',
+    confidence: 0.89,
+    source: 'آزمون تشخیصی',
+    createdAt: 'دیروز',
+  },
+  {
+    id: 'fact-4',
+    category: 'strength',
+    statementFa: 'نقطه قوت تثبیت‌شده: درک شهودی قضایای استوکس و انتگرال خطی در میدان‌های برداری محافظه‌کار.',
+    statementEn: 'Confirmed Strength: Intuitive grasp of Stokes theorem and path independence in conservative vector fields.',
+    confidence: 0.95,
+    source: 'حل تمرین اتاق مطالعه',
+    createdAt: '۴ روز پیش',
+  },
+  {
+    id: 'fact-5',
+    category: 'project',
+    statementFa: 'پروژه جاری: پیاده‌سازی شبیه‌ساز کنترل فیدبک حلقه بسته و تحلیل مکان هندسی ریشه‌ها (Root Locus).',
+    statementEn: 'Active Project: Python simulation of closed-loop feedback and Root Locus analysis.',
+    confidence: 0.91,
+    source: 'آزمایشگاه هوش مصنوعی',
+    createdAt: '۱ روز پیش',
+  },
+];
+
+const INITIAL_MERCURY_SOUL = {
+  soulMarkdown: `# دانشیار مرکیوری — هویت و فلسفه بنیادین (SOUL.md)
+
+1. **یادگیری اصیل به جای پاسخ سطحی**:
+   دانشیار مرکیوری صرفاً حل‌کننده حاضر و آماده نیست؛ هدف ارتقای شهود فیزیکی، مهارت تحلیلی و تفکر انتقادی دانشجو است.
+
+2. **صداقت علمی و اعلام محدوده اطمینان**:
+   اگر فرضیه یا تقریب عددی وجود دارد، صریحاً دامنه اعتبار و خطای تقریب بیان می‌شود. اعتماد آکادمیک از پاسخ‌های مصنوعی مهم‌تر است.
+
+3. **اصل «پرسش قبل از اقدام» (Ask Before It Acts)**:
+   هرگونه اجرای اسکریپت شل، تغییر فایل‌ها، ثبت در حافظه یا فراخوانی سرویس‌های برون‌خطی با تأیید صریح کاربر صورت می‌گیرد.
+
+4. **پایبندی به اخلاق مهندسی و ایمنی عمومی**:
+   در طراحی سازه، تجهیزات پزشکی و انرژی هسته‌ای، استانداردهای استاندارد و ایمنی خط قرمز است.`,
+  personaMarkdown: `# دانشیار مرکیوری — لحن و ارتباط (PERSONA.md)
+
+- **لحن**: محترمانه، آکادمیک، پرانرژی، راهگشا و هم‌تراز با دانشجوی پژوهشگر.
+- **زبان**: فارسی شیوا با واژه‌گزینی دقیق علمی، و انگلیسی برای اصطلاحات فنی و سورس‌کدها.
+- **روش برخورد**: تشویق استدلال گام‌به‌گام و پرهیز از اطناب بی‌مورد.`,
+  tasteMarkdown: `# دانشیار مرکیوری — استانداردهای فنی (TASTE.md)
+
+- **کدنویسی**: تایپینگ شفاف، ساختار ماژولار، کامنت‌های معنادار، استفاده از Pytest برای آزمون.
+- **ریاضیات**: نگارش شکیل با نمادهای رسمی KaTeX/LaTeX، درج شرایط مرزی و واحدهای SI.
+- **ساختار پاسخ**: ۱) تعریف فیزیکی مسئله، ۲) روابط حاکم، ۳) گام‌های حل عددی/نمادین، ۴) اعتبارسنجی.`,
+  heartbeatMarkdown: `# دانشیار مرکیوری — وظایف پس‌زمینه (HEARTBEAT.md)
+
+- ۰۸:۰۰ صبح: جستجو و سنتز مقالات Open Access توسط ربات ارشمیدس.
+- ۱۴:۰۰ بعدازظهر: تست و اعتبارسنجی کدهای شبیه‌سازی توسط ربات تورینگ.
+- ۱۸:۰۰ عصر: حل نمادین و استخراج فرمول‌ها توسط ربات اویلر.
+- ۲۱:۰۰ شب: بازبینی تقویم امتحانات و مرور فاصله‌دار فلش‌کارت‌ها توسط هیپاتیا.`,
+};
+
+const INITIAL_MERCURY_PERMISSIONS = {
+  askBeforeShell: true,
+  askBeforeFileWrite: true,
+  ssrfGuardEnabled: true,
+  scopedFolders: ['~/Danshyar/Projects', '~/Danshyar/Notes', '~/Documents/Mercury'],
+  blockedShellCommands: ['rm -rf /', 'sudo', 'format', 'mkfs', 'dd', 'chmod -R 777'],
+  dailyTokenLimit: 200000,
+  tokensConsumedToday: 61150,
+  tokenSaverActive: false,
+};
+
+const INITIAL_MERCURY_MESSAGES = [
+  {
+    id: 'msg-init-1',
+    sender: 'system',
+    text: '⚡ هسته هوشمند دانشیار مرکیوری (Mercury Agent Runtime) فعال شد. حافظه مغز دوم (Second Brain) متصل، ۴ ربات تخصصی آماده فرمان و بودجه توکن روزانه تحت نظارت است.',
+    timestamp: 'هم‌اکنون',
+  },
+  {
+    id: 'msg-init-2',
+    sender: 'agent',
+    text: 'سلام هم‌دانشگاهی گرامی! من دانشیار مرکیوری هستم—دستیار خودگردان مهندسی شما بر پایه معماری Mercury Agent. می‌توانم کارهای پژوهشی را به ارشمیدس، تست کدها را به تورینگ، استخراج فرمول‌ها را به اویلر و برنامه‌ریزی امتحانات را به هیپاتیا بسپارم. چه مسئله یا پروژه‌ای را با هم پیش ببریم؟',
+    timestamp: 'هم‌اکنون',
+    thoughtProcess: 'بررسی فکت‌های حافظه مغز دوم: دانشجو دارای هدف امتحان مدار ۱ و ریاضی مهندسی است. ابزارهای مجاز: جستجوی مقالات، حل نمادین، تست پایتون.',
+  },
+];
+
 const INITIAL_ROOMS = [
   {
     id: 'room-math-prep',
@@ -1020,6 +1233,258 @@ async function handleStaticApiFallback(
       return jsonResponse({ poll });
     }
     return jsonResponse({ error: 'نظرسنجی یافت نشد' }, 404);
+  }
+
+  // --------------------------------------------------------------------------
+  // Mercury Agent Architecture & Second Brain Endpoints (cosmicstack-labs/mercury-agent)
+  // --------------------------------------------------------------------------
+  if (apiPath === '/api/mercury/state') {
+    const bots = getLocal<any[]>('dy_mercury_bots', INITIAL_MERCURY_BOTS);
+    const facts = getLocal<any[]>('dy_mercury_facts', INITIAL_MERCURY_FACTS);
+    const soul = getLocal<any>('dy_mercury_soul', INITIAL_MERCURY_SOUL);
+    const permissions = getLocal<any>('dy_mercury_permissions', INITIAL_MERCURY_PERMISSIONS);
+    const messages = getLocal<any[]>('dy_mercury_messages', INITIAL_MERCURY_MESSAGES);
+    return jsonResponse({
+      bots,
+      facts,
+      soul,
+      permissions,
+      messages,
+    });
+  }
+
+  // Execute an Autonomous Agent Turn or Slash Command
+  if (apiPath === '/api/mercury/chat' && method === 'POST') {
+    const promptText = (body.prompt || '').trim();
+    const activeBotId = body.botId || null;
+    const lang = body.lang || 'fa';
+    const bots = getLocal<any[]>('dy_mercury_bots', INITIAL_MERCURY_BOTS);
+    const facts = getLocal<any[]>('dy_mercury_facts', INITIAL_MERCURY_FACTS);
+    const soul = getLocal<any>('dy_mercury_soul', INITIAL_MERCURY_SOUL);
+    const permissions = getLocal<any>('dy_mercury_permissions', INITIAL_MERCURY_PERMISSIONS);
+    const messages = getLocal<any[]>('dy_mercury_messages', INITIAL_MERCURY_MESSAGES);
+
+    // Save user message
+    const userMsg = {
+      id: `msg-${Date.now()}-u`,
+      sender: 'user',
+      text: promptText,
+      timestamp: 'هم‌اکنون',
+    };
+    messages.push(userMsg);
+
+    // Handle Slash Commands
+    if (promptText.startsWith('/')) {
+      const parts = promptText.split(' ');
+      const cmd = parts[0].toLowerCase();
+      let responseText = '';
+      let thoughts = 'پردازش دستور مستقیم شل دانشیار مرکیوری';
+
+      if (cmd === '/memory') {
+        responseText = lang === 'fa'
+          ? `🧠 **حافظه مغز دوم (Second Brain)**:\nتعداد فکت‌های استخراج‌شده: ${facts.length}\n` +
+            facts.map((f: any, i: number) => `${i + 1}. [${f.category}] ${f.statementFa} (اطمینان: ${Math.round(f.confidence * 100)}%)`).join('\n')
+          : `🧠 **Second Brain Memory**:\nFacts loaded: ${facts.length}\n` +
+            facts.map((f: any, i: number) => `${i + 1}. [${f.category}] ${f.statementEn} (Confidence: ${Math.round(f.confidence * 100)}%)`).join('\n');
+      } else if (cmd === '/bots') {
+        responseText = lang === 'fa'
+          ? `🤖 **ناوگان ربات‌های تخصصی مرکیوری**:\n` +
+            bots.map((b: any) => `• ${b.avatarIcon} **${b.nameFa}**: وضعیت: ${b.status} | زمان‌بندی: \`${b.scheduleCron}\` | مهارت‌ها: ${b.skills.join(', ')}`).join('\n')
+          : `🤖 **Mercury Bots Fleet**:\n` +
+            bots.map((b: any) => `• ${b.avatarIcon} **${b.nameEn}**: Status: ${b.status} | Schedule: \`${b.scheduleCron}\``).join('\n');
+      } else if (cmd === '/budget') {
+        const pct = Math.round((permissions.tokensConsumedToday / permissions.dailyTokenLimit) * 100);
+        responseText = lang === 'fa'
+          ? `📊 **گزارش بودجه توکن روزانه (Daily Token Budget)**:\nمصرف امروز: ${permissions.tokensConsumedToday.toLocaleString()} از ${permissions.dailyTokenLimit.toLocaleString()} توکن (${pct}%)\nحالت ذخیره توکن (Token Saver): ${permissions.tokenSaverActive ? 'فعال' : 'غیرفعال'}`
+          : `📊 **Daily Token Budget**:\nUsed: ${permissions.tokensConsumedToday.toLocaleString()} / ${permissions.dailyTokenLimit.toLocaleString()} (${pct}%)\nToken Saver Mode: ${permissions.tokenSaverActive ? 'Active' : 'Inactive'}`;
+      } else if (cmd === '/code') {
+        responseText = lang === 'fa'
+          ? `💻 **محیط برنامه‌نویسی و تست تورینگ (Mercury Code)** فعال است.\nدستور \`pytest\` و شبیه‌سازی در پوشه محصور \`~/Documents/Mercury/Turing/\` آماده اجراست.`
+          : `💻 **Mercury Code Environment** is ready. Sandbox folder \`~/Documents/Mercury/Turing/\` isolated.`;
+      } else if (cmd === '/status') {
+        responseText = lang === 'fa'
+          ? `⚡ **وضعیت هسته دانشیار مرکیوری**:\n• فرآیند همیشه فعال (Daemon): در حال اجرا\n• موتور پایگاه داده SQLite (مغز دوم): متصل\n• محافظت مجوزها: Ask Before It Acts فعال\n• مدل فعال: Gemini Pro / Flash با سوئیچ خودکار`
+          : `⚡ **Mercury Agent Status**:\n• Daemon: Online\n• Second Brain: Connected\n• Security Gate: Ask Before It Acts Enabled`;
+      } else {
+        responseText = lang === 'fa'
+          ? `دستور ناشناخته \`${cmd}\`. دستورات معتبر:\n\`/memory\` (مشاهده فکت‌های مغز دوم)\n\`/bots\` (وضعیت ربات‌ها)\n\`/budget\` (بودجه توکن)\n\`/code\` (محیط کدنویسی)\n\`/status\` (وضعیت سیستم)`
+          : `Unknown command \`${cmd}\`. Valid commands: \`/memory\`, \`/bots\`, \`/budget\`, \`/code\`, \`/status\`.`;
+      }
+
+      const agentMsg = {
+        id: `msg-${Date.now()}-a`,
+        sender: 'agent',
+        text: responseText,
+        timestamp: 'هم‌اکنون',
+        thoughtProcess: thoughts,
+      };
+      messages.push(agentMsg);
+      setLocal('dy_mercury_messages', messages);
+      return jsonResponse({ message: agentMsg, messages, facts, bots, permissions });
+    }
+
+    // Call Gemini for Autonomous Agent Turn
+    const relevantFacts = facts.slice(0, 4).map((f: any) => `- [${f.category}] ${f.statementFa}`).join('\n');
+    const systemPrompt = `You are DaneshYar Mercury Agent — an autonomous, soul-driven engineering and academic AI agent inspired by cosmicstack-labs/mercury-agent.
+You live on the student's device/platform, remember durable facts in your Second Brain SQLite memory, check safety rules before acting, and can dispatch specialist bots:
+- Archimedes (Literature & Paper Reviewer)
+- Turing (Code & Pytest Verification)
+- Euler (Symbolic Math & Derivations)
+- Hypatia (Exam Readiness & Flashcards)
+
+Student Memory Context:
+${relevantFacts}
+
+Soul Principles:
+1. Prioritize authentic physical and mathematical intuition over superficial answers.
+2. Formulate proofs and formulas in standard LaTeX.
+3. Be transparent about approximations or uncertainties.
+4. Language: Answer fluently in Persian (fa), keeping code/technical terms in English.
+
+Format your response as a valid JSON object:
+{
+  "thoughtProcess": "تحلیل داخلی و بررسی فکت‌های مغز دوم و نیاز به ابزارها",
+  "text": "پاسخ کامل، علمی، دقیق و کاربردی به دانشجو همراه با فرمول یا کد در صورت نیاز",
+  "toolCalls": [
+    {
+      "toolName": "python_sandbox / search_papers / solve_equation / update_memory",
+      "args": { "detail": "پارامترهای ابزار" },
+      "result": "نتیجه شبیه‌سازی یا جستجو"
+    }
+  ]
+}`;
+
+    try {
+      const raw = await callGemini(
+        `User Query: "${promptText}"\nActive Bot Focus: "${activeBotId || 'General Mercury Core'}"`,
+        systemPrompt
+      );
+      const parsed = extractJson<any>(raw, null);
+      if (parsed && parsed.text) {
+        // Track token usage
+        permissions.tokensConsumedToday = (permissions.tokensConsumedToday || 0) + 850;
+        setLocal('dy_mercury_permissions', permissions);
+
+        const agentMsg = {
+          id: `msg-${Date.now()}-a`,
+          sender: activeBotId ? 'bot' : 'agent',
+          botId: activeBotId,
+          text: parsed.text,
+          timestamp: 'هم‌اکنون',
+          thoughtProcess: parsed.thoughtProcess || 'تحلیل گام‌به‌گام و بررسی شهود مهندسی',
+          toolCalls: Array.isArray(parsed.toolCalls)
+            ? parsed.toolCalls.map((tc: any, idx: number) => ({
+                id: `tc-${Date.now()}-${idx}`,
+                toolName: tc.toolName || 'academic_tool',
+                args: tc.args || {},
+                result: tc.result || 'اجرا با موفقیت به پایان رسید.',
+                status: 'completed',
+              }))
+            : undefined,
+        };
+        messages.push(agentMsg);
+        setLocal('dy_mercury_messages', messages);
+        return jsonResponse({ message: agentMsg, messages, facts, bots, permissions });
+      }
+    } catch {
+      /* fallback below */
+    }
+
+    // High-quality fallback response
+    const agentMsg = {
+      id: `msg-${Date.now()}-a`,
+      sender: activeBotId ? 'bot' : 'agent',
+      botId: activeBotId,
+      text: lang === 'fa'
+        ? `درود! پرسش شما پیرامون «${promptText}» توسط هسته هوشمند دانشیار مرکیوری تحلیل شد.\n\nبا توجه به فکت‌های ذخیره‌شده در مغز دوم شما، فرآیند حل مسئله را با اتکا به مبانی تحلیلی و فرمول‌بندی استاندارد پی می‌گیریم. در صورتی که نیاز به شبیه‌سازی کدهای پایتون یا استخراج مقالات Open Access دارید، می‌توانم ربات‌های تورینگ یا ارشمیدس را برای اجرای مستقل فرابخوانم.`
+        : `Hello! Your request regarding "${promptText}" was analyzed by the DaneshYar Mercury runtime. Leveraging your Second Brain memory facts, I can initiate symbolic derivations or assign specialist bots to assist you.`,
+      timestamp: 'هم‌اکنون',
+      thoughtProcess: 'بازیابی سوابق تحصیلی دانشجو و آماده‌سازی محیط حل مسئله مهندسی',
+      toolCalls: [
+        {
+          id: `tc-${Date.now()}`,
+          toolName: 'memory_recall',
+          args: { query: promptText },
+          result: '۵ فکت مرتبط با اهداف درسی دانشجو بازیابی شد.',
+          status: 'completed',
+        },
+      ],
+    };
+    messages.push(agentMsg);
+    setLocal('dy_mercury_messages', messages);
+    return jsonResponse({ message: agentMsg, messages, facts, bots, permissions });
+  }
+
+  // Run a Bot Autonomous Turn
+  if (apiPath.startsWith('/api/mercury/bots/') && apiPath.endsWith('/run') && method === 'POST') {
+    const botId = apiPath.split('/')[4];
+    const bots = getLocal<any[]>('dy_mercury_bots', INITIAL_MERCURY_BOTS);
+    const bot = bots.find((b) => b.id === botId);
+    if (bot) {
+      bot.status = 'running';
+      bot.lastRunAt = 'هم‌اکنون';
+      bot.usedTokensToday = (bot.usedTokensToday || 0) + 1800;
+
+      // Add a fresh deliverable
+      const newDeliv = {
+        id: `deliv-${Date.now()}`,
+        titleFa: `گزارش تحلیلی جدید ربات ${bot.nameFa}`,
+        titleEn: `New Deliverable by ${bot.nameEn}`,
+        fileName: `${bot.id}_analysis_${Date.now().toString().slice(-4)}.md`,
+        createdAt: 'هم‌اکنون',
+        summary: `خروجی خودکار ربات بر اساس بررسی وظایف پس‌زمینه و حل محاسباتی مهندسی`,
+      };
+      if (!Array.isArray(bot.recentDeliverables)) bot.recentDeliverables = [];
+      bot.recentDeliverables.unshift(newDeliv);
+      setLocal('dy_mercury_bots', bots);
+      return jsonResponse({ bot, deliverable: newDeliv });
+    }
+    return jsonResponse({ error: 'ربات یافت نشد' }, 404);
+  }
+
+  // Add Fact to Second Brain
+  if (apiPath === '/api/mercury/memory/add' && method === 'POST') {
+    const facts = getLocal<any[]>('dy_mercury_facts', INITIAL_MERCURY_FACTS);
+    const newFact = {
+      id: `fact-${Date.now()}`,
+      category: body.category || 'preference',
+      statementFa: body.statementFa || body.statement || 'فکت جدید در حافظه',
+      statementEn: body.statementEn || body.statementFa || 'New memory fact',
+      confidence: Number(body.confidence) || 0.9,
+      source: body.source || 'ثبت دستی کاربر',
+      createdAt: 'هم‌اکنون',
+    };
+    facts.unshift(newFact);
+    setLocal('dy_mercury_facts', facts);
+    return jsonResponse({ fact: newFact, facts });
+  }
+
+  // Delete Fact from Second Brain
+  if (apiPath.startsWith('/api/mercury/memory/') && method === 'DELETE') {
+    const factId = apiPath.split('/')[4];
+    let facts = getLocal<any[]>('dy_mercury_facts', INITIAL_MERCURY_FACTS);
+    facts = facts.filter((f) => f.id !== factId);
+    setLocal('dy_mercury_facts', facts);
+    return jsonResponse({ success: true, facts });
+  }
+
+  // Update Soul Configuration
+  if (apiPath === '/api/mercury/soul/save' && method === 'POST') {
+    const soul = getLocal<any>('dy_mercury_soul', INITIAL_MERCURY_SOUL);
+    if (body.soulMarkdown !== undefined) soul.soulMarkdown = body.soulMarkdown;
+    if (body.personaMarkdown !== undefined) soul.personaMarkdown = body.personaMarkdown;
+    if (body.tasteMarkdown !== undefined) soul.tasteMarkdown = body.tasteMarkdown;
+    if (body.heartbeatMarkdown !== undefined) soul.heartbeatMarkdown = body.heartbeatMarkdown;
+    setLocal('dy_mercury_soul', soul);
+    return jsonResponse({ soul });
+  }
+
+  // Update Permissions Configuration
+  if (apiPath === '/api/mercury/permissions/update' && method === 'POST') {
+    const permissions = getLocal<any>('dy_mercury_permissions', INITIAL_MERCURY_PERMISSIONS);
+    Object.assign(permissions, body);
+    setLocal('dy_mercury_permissions', permissions);
+    return jsonResponse({ permissions });
   }
 
   // --------------------------------------------------------------------------

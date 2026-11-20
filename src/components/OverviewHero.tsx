@@ -14,6 +14,7 @@ import {
   Landmark,
   Box,
   Target,
+  Cpu,
 } from 'lucide-react';
 import { Lang, NavSection } from '../types/app';
 import { ENGINEERING_COURSES, ENGINEERING_FIELDS } from '../data/coursesData';
@@ -104,6 +105,15 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({
       descFa: 'تایمر پومودورو همگام‌سازی‌شده، اهداف روزانه تیمی و تخته فرمول‌نویسی مشترک.',
       descEn: 'Server-synced Pomodoro timers, shared daily goals, and real-time collaborative scratchpads.',
       action: () => onNavigate('study-rooms'),
+    },
+    {
+      id: 'mercury',
+      icon: Cpu,
+      titleFa: '⚡ دانشیار مرکیوری: عامل خودگردان و مغز دوم',
+      titleEn: '⚡ Mercury Agent: Soul-Driven AI & Second Brain',
+      descFa: 'عامل هوشمند با شخصیت قابل ویرایش (SOUL.md)، حافظه مغز دوم، ناوگان ربات‌های تخصصی (ارشمیدس، تورینگ، اویلر، هیپاتیا) و نظارت بر امنیت.',
+      descEn: 'Persistent second-brain memory, editable soul, autonomous specialist bot fleet, and permission-gated execution.',
+      action: () => onNavigate('mercury'),
     },
     {
       id: 'campus',

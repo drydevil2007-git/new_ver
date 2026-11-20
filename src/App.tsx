@@ -24,6 +24,7 @@ import { DeckTab, StudyDeckHub } from './components/StudyDeckHub';
 import { StudyRoomsAndTools } from './components/StudyRoomsAndTools';
 import { CommunityAndNotes } from './components/CommunityAndNotes';
 import { CampusVoiceHub } from './components/CampusVoiceHub';
+import { MercuryAgentHub } from './components/MercuryAgentHub';
 import { ArticlesHub } from './components/ArticlesHub';
 import { AdminPanel } from './components/AdminPanel';
 import { DaneshReelsModal } from './components/DaneshReelsModal';
@@ -431,6 +432,7 @@ export default function App() {
                   {activeSection === 'study-rooms' && (lang === 'fa' ? 'اتاق مطالعه اشتراکی' : 'Study Rooms & Tools')}
                   {activeSection === 'community' && (lang === 'fa' ? 'چت علمی، انجمن و جزوات' : 'Academic Chat, Forum & Notes')}
                   {activeSection === 'campus' && (lang === 'fa' ? 'هم‌دانشگاهی · صدای دانشجو و جامعه' : 'Campus & Society Student Voice')}
+                  {activeSection === 'mercury' && (lang === 'fa' ? '⚡ دانشیار مرکیوری · دستیار خودگردان و مغز دوم' : '⚡ Mercury Agent Hub & Second Brain')}
                   {activeSection === 'admin' && (lang === 'fa' ? 'پنل مدیریت جامع ادمین' : 'Comprehensive Admin Panel')}
                 </span>
               </>
@@ -553,6 +555,8 @@ export default function App() {
 
           {activeSection === 'campus' && <CampusVoiceHub lang={lang} />}
 
+          {activeSection === 'mercury' && <MercuryAgentHub lang={lang} onNavigate={setActiveSection} />}
+
           {activeSection === 'admin' && user?.role === 'admin' && (
             <AdminPanel
               lang={lang}
@@ -632,6 +636,13 @@ export default function App() {
               className="hover:text-slate-900 dark:hover:text-white cursor-pointer"
             >
               {lang === 'fa' ? 'هم‌دانشگاهی' : 'Campus Voice'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveSection('mercury')}
+              className="hover:text-slate-900 dark:hover:text-white cursor-pointer font-semibold text-sky-600 dark:text-sky-400"
+            >
+              {lang === 'fa' ? '⚡ مرکیوری ایجنت' : '⚡ Mercury Agent'}
             </button>
             {user?.role === 'admin' && (
               <button

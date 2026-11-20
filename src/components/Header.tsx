@@ -11,6 +11,7 @@ import {
   ChevronDown,
   Building2,
   Calendar,
+  Cpu,
 } from 'lucide-react';
 import { Lang, NavSection, UserSession } from '../types/app';
 
@@ -47,8 +48,9 @@ export const Header: React.FC<HeaderProps> = ({
     return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
 
-  const navItems: Array<{ id: NavSection; labelFa: string; labelEn: string; isCampus?: boolean }> = [
+  const navItems: Array<{ id: NavSection; labelFa: string; labelEn: string; isCampus?: boolean; isMercury?: boolean }> = [
     { id: 'exam-sprint', labelFa: '🎯 آمادگی امتحان', labelEn: '🎯 Exam Prep' },
+    { id: 'mercury', labelFa: '⚡ مرکیوری ایجنت', labelEn: '⚡ Mercury Agent', isMercury: true },
     { id: 'courses', labelFa: 'دروس و نقشه', labelEn: 'Courses' },
     { id: 'ai-lab', labelFa: 'آزمایشگاه AI', labelEn: 'AI Lab' },
     { id: 'articles', labelFa: 'کتب و مقالات علمی', labelEn: 'Books & Papers' },
@@ -104,6 +106,14 @@ export const Header: React.FC<HeaderProps> = ({
                   >
                     <GraduationCap className="w-3.5 h-3.5" />
                     <Landmark className="w-3.5 h-3.5" />
+                  </span>
+                )}
+                {item.isMercury && (
+                  <span
+                    className="inline-flex items-center text-sky-500 dark:text-sky-400"
+                    aria-hidden="true"
+                  >
+                    <Cpu className="w-3.5 h-3.5" />
                   </span>
                 )}
                 <span>{lang === 'fa' ? item.labelFa : item.labelEn}</span>
