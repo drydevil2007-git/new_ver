@@ -18,11 +18,12 @@ import {
 import { Lang, NavSection } from '../types/app';
 import { LatexBlock } from './MathRenderer';
 import { StoryCirclesBar } from './StoryCirclesBar';
+import { LabTab } from './AiEngineeringLab';
 
 interface OverviewHeroProps {
   lang: Lang;
   onNavigate: (section: NavSection) => void;
-  onOpenLabTab: (tab: 'solver' | 'feynman' | 'pdf') => void;
+  onOpenLabTab: (tab: LabTab) => void;
   onOpenDeckTab: (tab: 'flashcards' | 'quiz' | 'voice') => void;
   onOpenReelStory: (reelIndex: number) => void;
   viewedReelIds?: string[];
