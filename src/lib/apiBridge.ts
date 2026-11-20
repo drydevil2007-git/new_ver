@@ -366,16 +366,156 @@ const INITIAL_CAMPUS_THREADS = [
     category: 'ai-future',
     titleFa: 'آینده مهندسی با هوش مصنوعی: آیا ابزارهای کدنویسی و طراحی جای مهندسان تازه‌کار را می‌گیرند؟',
     titleEn: 'Future of Engineering with AI: Will Copilots Replace Junior Engineers?',
-    bodyFa: 'تجربه شما در دانشگاه و کارآموزی درباره مهارت‌های ضروری در عصر هوش مصنوعی چیست؟',
-    bodyEn: 'How should university curricula shift toward systems thinking in the age of AI?',
+    bodyFa: 'با ظهور مدل‌های پیشرفته تولید کد و شبیه‌سازهای خودکار، آیا بازار کار مهندسان تازه‌کار دگرگون خواهد شد؟ تجربه شما در دانشگاه و پروژه‌های واقعی درباره مهارت‌های ضروری در عصر هوش مصنوعی چیست؟',
+    bodyEn: 'With rapid advances in AI coding and design copilots, how should university curricula shift toward systems thinking and validation?',
     author: 'امیرحسین رضایی',
-    badgeFa: 'ارشد برق · دانشگاه تهران',
-    badgeEn: 'MSc Electrical · UT',
+    badgeFa: 'ارشد برق و هوش مصنوعی · دانشگاه تهران',
+    badgeEn: 'MSc Electrical & AI · UT',
     upvotes: 142,
     createdAt: '۳ ساعت پیش',
     trending: true,
     comments: [
-      { id: 'c-1', author: 'دکتر مریم شریعتی', text: 'ابزارها سرعت حل را بالا می‌برند، اما درک شهودی از فیزیک و اعتبارسنجی را جایگزین نمی‌کنند.' },
+      {
+        id: 'c-1',
+        author: 'دکتر مریم شریعتی',
+        badgeFa: 'استادیار دانشکده مهندسی برق',
+        badgeEn: 'Faculty Member · EE',
+        text: 'ابزارها سرعت حل و پیاده‌سازی را بالا می‌برند، اما درک شهودی از فیزیک، قیدهای ایمنی و اعتبارسنجی را جایگزین نمی‌کنند. مهندس آینده تحلیل‌گر سیستم است نه تایپیست فرمول.',
+        upvotes: 24,
+        createdAt: '۲ ساعت پیش',
+        replies: [
+          {
+            id: 'r-1',
+            author: 'علیرضا فلاح',
+            badgeFa: 'دانشجوی مکانیک · علم و صنعت',
+            badgeEn: 'Mechanical Engineering',
+            text: 'دقیقاً؛ در شبیه‌سازی اجزای محدود (FEA) تا وقتی توزیع تنش و شرایط مرزی را نفهمیم، خروجی هوش مصنوعی ممکن است سازه را به فاجعه بکشاند.',
+            upvotes: 9,
+            createdAt: '۱ ساعت پیش',
+          },
+        ],
+      },
+      {
+        id: 'c-2',
+        author: 'سپهر کاظمی',
+        badgeFa: 'مهندسی کامپیوتر · شریف',
+        badgeEn: 'Computer Science · SUT',
+        text: 'تمرکز ما در دانشگاه باید از «کدنویسی صِرف سینتکس» به «معماری سیستم، طراحی تست و مهندسی داده» شیفت پیدا کند.',
+        upvotes: 16,
+        createdAt: '۴۵ دقیقه پیش',
+        replies: [],
+      },
+    ],
+  },
+  {
+    id: 'cmp-2',
+    category: 'migration-stay',
+    titleFa: 'دوراهی مهاجرت تحصیلی یا ماندن و کار در صنعت دانش‌بنیان: تجربه‌ها و واقعیت‌ها',
+    titleEn: 'Migration vs. Staying: Realistic Experiences for Engineering Graduates',
+    bodyFa: 'بسیاری از دانشجویان ترم‌های پایانی میان گرفتن پذیرش (فاند تحصیلی) و ورود به شرکت‌های فناور داخلی یا راه‌اندازی استارتاپ دچار تردید هستند. چه عواملی برای شما اولویت داشته است؟',
+    bodyEn: 'Many senior students debate applying abroad versus joining high-tech domestic ventures or launching startups. What factors mattered most to you?',
+    author: 'نیلوفر رادمنش',
+    badgeFa: 'کارشناسی مهندسی مواد · دانشگاه تهران',
+    badgeEn: 'Materials Science · UT',
+    upvotes: 118,
+    createdAt: '۵ ساعت پیش',
+    trending: true,
+    comments: [
+      {
+        id: 'c-3',
+        author: 'سجاد نعمتی',
+        badgeFa: 'فارغ‌التحصیل متالورژی · فعال صنعت',
+        badgeEn: 'Metallurgy Specialist',
+        text: 'مهاجرت ابزاری برای یادگیری مرزهای دانش است، اما اگر در داخل پروژه معنادار و تیم قوی داشته باشید، اثرگذاری و سرعت رشد صنعتی می‌تواند بسیار بالاتر باشد.',
+        upvotes: 19,
+        createdAt: '۴ ساعت پیش',
+        replies: [
+          {
+            id: 'r-2',
+            author: 'زهرا موسوی',
+            badgeFa: 'کارشناسی ارشد نانو · امیرکبیر',
+            badgeEn: 'MSc Nano · AUT',
+            text: 'نکته کلیدی تأمین زیرساخت و دستگاه‌های آزمایشگاهی پیشرفته است؛ در برخی حوزه‌ها دسترسی به تجهیزات خارجی تعیین‌کننده است.',
+            upvotes: 7,
+            createdAt: '۳ ساعت پیش',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'cmp-3',
+    category: 'university-industry',
+    titleFa: 'چالش ارتباط دانشگاه و صنعت: چرا پروژه‌های پایانی وارد خط تولید کارخانه‌ها نمی‌شوند؟',
+    titleEn: 'University-Industry Gap: Translating Capstone Projects to Production',
+    bodyFa: 'هزاران تز کارشناسی و ارشد سالانه دفاع می‌شوند اما سهم اندکی از آن‌ها به حل مسئله واقعی در صنایع مادر یا شرکت‌های دانش‌بنیان ختم می‌شود. ریشه این گسست کجاست؟',
+    bodyEn: 'Why do so few academic theses turn into scalable real-world products? How can we bridge this gap?',
+    author: 'مهندس بهنام ابراهیمی',
+    badgeFa: 'پژوهشگر تحقیق و توسعه (R&D) · خودرو و رباتیک',
+    badgeEn: 'R&D Lead · Robotics',
+    upvotes: 95,
+    createdAt: '۸ ساعت پیش',
+    comments: [
+      {
+        id: 'c-4',
+        author: 'فاطمه صمدی',
+        badgeFa: 'دانشجوی دکترای مهندسی شیمی',
+        badgeEn: 'PhD Chemical Eng',
+        text: 'سیستم ارتقای هیئت علمی متاسفانه بر مبنای تعداد مقالات ISI است، نه حل معضلات صنعتی. اگر قراردادهای ارتباط با صنعت امتیاز رسمی بگیرند، اساتید خودشان به سمت صنایع می‌آیند.',
+        upvotes: 31,
+        createdAt: '۶ ساعت پیش',
+        replies: [],
+      },
+    ],
+  },
+  {
+    id: 'cmp-4',
+    category: 'engineering-ethics',
+    titleFa: 'اخلاق مهندسی در پروژه‌های هوشمند و سازه‌ها: مرز ایمنی، مسئولیت مدنی و حریم داده',
+    titleEn: 'Engineering Ethics: Public Safety, Liability, and AI Systems',
+    bodyFa: 'وقتی یک الگوریتم هوشمند یا ابزار اتوماسیون دچار خطا شده و خسارت جانی یا مالی به بار می‌آورد، مسئولیت حقوقی متوجه چه کسی است؟ آیا آموزش اخلاق مهندسی در دانشگاه‌ها کافی است؟',
+    bodyEn: 'When automated engineering systems fail, who bears ethical and legal liability? Are engineering ethics taught effectively?',
+    author: 'پارسا کیانی',
+    badgeFa: 'عمران و سازه · خواجه نصیر',
+    badgeEn: 'Civil & Structural Eng · KNTU',
+    upvotes: 84,
+    createdAt: '۱ روز پیش',
+    comments: [
+      {
+        id: 'c-5',
+        author: 'دکتر احسان فرید',
+        badgeFa: 'عضو نظام مهندسی ساختمان',
+        badgeEn: 'Licensed PE Member',
+        text: 'امضای مهندس ناظر و محاسب پای برگه نقشه یعنی تضمین جان انسان‌ها. هیچ هوش مصنوعی نمی‌تواند سوگند مهندسی یاد کند و مسئولیت خطای محاسباتی همواره با مهندس انسانی است.',
+        upvotes: 27,
+        createdAt: '۱۸ ساعت پیش',
+        replies: [],
+      },
+    ],
+  },
+  {
+    id: 'cmp-5',
+    category: 'student-life',
+    titleFa: 'توازن میان پاس کردن دروس تئوری سنگین و کسب مهارت‌های عملی بازار کار',
+    titleEn: 'Balancing Heavy Academic Load with Real-World Engineering Skills',
+    bodyFa: 'چطور برنامه‌ریزی کنیم تا هم معدل دانشگاه حفظ شود و هم برای پروژه‌های صنعتی، زبان تخصصی و کارهای تیمی زمان کافی باقی بماند؟ راهکار شما چیست؟',
+    bodyEn: 'Practical strategies for engineering students to balance theoretical GPA requirements with hands-on technical skills and portfolio building.',
+    author: 'آیدین مقدم',
+    badgeFa: 'مهندسی صنایع · پلی‌تکنیک (امیرکبیر)',
+    badgeEn: 'Industrial Eng · AUT',
+    upvotes: 76,
+    createdAt: '۱ روز پیش',
+    comments: [
+      {
+        id: 'c-6',
+        author: 'روژان رحیمی',
+        badgeFa: 'دانشجوی ترم ۵ کامپیوتر',
+        badgeEn: 'Software Engineering',
+        text: 'تکنیک یادگیری فشرده با دانشیار و تقسیم روز به بلوک‌های تمرکز (Pomodoro) خیلی موثر است؛ تئوری‌ها را عمقی بفهمید تا شب امتحان وقت هدر نرود.',
+        upvotes: 14,
+        createdAt: '۱۴ ساعت پیش',
+        replies: [],
+      },
     ],
   },
 ];
@@ -383,12 +523,36 @@ const INITIAL_CAMPUS_THREADS = [
 const INITIAL_CAMPUS_POLLS = [
   {
     id: 'poll-1',
-    questionFa: 'بزرگ‌ترین چالش دانشجویان مهندسی در سال جاری چیست؟',
-    questionEn: 'What is the biggest challenge for engineering students this year?',
+    questionFa: 'بزرگ‌ترین دغدغه شما در دوران تحصیل مهندسی چیست؟',
+    questionEn: 'What is your primary concern during your engineering education?',
     category: 'university-industry',
     options: [
-      { id: 'p1-o1', labelFa: 'شکاف مهارت‌های دانشگاهی با نیاز واقعی صنعت', labelEn: 'University-to-industry skill gap', votes: 342 },
-      { id: 'p1-o2', labelFa: 'سردرگمی میان مهاجرت تحصیلی و ماندن', labelEn: 'Migration vs. staying locally', votes: 289 },
+      { id: 'p1-o1', labelFa: 'شکاف میان دانش تئوری دانشگاه و نیاز واقعی صنعت', labelEn: 'Theory vs. industry application gap', votes: 412 },
+      { id: 'p1-o2', labelFa: 'تردید میان اپلای تحصیلی، کنکور ارشد یا بازار کار', labelEn: 'Dilemma: Studying abroad vs. local career', votes: 326 },
+      { id: 'p1-o3', labelFa: 'تاثیر هوش مصنوعی بر فرصت‌های شغلی آینده', labelEn: 'AI disruption on future job opportunities', votes: 215 },
+      { id: 'p1-o4', labelFa: 'فشار امتحانات و حجم سنگین دروس پایه', labelEn: 'Exam pressure and heavy study load', votes: 148 },
+    ],
+  },
+  {
+    id: 'poll-2',
+    questionFa: 'چقدر از ابزارهای هوش مصنوعی در حل تمرین و پروژه‌های درسی استفاده می‌کنید؟',
+    questionEn: 'How actively do you leverage AI tools in academic coursework?',
+    category: 'ai-future',
+    options: [
+      { id: 'p2-o1', labelFa: 'همیار روزانه برای رفع اشکال و فهم شهودی مفاهیم', labelEn: 'Daily copilot for debugging & conceptual intuition', votes: 489 },
+      { id: 'p2-o2', labelFa: 'صرفاً برای ترجمه متون و ویرایش گزارش کار', labelEn: 'Occasionally for papers and lab report editing', votes: 231 },
+      { id: 'p2-o3', labelFa: 'ترجیح می‌دهم کاملاً سنتی و خودکفا حل کنم', labelEn: 'Prefer strictly manual solving without AI', votes: 104 },
+    ],
+  },
+  {
+    id: 'poll-3',
+    questionFa: 'موثرترین روش شما برای آمادگی موفق در امتحانات پایان‌ترم چیست؟',
+    questionEn: 'What is your most effective exam readiness strategy?',
+    category: 'student-life',
+    options: [
+      { id: 'p3-o1', labelFa: 'حل نمونه‌سوالات امتحانی سال‌های گذشته با رفع اشکال', labelEn: 'Past exam papers with step-by-step breakdown', votes: 378 },
+      { id: 'p3-o2', labelFa: 'فلش‌کارت‌های فعال و آزمون‌های تشخیصی هوشمند', labelEn: 'Smart flashcards and diagnostic quizzes', votes: 295 },
+      { id: 'p3-o3', labelFa: 'مطالعه گروهی و مباحثه در تالارهای مطالعه', labelEn: 'Peer study groups and discussion rooms', votes: 182 },
     ],
   },
 ];
@@ -699,15 +863,53 @@ async function handleStaticApiFallback(
   // --------------------------------------------------------------------------
   // Campus State & Actions
   // --------------------------------------------------------------------------
+  function sanitizeCampusThreads(rawThreads: any[]): any[] {
+    if (
+      !Array.isArray(rawThreads) ||
+      rawThreads.length === 0 ||
+      (rawThreads.length === 1 && rawThreads[0].id === 'cmp-1' && rawThreads[0].comments?.[0]?.replies === undefined)
+    ) {
+      return INITIAL_CAMPUS_THREADS;
+    }
+    return rawThreads.map((t) => ({
+      ...t,
+      upvotes: typeof t.upvotes === 'number' ? t.upvotes : 0,
+      createdAt: t.createdAt || 'اخیراً',
+      badgeFa: t.badgeFa || 'دانشجو',
+      badgeEn: t.badgeEn || 'Student',
+      comments: Array.isArray(t.comments)
+        ? t.comments.map((c: any) => ({
+            ...c,
+            upvotes: typeof c.upvotes === 'number' ? c.upvotes : 0,
+            createdAt: c.createdAt || 'اخیراً',
+            badgeFa: c.badgeFa || 'دانشجو',
+            badgeEn: c.badgeEn || 'Student',
+            replies: Array.isArray(c.replies)
+              ? c.replies.map((r: any) => ({
+                  ...r,
+                  badgeFa: r.badgeFa || 'دانشجو',
+                  badgeEn: r.badgeEn || 'Student',
+                  createdAt: r.createdAt || 'اخیراً',
+                }))
+              : [],
+          }))
+        : [],
+    }));
+  }
+
   if (apiPath === '/api/campus/state') {
+    const rawThreads = getLocal<any[]>('dy_campus_threads', INITIAL_CAMPUS_THREADS);
+    const threads = sanitizeCampusThreads(rawThreads);
+    const rawPolls = getLocal<any[]>('dy_campus_polls', INITIAL_CAMPUS_POLLS);
     return jsonResponse({
-      threads: getLocal('dy_campus_threads', INITIAL_CAMPUS_THREADS),
-      polls: getLocal('dy_campus_polls', INITIAL_CAMPUS_POLLS),
+      threads,
+      polls: Array.isArray(rawPolls) && rawPolls.length > 0 ? rawPolls : INITIAL_CAMPUS_POLLS,
     });
   }
 
   if (apiPath === '/api/campus/threads' && method === 'POST') {
-    const threads = getLocal<any[]>('dy_campus_threads', INITIAL_CAMPUS_THREADS);
+    const rawThreads = getLocal<any[]>('dy_campus_threads', INITIAL_CAMPUS_THREADS);
+    const threads = sanitizeCampusThreads(rawThreads);
     const created = {
       id: `cmp-${Date.now()}`,
       category: body.category || 'student-life',
@@ -717,7 +919,7 @@ async function handleStaticApiFallback(
       bodyEn: body.bodyEn || body.bodyFa || body.body || '',
       author: body.author || 'دانشجوی دانشیار',
       badgeFa: body.badgeFa || 'دانشجو',
-      badgeEn: 'Student',
+      badgeEn: body.badgeEn || 'Student',
       upvotes: 1,
       createdAt: 'هم‌اکنون',
       comments: [],
@@ -727,16 +929,97 @@ async function handleStaticApiFallback(
     return jsonResponse({ thread: created });
   }
 
+  // Upvote campus thread
+  if (apiPath.startsWith('/api/campus/threads/') && apiPath.endsWith('/upvote') && !apiPath.includes('/comments/')) {
+    const threadId = apiPath.split('/')[4];
+    const rawThreads = getLocal<any[]>('dy_campus_threads', INITIAL_CAMPUS_THREADS);
+    const threads = sanitizeCampusThreads(rawThreads);
+    const thread = threads.find((t) => t.id === threadId);
+    if (thread) {
+      thread.upvotes = (thread.upvotes || 0) + 1;
+      setLocal('dy_campus_threads', threads);
+      return jsonResponse({ thread });
+    }
+    return jsonResponse({ error: 'گفتگو یافت نشد' }, 404);
+  }
+
+  // Add comment or nested reply to campus thread
+  if (apiPath.startsWith('/api/campus/threads/') && apiPath.endsWith('/comments') && method === 'POST') {
+    const threadId = apiPath.split('/')[4];
+    const rawThreads = getLocal<any[]>('dy_campus_threads', INITIAL_CAMPUS_THREADS);
+    const threads = sanitizeCampusThreads(rawThreads);
+    const thread = threads.find((t) => t.id === threadId);
+    if (thread) {
+      if (!Array.isArray(thread.comments)) thread.comments = [];
+      const parentCommentId = body.parentCommentId;
+      if (parentCommentId) {
+        const parent = thread.comments.find((c: any) => c.id === parentCommentId);
+        if (parent) {
+          if (!Array.isArray(parent.replies)) parent.replies = [];
+          const newReply = {
+            id: `rep-${Date.now()}`,
+            author: body.author || 'دانشجوی مهمان',
+            badgeFa: body.badgeFa || 'مهندسی · دانشیار',
+            badgeEn: body.badgeEn || 'Engineering Student',
+            text: body.text || '',
+            upvotes: 0,
+            createdAt: 'هم‌اکنون',
+          };
+          parent.replies.push(newReply);
+        }
+      } else {
+        const newComment = {
+          id: `c-${Date.now()}`,
+          author: body.author || 'دانشجوی مهمان',
+          badgeFa: body.badgeFa || 'مهندسی · دانشیار',
+          badgeEn: body.badgeEn || 'Engineering Student',
+          text: body.text || '',
+          upvotes: 0,
+          createdAt: 'هم‌اکنون',
+          replies: [],
+        };
+        thread.comments.push(newComment);
+      }
+      setLocal('dy_campus_threads', threads);
+      return jsonResponse({ thread });
+    }
+    return jsonResponse({ error: 'گفتگو یافت نشد' }, 404);
+  }
+
+  // Upvote comment in campus thread
+  if (apiPath.startsWith('/api/campus/threads/') && apiPath.includes('/comments/') && apiPath.endsWith('/upvote')) {
+    const parts = apiPath.split('/');
+    const threadId = parts[4];
+    const commentId = parts[6];
+    const rawThreads = getLocal<any[]>('dy_campus_threads', INITIAL_CAMPUS_THREADS);
+    const threads = sanitizeCampusThreads(rawThreads);
+    const thread = threads.find((t) => t.id === threadId);
+    if (thread && Array.isArray(thread.comments)) {
+      const comment = thread.comments.find((c: any) => c.id === commentId);
+      if (comment) {
+        comment.upvotes = (comment.upvotes || 0) + 1;
+        setLocal('dy_campus_threads', threads);
+        return jsonResponse({ thread });
+      }
+    }
+    return jsonResponse({ error: 'دیدگاه یافت نشد' }, 404);
+  }
+
+  // Poll voting
   if (apiPath.startsWith('/api/campus/polls/') && apiPath.endsWith('/vote')) {
     const id = apiPath.split('/')[4];
-    const polls = getLocal<any[]>('dy_campus_polls', INITIAL_CAMPUS_POLLS);
+    const rawPolls = getLocal<any[]>('dy_campus_polls', INITIAL_CAMPUS_POLLS);
+    const polls = Array.isArray(rawPolls) && rawPolls.length > 0 ? rawPolls : INITIAL_CAMPUS_POLLS;
     const poll = polls.find((p) => p.id === id);
-    if (poll) {
+    if (poll && Array.isArray(poll.options)) {
       const opt = poll.options.find((o: any) => o.id === body.optionId);
-      if (opt) opt.votes += 1;
+      if (opt) {
+        opt.votes = (opt.votes || 0) + 1;
+      }
       setLocal('dy_campus_polls', polls);
       return jsonResponse({ poll });
     }
+    return jsonResponse({ error: 'نظرسنجی یافت نشد' }, 404);
   }
 
   // --------------------------------------------------------------------------
@@ -1362,8 +1645,11 @@ Answer in ${lang === 'fa' ? 'Persian' : 'English'} in exactly 2-3 punchy, intuit
     const title = body.title || 'دغدغه مهندسی';
     const textBody = body.body || '';
     const lang = body.lang || 'fa';
+    const studentComments = Array.isArray(body.comments) && body.comments.length > 0
+      ? `\nStudent Voices:\n${body.comments.slice(0, 5).join('\n')}`
+      : '';
 
-    const prompt = `Analyze discussion topic: "${title}" - "${textBody}".
+    const prompt = `Analyze discussion topic: "${title}" - "${textBody}".${studentComments}
 Provide balanced engineering ethics perspective in ${lang || 'fa'} as JSON:
 {
   "proPoints": ["نکته مثبت ۱", "نکته مثبت ۲"],
@@ -1375,8 +1661,15 @@ Provide balanced engineering ethics perspective in ${lang || 'fa'} as JSON:
     try {
       const raw = await callGemini(prompt, 'You are DaneshYar balanced university debate moderator. Output pure JSON only.');
       const parsed = extractJson<any>(raw, null);
-      if (parsed && Array.isArray(parsed.proPoints)) {
-        return jsonResponse({ perspective: parsed });
+      if (parsed && Array.isArray(parsed.proPoints) && Array.isArray(parsed.conPoints)) {
+        return jsonResponse({
+          perspective: {
+            proPoints: parsed.proPoints,
+            conPoints: parsed.conPoints,
+            ethicsLens: parsed.ethicsLens || (lang === 'fa' ? 'مسئولیت اخلاقی و فنی مهندس' : 'Engineering ethics lens'),
+            balancedTakeaway: parsed.balancedTakeaway || (lang === 'fa' ? 'جمع‌بندی متوازن' : 'Balanced takeaway'),
+          },
+        });
       }
     } catch {
       /* fallback below */

@@ -51,7 +51,14 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
     }
   });
 
-  const [upvotedThreads, setUpvotedThreads] = useState<string[]>([]);
+  const [upvotedThreads, setUpvotedThreads] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('daneshyar_campus_upvoted_threads');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [expandedThreadId, setExpandedThreadId] = useState<string | null>('cmp-1');
   const [replyTargetId, setReplyTargetId] = useState<string | null>(null);
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
@@ -77,7 +84,33 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
       .then((r) => r.json())
       .then((data) => {
         if (!active) return;
-        if (Array.isArray(data.threads)) setThreads(data.threads);
+        if (Array.isArray(data.threads)) {
+          const sanitized = data.threads.map((t: any) => ({
+            ...t,
+            upvotes: typeof t.upvotes === 'number' ? t.upvotes : 0,
+            createdAt: t.createdAt || 'اخیراً',
+            badgeFa: t.badgeFa || 'دانشجو',
+            badgeEn: t.badgeEn || 'Student',
+            comments: Array.isArray(t.comments)
+              ? t.comments.map((c: any) => ({
+                  ...c,
+                  upvotes: typeof c.upvotes === 'number' ? c.upvotes : 0,
+                  createdAt: c.createdAt || 'اخیراً',
+                  badgeFa: c.badgeFa || 'دانشجو',
+                  badgeEn: c.badgeEn || 'Student',
+                  replies: Array.isArray(c.replies)
+                    ? c.replies.map((r: any) => ({
+                        ...r,
+                        badgeFa: r.badgeFa || 'دانشجو',
+                        badgeEn: r.badgeEn || 'Student',
+                        createdAt: r.createdAt || 'اخیراً',
+                      }))
+                    : [],
+                }))
+              : [],
+          }));
+          setThreads(sanitized);
+        }
         if (Array.isArray(data.polls)) setPolls(data.polls);
       })
       .catch(() => {})
@@ -106,7 +139,7 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
         p.id === pollId
           ? {
               ...p,
-              options: p.options.map((o) => (o.id === optionId ? { ...o, votes: o.votes + 1 } : o)),
+              options: (p.options || []).map((o) => (o.id === optionId ? { ...o, votes: (o.votes || 0) + 1 } : o)),
             }
           : p
       )
@@ -136,8 +169,14 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
 
   const handleUpvoteThread = async (threadId: string) => {
     if (upvotedThreads.includes(threadId)) return;
-    setUpvotedThreads((prev) => [...prev, threadId]);
-    setThreads((prev) => prev.map((t) => (t.id === threadId ? { ...t, upvotes: t.upvotes + 1 } : t)));
+    const nextUpvoted = [...upvotedThreads, threadId];
+    setUpvotedThreads(nextUpvoted);
+    try {
+      localStorage.setItem('daneshyar_campus_upvoted_threads', JSON.stringify(nextUpvoted));
+    } catch {
+      // ignore
+    }
+    setThreads((prev) => prev.map((t) => (t.id === threadId ? { ...t, upvotes: (t.upvotes || 0) + 1 } : t)));
     try {
       const resp = await fetch(`/api/campus/threads/${threadId}/upvote`, { method: 'POST' });
       const data = await resp.json();
@@ -150,6 +189,17 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
   };
 
   const handleUpvoteComment = async (threadId: string, commentId: string) => {
+    setThreads((prev) =>
+      prev.map((t) => {
+        if (t.id !== threadId) return t;
+        return {
+          ...t,
+          comments: (t.comments || []).map((c) =>
+            c.id === commentId ? { ...c, upvotes: (c.upvotes || 0) + 1 } : c
+          ),
+        };
+      })
+    );
     try {
       const resp = await fetch(`/api/campus/threads/${threadId}/comments/${commentId}/upvote`, {
         method: 'POST',
@@ -159,7 +209,7 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
         setThreads((prev) => prev.map((t) => (t.id === threadId ? data.thread : t)));
       }
     } catch {
-      // ignore
+      // optimistic state kept
     }
   };
 
@@ -168,12 +218,19 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
     const text = (raw || '').trim();
     if (!text) return;
 
+    if (parentCommentId) {
+      setReplyInputs((prev) => ({ ...prev, [parentCommentId]: '' }));
+      setReplyTargetId(null);
+    } else {
+      setCommentInputs((prev) => ({ ...prev, [threadId]: '' }));
+    }
+
     try {
       const resp = await fetch(`/api/campus/threads/${threadId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          author: newAuthor.trim() || (lang === 'fa' ? 'دانشجوی مهمان' : 'Campus Student'),
+          author: newAuthor.trim() || (lang === 'fa' ? 'دانشجوی دانشیار' : 'Campus Student'),
           badgeFa: newBadge.trim() || (lang === 'fa' ? 'مهندسی · دانشیار' : 'Engineering Student'),
           text,
           parentCommentId,
@@ -182,12 +239,6 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
       const data = await resp.json();
       if (data.thread) {
         setThreads((prev) => prev.map((t) => (t.id === threadId ? data.thread : t)));
-      }
-      if (parentCommentId) {
-        setReplyInputs((prev) => ({ ...prev, [parentCommentId]: '' }));
-        setReplyTargetId(null);
-      } else {
-        setCommentInputs((prev) => ({ ...prev, [threadId]: '' }));
       }
     } catch {
       // ignore
@@ -213,13 +264,13 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
         body: JSON.stringify({
           title: lang === 'fa' ? thread.titleFa : thread.titleEn,
           body: lang === 'fa' ? thread.bodyFa : thread.bodyEn,
-          comments: thread.comments.map((c) => `${c.author}: ${c.text}`),
+          comments: (thread.comments || []).map((c) => `${c.author}: ${c.text}`),
           lang,
         }),
       });
       const data = await resp.json();
       if (!resp.ok || data.error) {
-        setPerspectiveError(data.error || 'خطا در تحلیل هوش مصنوعی');
+        setPerspectiveError(data.error || (lang === 'fa' ? 'خطا در تحلیل هوش مصنوعی' : 'AI analysis error'));
       } else if (data.perspective) {
         setPerspectives((prev) => ({ ...prev, [thread.id]: data.perspective }));
       }
@@ -250,6 +301,7 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
       if (data.thread) {
         setThreads((prev) => [data.thread, ...prev]);
         setExpandedThreadId(data.thread.id);
+        setCategoryFilter('all');
         setNewTitle('');
         setNewBody('');
         setComposerOpen(false);
@@ -417,6 +469,36 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
               <Loader2 className="w-5 h-5 animate-spin text-sky-600" />
               <span>{lang === 'fa' ? 'در حال بارگذاری گفتگوهای همدانشگاهی...' : 'Loading Campus discussions...'}</span>
             </div>
+          ) : filteredThreads.length === 0 ? (
+            <div className="glass-surface rounded-3xl p-10 text-center space-y-4">
+              <MessageSquare className="w-10 h-10 text-sky-500 mx-auto" />
+              <h4 className="text-base font-bold text-slate-900 dark:text-white">
+                {lang === 'fa'
+                  ? 'هنوز در این دسته‌بندی موضوعی مطرح نشده است'
+                  : 'No debates yet in this category'}
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                {lang === 'fa'
+                  ? 'شما می‌توانید اولین دانشجویی باشید که در این زمینه تجربه یا پرسش خود را برای هم‌دانشگاهی‌ها مطرح می‌کند.'
+                  : 'Be the first student to initiate a thoughtful discussion here.'}
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setComposerOpen(true)}
+                  className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold cursor-pointer transition-colors shadow-sm"
+                >
+                  {lang === 'fa' ? 'طرح موضوع جدید' : 'Start Debate'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategoryFilter('all')}
+                  className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                >
+                  {lang === 'fa' ? 'مشاهده همه گفتگوها' : 'View All Debates'}
+                </button>
+              </div>
+            </div>
           ) : (
             filteredThreads.map((thread) => {
               const isExpanded = expandedThreadId === thread.id;
@@ -438,9 +520,9 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                       <span aria-hidden="true">·</span>
                       <span className="font-semibold text-slate-800 dark:text-slate-200">{thread.author}</span>
                       <span aria-hidden="true">·</span>
-                      <span>{lang === 'fa' ? thread.badgeFa : thread.badgeEn}</span>
+                      <span>{(lang === 'fa' ? thread.badgeFa : thread.badgeEn) || (lang === 'fa' ? 'دانشجو' : 'Student')}</span>
                       <span aria-hidden="true">·</span>
-                      <span>{thread.createdAt}</span>
+                      <span>{thread.createdAt || (lang === 'fa' ? 'اخیراً' : 'Recently')}</span>
                     </div>
 
                     {thread.trending && (
@@ -472,7 +554,7 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                         }`}
                       >
                         <ThumbsUp className="w-3.5 h-3.5" />
-                        <span className="tabular-nums font-mono">{thread.upvotes}</span>
+                        <span className="tabular-nums font-mono">{thread.upvotes || 0}</span>
                       </button>
 
                       <button
@@ -482,7 +564,7 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
                         <span className="tabular-nums">
-                          {thread.comments.length} {lang === 'fa' ? 'دیدگاه' : 'Comments'}
+                          {(thread.comments || []).length} {lang === 'fa' ? 'دیدگاه' : 'Comments'}
                         </span>
                       </button>
                     </div>
@@ -524,7 +606,7 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                             {lang === 'fa' ? 'استدلال‌های موافق و فرصت‌ها (Pro)' : 'Supporting Arguments (Pro)'}
                           </div>
                           <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
-                            {aiView.proPoints.map((pt, i) => (
+                            {(Array.isArray(aiView.proPoints) ? aiView.proPoints : []).map((pt, i) => (
                               <li key={i} className="flex items-start gap-1.5">
                                 <span className="font-mono text-emerald-600 font-bold">+</span>
                                 <span>{pt}</span>
@@ -538,7 +620,7 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                             {lang === 'fa' ? 'نقدها، ریسک‌ها و دغدغه‌ها (Con)' : 'Critical Concerns (Con)'}
                           </div>
                           <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
-                            {aiView.conPoints.map((pt, i) => (
+                            {(Array.isArray(aiView.conPoints) ? aiView.conPoints : []).map((pt, i) => (
                               <li key={i} className="flex items-start gap-1.5">
                                 <span className="font-mono text-rose-600 font-bold">−</span>
                                 <span>{pt}</span>
@@ -568,7 +650,7 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                   {/* Rich Comment & Nested Reply Threads */}
                   {isExpanded && (
                     <div className="pt-3 border-t border-slate-200/70 dark:border-slate-800/70 space-y-4">
-                      {thread.comments.length === 0 ? (
+                      {(!thread.comments || thread.comments.length === 0) ? (
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {lang === 'fa'
                             ? 'هنوز دیدگاهی ثبت نشده است. اولین نفری باشید که نظر می‌دهید!'
@@ -576,7 +658,7 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                         </p>
                       ) : (
                         <div className="space-y-3">
-                          {thread.comments.map((comment) => (
+                          {(thread.comments || []).map((comment) => (
                             <div
                               key={comment.id}
                               className="rounded-2xl bg-slate-50/85 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 p-4 space-y-2.5"
@@ -585,9 +667,9 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                                 <div className="flex items-center gap-2">
                                   <span className="font-bold text-slate-900 dark:text-white">{comment.author}</span>
                                   <span aria-hidden="true">·</span>
-                                  <span>{lang === 'fa' ? comment.badgeFa : comment.badgeEn}</span>
+                                  <span>{(lang === 'fa' ? comment.badgeFa : comment.badgeEn) || (lang === 'fa' ? 'دانشجو' : 'Student')}</span>
                                   <span aria-hidden="true">·</span>
-                                  <span>{comment.createdAt}</span>
+                                  <span>{comment.createdAt || (lang === 'fa' ? 'اخیراً' : 'Recently')}</span>
                                 </div>
 
                                 <div className="flex items-center gap-2">
@@ -597,7 +679,7 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                                     className="inline-flex items-center gap-1 hover:text-sky-600 dark:hover:text-sky-400 cursor-pointer"
                                   >
                                     <ThumbsUp className="w-3 h-3" />
-                                    <span className="tabular-nums font-mono">{comment.upvotes}</span>
+                                    <span className="tabular-nums font-mono">{comment.upvotes || 0}</span>
                                   </button>
                                   <button
                                     type="button"
@@ -617,18 +699,18 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                               </p>
 
                               {/* Nested Replies */}
-                              {comment.replies.length > 0 && (
+                              {comment.replies && comment.replies.length > 0 && (
                                 <div className="ms-4 ps-3 border-s border-slate-300 dark:border-slate-700 space-y-2 pt-1">
-                                  {comment.replies.map((rep) => (
+                                  {(comment.replies || []).map((rep) => (
                                     <div key={rep.id} className="space-y-1">
                                       <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
                                         <span className="font-semibold text-slate-800 dark:text-slate-200">
                                           {rep.author}
                                         </span>
                                         <span aria-hidden="true">·</span>
-                                        <span>{lang === 'fa' ? rep.badgeFa : rep.badgeEn}</span>
+                                        <span>{(lang === 'fa' ? rep.badgeFa : rep.badgeEn) || (lang === 'fa' ? 'دانشجو' : 'Student')}</span>
                                         <span aria-hidden="true">·</span>
-                                        <span>{rep.createdAt}</span>
+                                        <span>{rep.createdAt || (lang === 'fa' ? 'اخیراً' : 'Recently')}</span>
                                       </div>
                                       <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                                         {rep.text}
@@ -647,6 +729,9 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                                     onChange={(e) =>
                                       setReplyInputs((prev) => ({ ...prev, [comment.id]: e.target.value }))
                                     }
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') handlePostComment(thread.id, comment.id);
+                                    }}
                                     placeholder={
                                       lang === 'fa'
                                         ? `پاسخ به ${comment.author}...`
@@ -657,7 +742,7 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                                   <button
                                     type="button"
                                     onClick={() => handlePostComment(thread.id, comment.id)}
-                                    className="px-3 py-2 rounded-xl bg-sky-600 text-white text-xs font-semibold cursor-pointer"
+                                    className="px-3 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold cursor-pointer"
                                   >
                                     {lang === 'fa' ? 'ارسال' : 'Send'}
                                   </button>
@@ -703,7 +788,7 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
           )}
         </div>
 
-        {/* Right Sidebar: Live Interactive Student Polls (4 cols) */}
+        {/* Right Sidebar: Live Interactive Student Polls & Community Guidelines (4 cols) */}
         <aside className="lg:col-span-4 space-y-5">
           <div className="glass-surface rounded-3xl p-5 sm:p-6 space-y-5">
             <div className="flex items-center gap-2">
@@ -715,7 +800,7 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
 
             <div className="space-y-6">
               {polls.map((poll) => {
-                const totalVotes = poll.options.reduce((sum, o) => sum + o.votes, 0) || 1;
+                const totalVotes = (poll.options || []).reduce((sum, o) => sum + (o.votes || 0), 0) || 1;
                 const userChoice = votedPolls[poll.id];
 
                 return (
@@ -728,8 +813,8 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                     </h4>
 
                     <div className="space-y-2">
-                      {poll.options.map((opt) => {
-                        const pct = Math.round((opt.votes / totalVotes) * 100);
+                      {(poll.options || []).map((opt) => {
+                        const pct = Math.round(((opt.votes || 0) / totalVotes) * 100);
                         const isChosen = userChoice === opt.id;
                         return (
                           <button
@@ -780,6 +865,40 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                 );
               })}
             </div>
+          </div>
+
+          {/* Academic Debate Civic Guidelines */}
+          <div className="glass-surface rounded-3xl p-5 space-y-3 border-sky-200/50 dark:border-sky-800/40">
+            <div className="flex items-center gap-2 text-xs font-bold text-sky-700 dark:text-sky-400">
+              <GraduationCap className="w-4 h-4" />
+              <span>{lang === 'fa' ? 'مرام‌نامه گفتگوی آکادمیک' : 'Campus Debate Code'}</span>
+            </div>
+            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              <li className="flex items-start gap-1.5">
+                <span className="text-sky-500 font-bold">✓</span>
+                <span>
+                  {lang === 'fa'
+                    ? 'احترام به دیدگاه‌های متفاوت و تمرکز بر نقد استدلال به جای اشخاص'
+                    : 'Constructive critique focusing on empirical evidence and reason.'}
+                </span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="text-sky-500 font-bold">✓</span>
+                <span>
+                  {lang === 'fa'
+                    ? 'اشتراک‌گذاری تجارب واقعی دانشگاهی و صنعتی برای توانمندسازی هم‌دانشگاهی‌ها'
+                    : 'Share authentic academic and industry experiences to empower peers.'}
+                </span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="text-sky-500 font-bold">✓</span>
+                <span>
+                  {lang === 'fa'
+                    ? 'پایبندی به استانداردهای اخلاق مهندسی، امانت‌داری علمی و مسئولیت اجتماعی'
+                    : 'Adhere to engineering ethics, scholarly integrity, and public safety.'}
+                </span>
+              </li>
+            </ul>
           </div>
         </aside>
       </div>
