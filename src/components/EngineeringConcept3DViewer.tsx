@@ -12,9 +12,116 @@ import {
   Compass,
   Info,
   X,
+  Maximize2,
+  Minimize2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { Concept3DModelType, Lang } from '../types/app';
 import { LatexBlock } from './MathRenderer';
+
+// Procedural CanvasTexture helpers (Zero external asset URLs)
+function createBrushedMetalTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0, 0, 256, 256);
+    for (let y = 0; y < 256; y += 2) {
+      const shade = 112 + Math.floor((Math.sin(y * 0.45) + Math.cos(y * 1.13)) * 18);
+      ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
+      ctx.fillRect(0, y, 256, 1);
+    }
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(3, 2);
+  return tex;
+}
+
+function createContactShadowTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    const grad = ctx.createRadialGradient(128, 128, 12, 128, 128, 120);
+    grad.addColorStop(0, 'rgba(2, 6, 23, 0.72)');
+    grad.addColorStop(0.55, 'rgba(2, 6, 23, 0.28)');
+    grad.addColorStop(1, 'rgba(2, 6, 23, 0.0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 256, 256);
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  return tex;
+}
+
+function createGeopoliticalGlobeTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    // Deep diplomatic navy ocean
+    const oceanGrad = ctx.createLinearGradient(0, 0, 0, 256);
+    oceanGrad.addColorStop(0, '#0c2340');
+    oceanGrad.addColorStop(0.5, '#0f3460');
+    oceanGrad.addColorStop(1, '#0a1c36');
+    ctx.fillStyle = oceanGrad;
+    ctx.fillRect(0, 0, 512, 256);
+
+    // Stylized tectonic landmass silhouettes
+    ctx.fillStyle = '#1e5f74';
+    const blobs: Array<[number, number, number, number, number]> = [
+      [115, 86, 46, 32, -0.2],   // N. America
+      [154, 162, 24, 38, 0.25],  // S. America
+      [256, 74, 34, 24, 0.1],    // Europe
+      [272, 138, 30, 42, -0.05], // Africa
+      [348, 86, 68, 38, 0.08],   // Asia & Middle East
+      [418, 178, 28, 18, 0.2],   // Oceania
+    ];
+    blobs.forEach(([cx, cy, rx, ry, rot]) => {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(rot);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    // Subtle latitude & longitude graticule
+    ctx.strokeStyle = 'rgba(125, 211, 252, 0.18)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= 512; x += 32) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, 256);
+      ctx.stroke();
+    }
+    for (let y = 32; y < 256; y += 32) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(512, y);
+      ctx.stroke();
+    }
+    // Equator accent
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
+    ctx.beginPath();
+    ctx.moveTo(0, 128);
+    ctx.lineTo(512, 128);
+    ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
 
 interface EngineeringConcept3DViewerProps {
   lang: Lang;
@@ -188,6 +295,78 @@ const MODEL_SPECS: Record<Concept3DModelType, ModelSpec> = {
       },
     ],
   },
+  nuclear_reactor: {
+    id: 'nuclear_reactor',
+    titleFa: 'راکتور آب تحت فشار (PWR) و زنجیره شکافت',
+    titleEn: 'Pressurized Water Reactor (PWR) Core & Fission Chain',
+    subtitleFa: 'مخزن تحت فشار، میله‌های سوخت اورانیوم، میله‌های کنترل بور و تابش چرنکوف',
+    subtitleEn: 'Pressure vessel, UO₂ fuel assembly, boron control rods & Cherenkov core glow',
+    hotspots: [
+      {
+        id: 'nuc-core',
+        labelFa: 'قلب راکتور و مجتمع سوخت UO₂',
+        labelEn: 'UO₂ Fuel Bundle & Cherenkov Core',
+        detailFa: 'شکافت هسته‌های اورانیوم-۲۳۵ توسط نوترون‌های حرارتی انرژی حدود ۲۰۰ مگاالکترون‌ولت به ازای هر شکافت آزاد می‌کند.',
+        detailEn: 'Thermal neutron fission of U-235 releases ~200 MeV per event while moderating water glows with Cherenkov radiation.',
+        formula: 'k_{\\text{eff}} = \\frac{\\nu \\Sigma_f}{\\Sigma_a + D B_g^2} = 1',
+        worldPos: [0, -0.25, 0.85],
+      },
+      {
+        id: 'nuc-control',
+        labelFa: 'میله‌های کنترل جاذب نوترون (بور/کادمیم)',
+        labelEn: 'Boron-Carbide Control Rods',
+        detailFa: 'حرکت عمودی میله‌های جاذب نوترون راکتیویته ρ را تنظیم کرده و پایداری بحرانی راکتور را تضمین می‌کند.',
+        detailEn: 'Vertical insertion of neutron-absorbing rods regulates reactivity ρ and ensures safe criticality control.',
+        formula: '\\rho = \\frac{k_{\\text{eff}} - 1}{k_{\\text{eff}}}, \\quad \\frac{dn}{dt} = \\frac{\\rho - \\beta}{\\Lambda}n + \\sum \\lambda_i C_i',
+        worldPos: [0, 1.35, 0],
+      },
+      {
+        id: 'nuc-coolant',
+        labelFa: 'مدار خنک‌کننده اولیه تحت فشار',
+        labelEn: 'Primary Pressurized Coolant Loop',
+        detailFa: 'آب تحت فشار ۱۵۵ اتمسفر حرارت قلب را بدون جوشش به مولد بخار منتقل کرده و به توربین نیروگاه می‌رساند.',
+        detailEn: 'Pressurized water at 15.5 MPa carries core thermal power to the steam generator without bulk boiling.',
+        formula: '\\dot{Q}_{\\text{th}} = \\dot{m}\\, c_p (T_{\\text{hot}} - T_{\\text{cold}})',
+        worldPos: [1.55, 0.2, 0],
+      },
+    ],
+  },
+  geopolitical_globe: {
+    id: 'geopolitical_globe',
+    titleFa: 'کره ژئوپلیتیک، موازنه قدرت و ائتلاف‌های بین‌المللی',
+    titleEn: 'Geopolitical Globe, Balance of Power & Diplomacy Network',
+    subtitleFa: 'قطب‌های قدرت، کریدورهای دیپلماتیک و تعادل راهبردی در روابط بین‌الملل و اقتصاد سیاسی',
+    subtitleEn: 'Power poles, diplomatic corridors, trade arcs & strategic equilibrium in IR',
+    hotspots: [
+      {
+        id: 'geo-poles',
+        labelFa: 'قطب‌های قدرت و حاکمیت ملی',
+        labelEn: 'Sovereign Power Poles',
+        detailFa: 'در نظام بین‌الملل چندقطبی، توزیع توان اقتصادی، نظامی و نرم میان بازیگران اصلی ساختار موازنه قدرت را تعیین می‌کند.',
+        detailEn: 'In a multipolar international system, the distribution of material and soft capabilities shapes strategic stability.',
+        formula: 'P_i = \\alpha \\cdot \\text{GDP}_i + \\beta \\cdot \\text{Cap}_i + \\gamma \\cdot \\text{SoftPower}_i',
+        worldPos: [0.95, 0.82, 0.72],
+      },
+      {
+        id: 'geo-arcs',
+        labelFa: 'کریدورهای دیپلماسی و تجارت',
+        labelEn: 'Treaty & Trade Corridors',
+        detailFa: 'وابستگی متقابل اقتصادی و معاهدات چندجانبه هزینه تعارض را افزایش داده و همکاری نهادی را تقویت می‌کنند.',
+        detailEn: 'Complex interdependence and multilateral treaties raise conflict costs and foster institutional cooperation.',
+        formula: 'U_i(a_i^*, a_{-i}^*) \\ge U_i(a_i, a_{-i}^*) \\quad \\forall i',
+        worldPos: [-1.15, 0.45, 0.65],
+      },
+      {
+        id: 'geo-rings',
+        labelFa: 'رژیم‌های حقوقی و نهادهای بین‌المللی',
+        labelEn: 'International Law & Regimes',
+        detailFa: 'منشور سازمان ملل، معاهدات حقوقی و هنجارهای بین‌المللی چارچوب حل‌وفصل مسالمت‌آمیز اختلافات دولت‌ها هستند.',
+        detailEn: 'The UN Charter, international treaties, and legal norms frame peaceful dispute resolution among states.',
+        formula: '\\text{Legitimacy} = f(\\text{Rule of Law},\\, \\text{Representation},\\, \\text{Accountability})',
+        worldPos: [0, -1.2, 0.85],
+      },
+    ],
+  },
 };
 
 const _projVec = new THREE.Vector3();
@@ -205,12 +384,32 @@ export const EngineeringConcept3DViewer: React.FC<EngineeringConcept3DViewerProp
   const [selectedHotspot, setSelectedHotspot] = useState<HotspotMeta | null>(null);
   const [projectedPins, setProjectedPins] = useState<Array<{ id: string; x: number; y: number; visible: boolean }>>([]);
   const [webglUnavailable, setWebglUnavailable] = useState(false);
+  const [dockOpen, setDockOpen] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const mountRef = useRef<HTMLDivElement | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const isPlayingRef = useRef(isPlaying);
   const autoRotateRef = useRef(autoRotate);
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsFullscreen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    const t = window.setTimeout(() => window.dispatchEvent(new Event('resize')), 40);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.clearTimeout(t);
+    };
+  }, [isFullscreen]);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => window.dispatchEvent(new Event('resize')), 40);
+    return () => window.clearTimeout(t);
+  }, [isFullscreen]);
 
   useEffect(() => {
     setModelType(initialModelType);
@@ -305,7 +504,8 @@ export const EngineeringConcept3DViewer: React.FC<EngineeringConcept3DViewerProp
     scene.fog = new THREE.FogExp2(0x0b1222, 0.042);
 
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+    const envTarget = pmremGenerator.fromScene(new RoomEnvironment(), 0.04);
+    scene.environment = envTarget.texture;
     pmremGenerator.dispose();
 
     const camera = new THREE.PerspectiveCamera(44, width / height, 0.1, 80);
@@ -338,17 +538,17 @@ export const EngineeringConcept3DViewer: React.FC<EngineeringConcept3DViewerProp
     rimLight.position.set(-5, 3, -5);
     scene.add(rimLight);
 
-    // Subtle grounded reference floor plane
+    // Subtle grounded reference floor plane & procedural contact shadow
     const grid = new THREE.GridHelper(12, 16, 0x1e3a5f, 0x172554);
     grid.position.y = -1.75;
     (grid.material as THREE.Material).transparent = true;
-    (grid.material as THREE.Material).opacity = 0.45;
+    (grid.material as THREE.Material).opacity = 0.42;
     scene.add(grid);
 
     const heroGroup = new THREE.Group();
     scene.add(heroGroup);
 
-    const disposables: Array<{ dispose: () => void }> = [];
+    const disposables: Array<{ dispose: () => void }> = [envTarget];
     const trackGeo = <T extends THREE.BufferGeometry>(g: T): T => {
       disposables.push(g);
       return g;
@@ -357,6 +557,20 @@ export const EngineeringConcept3DViewer: React.FC<EngineeringConcept3DViewerProp
       disposables.push(m);
       return m;
     };
+    const trackTex = <T extends THREE.Texture>(t: T): T => {
+      disposables.push(t);
+      return t;
+    };
+
+    // Soft radial contact shadow grounding the hero assembly
+    const shadowTex = trackTex(createContactShadowTexture());
+    const contactShadow = new THREE.Mesh(
+      trackGeo(new THREE.PlaneGeometry(4.4, 4.4)),
+      trackMat(new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }))
+    );
+    contactShadow.rotation.x = -Math.PI / 2;
+    contactShadow.position.y = -1.73;
+    scene.add(contactShadow);
 
     // Animated references
     let emChargesMesh: THREE.InstancedMesh | null = null;
@@ -373,6 +587,17 @@ export const EngineeringConcept3DViewer: React.FC<EngineeringConcept3DViewerProp
     const nnPaths: Array<{ from: THREE.Vector3; to: THREE.Vector3; offset: number; backward: boolean }> = [];
 
     let latticeGroup: THREE.Group | null = null;
+
+    let reactorControlRods: THREE.Group | null = null;
+    let cherenkovCoreMat: THREE.MeshStandardMaterial | null = null;
+    let neutronMesh: THREE.InstancedMesh | null = null;
+    let neutronSeeds: Array<{ r: number; y: number; speed: number; phase: number }> = [];
+
+    let geoGlobeGroup: THREE.Group | null = null;
+    let geoRingOuter: THREE.Mesh | null = null;
+    let geoRingInner: THREE.Mesh | null = null;
+    let geoPacketsMesh: THREE.InstancedMesh | null = null;
+    const geoArcCurves: THREE.QuadraticBezierCurve3[] = [];
 
     // ------------------------------------------------------------------------
     // BUILD MODEL 1: ELECTROMAGNETIC COIL + LORENTZ FORCE
@@ -716,6 +941,263 @@ export const EngineeringConcept3DViewer: React.FC<EngineeringConcept3DViewerProp
       latticeGroup.add(braggPlane);
     }
 
+    // ------------------------------------------------------------------------
+    // BUILD MODEL 5: PRESSURIZED WATER NUCLEAR REACTOR (PWR) CORE
+    // ------------------------------------------------------------------------
+    else if (modelType === 'nuclear_reactor') {
+      const brushedTex = trackTex(createBrushedMetalTexture());
+      const vesselMat = trackMat(
+        new THREE.MeshStandardMaterial({
+          color: 0x94a3b8,
+          metalness: 0.85,
+          roughness: 0.28,
+          bumpMap: brushedTex,
+          bumpScale: 0.015,
+          side: THREE.DoubleSide,
+        })
+      );
+      const flangeMat = trackMat(
+        new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.82, roughness: 0.36 })
+      );
+      const fuelRodMat = trackMat(
+        new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.78, roughness: 0.25 })
+      );
+      const boronMat = trackMat(
+        new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.65, roughness: 0.35 })
+      );
+      const hotPipeMat = trackMat(
+        new THREE.MeshStandardMaterial({ color: 0xef4444, metalness: 0.55, roughness: 0.32 })
+      );
+      const coldPipeMat = trackMat(
+        new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.55, roughness: 0.32 })
+      );
+
+      // Cutaway cylindrical pressure vessel (240 deg arc so core is clearly visible)
+      const vesselShell = new THREE.Mesh(
+        trackGeo(new THREE.CylinderGeometry(1.08, 1.08, 2.35, 36, 1, true, Math.PI * 0.2, Math.PI * 1.35)),
+        vesselMat
+      );
+      vesselShell.position.y = -0.15;
+      heroGroup.add(vesselShell);
+
+      // Lower hemispherical dome & upper bolted flange collar
+      const bottomDome = new THREE.Mesh(
+        trackGeo(new THREE.SphereGeometry(1.08, 28, 16, 0, Math.PI * 2, Math.PI * 0.5, Math.PI * 0.5)),
+        flangeMat
+      );
+      bottomDome.position.y = -1.32;
+      heroGroup.add(bottomDome);
+
+      const topFlange = new THREE.Mesh(trackGeo(new THREE.TorusGeometry(1.08, 0.11, 14, 36)), flangeMat);
+      topFlange.rotation.x = Math.PI / 2;
+      topFlange.position.y = 1.02;
+      heroGroup.add(topFlange);
+
+      const midCollar = new THREE.Mesh(trackGeo(new THREE.TorusGeometry(1.11, 0.06, 12, 36)), flangeMat);
+      midCollar.rotation.x = Math.PI / 2;
+      midCollar.position.y = -1.25;
+      heroGroup.add(midCollar);
+
+      // Cherenkov luminous water core volume
+      cherenkovCoreMat = trackMat(
+        new THREE.MeshStandardMaterial({
+          color: 0x38bdf8,
+          emissive: 0x0284c7,
+          emissiveIntensity: 0.72,
+          transparent: true,
+          opacity: 0.32,
+          roughness: 0.1,
+          depthWrite: false,
+        })
+      );
+      const cherenkovCore = new THREE.Mesh(trackGeo(new THREE.CylinderGeometry(0.86, 0.86, 1.55, 28)), cherenkovCoreMat);
+      cherenkovCore.position.y = -0.3;
+      cherenkovCore.renderOrder = 2;
+      heroGroup.add(cherenkovCore);
+
+      // Hexagonal 7-rod UO2 Fuel Assembly
+      const fuelGeo = trackGeo(new THREE.CylinderGeometry(0.085, 0.085, 1.48, 16));
+      const fuelPositions: Array<[number, number]> = [[0, 0]];
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        fuelPositions.push([Math.cos(a) * 0.44, Math.sin(a) * 0.44]);
+      }
+      fuelPositions.forEach(([fx, fz]) => {
+        const rod = new THREE.Mesh(fuelGeo, fuelRodMat);
+        rod.position.set(fx, -0.32, fz);
+        heroGroup.add(rod);
+      });
+
+      // Animated Boron Control Rod Cluster (4 rods moving vertically)
+      reactorControlRods = new THREE.Group();
+      const ctrlRodGeo = trackGeo(new THREE.CylinderGeometry(0.048, 0.048, 1.65, 14));
+      const spiderHub = new THREE.Mesh(trackGeo(new THREE.CylinderGeometry(0.55, 0.55, 0.1, 20)), flangeMat);
+      spiderHub.position.y = 1.45;
+      reactorControlRods.add(spiderHub);
+      for (let i = 0; i < 4; i++) {
+        const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+        const rod = new THREE.Mesh(ctrlRodGeo, boronMat);
+        rod.position.set(Math.cos(a) * 0.28, 0.65, Math.sin(a) * 0.28);
+        reactorControlRods.add(rod);
+      }
+      heroGroup.add(reactorControlRods);
+
+      // Primary Hot Leg & Cold Leg Coolant Loops (TubeGeometry)
+      const hotCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(1.02, 0.35, 0),
+        new THREE.Vector3(1.75, 0.35, 0),
+        new THREE.Vector3(1.85, -0.3, 0.35),
+        new THREE.Vector3(1.65, -0.85, 0.15),
+      ]);
+      const hotLeg = new THREE.Mesh(trackGeo(new THREE.TubeGeometry(hotCurve, 32, 0.13, 14, false)), hotPipeMat);
+      heroGroup.add(hotLeg);
+
+      const coldCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-1.02, 0.35, 0),
+        new THREE.Vector3(-1.75, 0.35, 0),
+        new THREE.Vector3(-1.85, -0.3, -0.35),
+        new THREE.Vector3(-1.65, -0.85, -0.15),
+      ]);
+      const coldLeg = new THREE.Mesh(trackGeo(new THREE.TubeGeometry(coldCurve, 32, 0.13, 14, false)), coldPipeMat);
+      heroGroup.add(coldLeg);
+
+      // Instanced Fission Neutrons orbiting inside the core
+      const nCount = 28;
+      const nGeo = trackGeo(new THREE.SphereGeometry(0.042, 10, 10));
+      const nMat = trackMat(
+        new THREE.MeshStandardMaterial({ color: 0x7dd3fc, emissive: 0x38bdf8, emissiveIntensity: 0.85, roughness: 0.2 })
+      );
+      neutronMesh = new THREE.InstancedMesh(nGeo, nMat, nCount);
+      neutronMesh.frustumCulled = false;
+      neutronSeeds = Array.from({ length: nCount }, (_, i) => ({
+        r: 0.24 + (i % 5) * 0.13,
+        y: -0.95 + ((i * 7) % nCount) / nCount * 1.25,
+        speed: 1.4 + (i % 4) * 0.65,
+        phase: (i / nCount) * Math.PI * 2,
+      }));
+      heroGroup.add(neutronMesh);
+    }
+
+    // ------------------------------------------------------------------------
+    // BUILD MODEL 6: GEOPOLITICAL GLOBE & INTERNATIONAL RELATIONS NETWORK
+    // ------------------------------------------------------------------------
+    else if (modelType === 'geopolitical_globe') {
+      geoGlobeGroup = new THREE.Group();
+      heroGroup.add(geoGlobeGroup);
+
+      const globeTex = trackTex(createGeopoliticalGlobeTexture());
+      const globeMat = trackMat(
+        new THREE.MeshStandardMaterial({
+          map: globeTex,
+          roughness: 0.42,
+          metalness: 0.18,
+        })
+      );
+      const R = 1.25;
+      const globeMesh = new THREE.Mesh(trackGeo(new THREE.SphereGeometry(R, 40, 32)), globeMat);
+      geoGlobeGroup.add(globeMesh);
+
+      // Translucent atmospheric horizon halo
+      const atmoMesh = new THREE.Mesh(
+        trackGeo(new THREE.SphereGeometry(R * 1.045, 32, 24)),
+        trackMat(
+          new THREE.MeshPhysicalMaterial({
+            color: 0x38bdf8,
+            transparent: true,
+            opacity: 0.14,
+            roughness: 0.1,
+            depthWrite: false,
+          })
+        )
+      );
+      geoGlobeGroup.add(atmoMesh);
+
+      // 6 Strategic Power Pole / Diplomatic Hub Beacons on the Sphere
+      const hubsLatLon: Array<[number, number, number]> = [
+        [35.7, 51.4, 0xf59e0b],  // Tehran / Middle East
+        [46.2, 6.1, 0x38bdf8],   // Geneva / Europe
+        [40.7, -74.0, 0x10b981], // New York / UN
+        [39.9, 116.4, 0xf43f5e], // Beijing / East Asia
+        [28.6, 77.2, 0xa855f7],  // New Delhi / South Asia
+        [-15.8, -47.9, 0x22d3ee],// Brasilia / Global South
+      ];
+      const latLonToVec = (lat: number, lon: number, radius: number) => {
+        const phi = (90 - lat) * (Math.PI / 180);
+        const theta = (lon + 180) * (Math.PI / 180);
+        return new THREE.Vector3(
+          -radius * Math.sin(phi) * Math.cos(theta),
+          radius * Math.cos(phi),
+          radius * Math.sin(phi) * Math.sin(theta)
+        );
+      };
+      const hubPositions = hubsLatLon.map(([lat, lon]) => latLonToVec(lat, lon, R + 0.03));
+      const beaconGeo = trackGeo(new THREE.SphereGeometry(0.072, 16, 16));
+      hubsLatLon.forEach(([, , hex], idx) => {
+        const bMat = trackMat(
+          new THREE.MeshStandardMaterial({ color: hex, emissive: hex, emissiveIntensity: 0.65, roughness: 0.25 })
+        );
+        const beacon = new THREE.Mesh(beaconGeo, bMat);
+        beacon.position.copy(hubPositions[idx]);
+        geoGlobeGroup!.add(beacon);
+      });
+
+      // Great-Circle Alliance & Trade Arcs (TubeGeometry along QuadraticBezierCurve3)
+      const arcPairs: Array<[number, number]> = [
+        [0, 1],
+        [0, 3],
+        [1, 2],
+        [2, 5],
+        [3, 4],
+        [4, 0],
+      ];
+      const arcMat = trackMat(
+        new THREE.MeshStandardMaterial({
+          color: 0xfbbf24,
+          emissive: 0xd97706,
+          emissiveIntensity: 0.35,
+          transparent: true,
+          opacity: 0.72,
+          roughness: 0.3,
+        })
+      );
+      arcPairs.forEach(([a, b]) => {
+        const p1 = hubPositions[a];
+        const p2 = hubPositions[b];
+        const mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+        mid.normalize().multiplyScalar(R * 1.46);
+        const curve = new THREE.QuadraticBezierCurve3(p1, mid, p2);
+        geoArcCurves.push(curve);
+        const arcTube = new THREE.Mesh(trackGeo(new THREE.TubeGeometry(curve, 32, 0.015, 8, false)), arcMat);
+        geoGlobeGroup!.add(arcTube);
+      });
+
+      // Diplomatic Signal Pulses traveling along treaty/trade arcs
+      const pktGeo = trackGeo(new THREE.SphereGeometry(0.044, 10, 10));
+      const pktMat = trackMat(
+        new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x38bdf8, emissiveIntensity: 0.9 })
+      );
+      geoPacketsMesh = new THREE.InstancedMesh(pktGeo, pktMat, geoArcCurves.length * 2);
+      geoPacketsMesh.frustumCulled = false;
+      geoGlobeGroup.add(geoPacketsMesh);
+
+      // Orbital International Law & Treaty Regime Rings
+      const ringMatOuter = trackMat(
+        new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.7, roughness: 0.25, transparent: true, opacity: 0.65 })
+      );
+      const ringMatInner = trackMat(
+        new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.75, roughness: 0.28, transparent: true, opacity: 0.55 })
+      );
+      geoRingOuter = new THREE.Mesh(trackGeo(new THREE.TorusGeometry(1.78, 0.022, 12, 64)), ringMatOuter);
+      geoRingOuter.rotation.x = Math.PI * 0.42;
+      geoRingOuter.rotation.y = 0.25;
+      heroGroup.add(geoRingOuter);
+
+      geoRingInner = new THREE.Mesh(trackGeo(new THREE.TorusGeometry(1.62, 0.018, 12, 64)), ringMatInner);
+      geoRingInner.rotation.x = Math.PI * 0.62;
+      geoRingInner.rotation.z = -0.35;
+      heroGroup.add(geoRingInner);
+    }
+
     if (!isSoftwareGl) {
       renderer.compile(scene, camera);
     }
@@ -831,6 +1313,54 @@ export const EngineeringConcept3DViewer: React.FC<EngineeringConcept3DViewerProp
         latticeGroup.rotation.x = Math.sin(elapsedTotal * 0.25) * 0.14;
       }
 
+      // Animate Model 5: PWR Nuclear Reactor Control Rods, Cherenkov Pulse & Neutrons
+      if (modelType === 'nuclear_reactor') {
+        if (reactorControlRods) {
+          reactorControlRods.position.y = Math.sin(elapsedTotal * 1.1) * 0.28;
+        }
+        if (cherenkovCoreMat) {
+          cherenkovCoreMat.emissiveIntensity = 0.62 + Math.sin(elapsedTotal * 2.4) * 0.24;
+        }
+        if (neutronMesh) {
+          for (let i = 0; i < neutronSeeds.length; i++) {
+            const seed = neutronSeeds[i];
+            const ang = elapsedTotal * seed.speed + seed.phase;
+            const radialPulse = seed.r + Math.sin(elapsedTotal * 2.2 + i) * 0.06;
+            dummy.position.set(
+              Math.cos(ang) * radialPulse,
+              seed.y + Math.sin(elapsedTotal * 1.8 + seed.phase) * 0.12,
+              Math.sin(ang) * radialPulse
+            );
+            dummy.scale.setScalar(0.85 + Math.sin(elapsedTotal * 3 + i) * 0.2);
+            dummy.updateMatrix();
+            neutronMesh.setMatrixAt(i, dummy.matrix);
+          }
+          neutronMesh.instanceMatrix.needsUpdate = true;
+        }
+      }
+
+      // Animate Model 6: Geopolitical Globe Spin, Regime Rings & Diplomatic Arc Pulses
+      if (modelType === 'geopolitical_globe' && geoGlobeGroup) {
+        geoGlobeGroup.rotation.y = elapsedTotal * 0.26;
+        if (geoRingOuter) geoRingOuter.rotation.z = elapsedTotal * 0.22;
+        if (geoRingInner) geoRingInner.rotation.z = -elapsedTotal * 0.3;
+        if (geoPacketsMesh && geoArcCurves.length > 0) {
+          let idx = 0;
+          for (let c = 0; c < geoArcCurves.length; c++) {
+            const curve = geoArcCurves[c];
+            for (let k = 0; k < 2; k++) {
+              const t = (elapsedTotal * 0.42 + c * 0.17 + k * 0.5) % 1;
+              curve.getPoint(t, tmpVec);
+              dummy.position.copy(tmpVec);
+              dummy.scale.setScalar(0.8 + Math.sin(t * Math.PI) * 0.45);
+              dummy.updateMatrix();
+              geoPacketsMesh.setMatrixAt(idx++, dummy.matrix);
+            }
+          }
+          geoPacketsMesh.instanceMatrix.needsUpdate = true;
+        }
+      }
+
       controls.update();
       renderer.render(scene, camera);
 
@@ -842,6 +1372,8 @@ export const EngineeringConcept3DViewer: React.FC<EngineeringConcept3DViewerProp
         _projVec.set(...hp.worldPos);
         if (modelType === 'crystal_lattice' && latticeGroup) {
           _projVec.applyEuler(latticeGroup.rotation);
+        } else if (modelType === 'geopolitical_globe' && geoGlobeGroup) {
+          _projVec.applyEuler(geoGlobeGroup.rotation);
         }
         _projVec.project(camera);
         return {
@@ -896,6 +1428,8 @@ export const EngineeringConcept3DViewer: React.FC<EngineeringConcept3DViewerProp
                 {ms.id === 'mechanical_piston' && (lang === 'fa' ? 'تیر تنش + پیستون موتور' : 'Beam Stress & Piston')}
                 {ms.id === 'neural_network' && (lang === 'fa' ? 'شبکه عصبی چندلایه' : '3D Neural Network')}
                 {ms.id === 'crystal_lattice' && (lang === 'fa' ? 'شبکه بلوری کریستال' : 'Crystal Lattice')}
+                {ms.id === 'nuclear_reactor' && (lang === 'fa' ? 'راکتور هسته‌ای PWR' : 'PWR Nuclear Reactor')}
+                {ms.id === 'geopolitical_globe' && (lang === 'fa' ? 'کره ژئوپلیتیک و دیپلماسی' : 'Geopolitical Globe')}
               </button>
             );
           })}
@@ -903,7 +1437,13 @@ export const EngineeringConcept3DViewer: React.FC<EngineeringConcept3DViewerProp
       )}
 
       {/* 3D WebGL Viewport Container */}
-      <div className={`relative ${heightClass} rounded-2xl overflow-hidden bg-slate-950 border border-slate-800`}>
+      <div
+        className={
+          isFullscreen
+            ? 'fixed inset-0 z-[100] w-screen h-screen bg-slate-950 overflow-hidden'
+            : `relative ${heightClass} rounded-2xl overflow-hidden bg-slate-950 border border-slate-800`
+        }
+      >
         {webglUnavailable ? (
           <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-slate-300 space-y-2">
             <Box className="w-10 h-10 text-sky-400" />
@@ -914,13 +1454,23 @@ export const EngineeringConcept3DViewer: React.FC<EngineeringConcept3DViewerProp
           <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
         )}
 
-        {/* Top-Left Minimal Spec Header (No backdrop-filter over WebGL canvas) */}
-        <div className="pointer-events-none absolute top-3 start-3 z-10 max-w-[78%] rounded-xl bg-slate-950/85 border border-slate-700/70 px-3 py-1.5 text-white">
+        {/* Top-Left Minimal Spec Header (Solid rgba surface, zero backdrop-filter over WebGL) */}
+        <div className="pointer-events-none absolute top-3 start-3 z-10 max-w-[74%] rounded-xl bg-slate-950/90 border border-slate-700/70 px-3 py-1.5 text-white">
           <div className="text-xs font-bold truncate">{lang === 'fa' ? spec.titleFa : spec.titleEn}</div>
           {!compact && (
             <div className="text-[11px] text-slate-300 truncate">{lang === 'fa' ? spec.subtitleFa : spec.subtitleEn}</div>
           )}
         </div>
+
+        {/* Top-Right Fullscreen Expand Button */}
+        <button
+          type="button"
+          onClick={() => setIsFullscreen((fs) => !fs)}
+          title={isFullscreen ? (lang === 'fa' ? 'خروج از تمام‌صفحه (Esc)' : 'Exit Fullscreen (Esc)') : (lang === 'fa' ? 'نمایش تمام‌صفحه سه‌بعدی' : 'Fullscreen 3D View')}
+          className="absolute top-3 end-3 z-20 min-h-[36px] min-w-[36px] rounded-xl bg-slate-950/90 hover:bg-slate-800 border border-slate-700/80 text-slate-200 flex items-center justify-center cursor-pointer transition-colors"
+        >
+          {isFullscreen ? <Minimize2 className="w-4 h-4 text-sky-400" /> : <Maximize2 className="w-4 h-4" />}
+        </button>
 
         {/* Clickable 3D Hotspot Pins */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden z-10">
@@ -947,52 +1497,66 @@ export const EngineeringConcept3DViewer: React.FC<EngineeringConcept3DViewerProp
           })}
         </div>
 
-        {/* Unified Bottom Control Dock (Zero Viewport Occlusion, solid rgba surface) */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 rounded-xl bg-slate-950/90 border border-slate-700/80 px-2.5 py-1.5 text-slate-100 shadow-xl">
+        {/* Collapsible Unified Bottom Control Dock (Zero Viewport Occlusion, solid rgba surface) */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 rounded-xl bg-slate-950/90 border border-slate-700/80 px-2 py-1.5 text-slate-100 shadow-xl">
           <button
             type="button"
-            onClick={() => setIsPlaying((p) => !p)}
-            title={isPlaying ? (lang === 'fa' ? 'توقف حرکت' : 'Pause') : (lang === 'fa' ? 'پخش حرکت' : 'Play')}
-            className="min-h-[34px] min-w-[34px] rounded-lg hover:bg-slate-800 flex items-center justify-center cursor-pointer"
+            onClick={() => setDockOpen((o) => !o)}
+            title={dockOpen ? (lang === 'fa' ? 'جمع کردن کنترل‌ها' : 'Collapse Controls') : (lang === 'fa' ? 'نمایش کنترل‌ها' : 'Expand Controls')}
+            className="min-h-[34px] px-2 rounded-lg hover:bg-slate-800 text-[11px] font-semibold text-slate-300 flex items-center gap-1 cursor-pointer whitespace-nowrap"
           >
-            {isPlaying ? <Pause className="w-3.5 h-3.5 text-sky-400" /> : <Play className="w-3.5 h-3.5 text-emerald-400" />}
+            {dockOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+            {!dockOpen && <span>{lang === 'fa' ? 'کنترل‌ها' : 'Controls'}</span>}
           </button>
-          <button
-            type="button"
-            onClick={() => setAutoRotate((r) => !r)}
-            title={lang === 'fa' ? 'چرخش خودکار دوربین' : 'Auto-orbit'}
-            className={`min-h-[34px] px-2 rounded-lg text-[11px] font-semibold flex items-center gap-1 cursor-pointer ${
-              autoRotate ? 'bg-sky-600 text-white' : 'hover:bg-slate-800 text-slate-300'
-            }`}
-          >
-            <Compass className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{lang === 'fa' ? 'مدار' : 'Orbit'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleZoom(0.84)}
-            title={lang === 'fa' ? 'بزرگنمایی' : 'Zoom In'}
-            className="min-h-[34px] min-w-[34px] rounded-lg hover:bg-slate-800 flex items-center justify-center cursor-pointer"
-          >
-            <ZoomIn className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => handleZoom(1.18)}
-            title={lang === 'fa' ? 'کوچک‌نمایی' : 'Zoom Out'}
-            className="min-h-[34px] min-w-[34px] rounded-lg hover:bg-slate-800 flex items-center justify-center cursor-pointer"
-          >
-            <ZoomOut className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={handleResetView}
-            title={lang === 'fa' ? 'بازنشانی زاویه دید' : 'Reset View'}
-            className="min-h-[34px] px-2 rounded-lg hover:bg-slate-800 text-[11px] font-medium flex items-center gap-1 cursor-pointer"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{lang === 'fa' ? 'ریست' : 'Reset'}</span>
-          </button>
+
+          {dockOpen && (
+            <>
+              <button
+                type="button"
+                onClick={() => setIsPlaying((p) => !p)}
+                title={isPlaying ? (lang === 'fa' ? 'توقف حرکت' : 'Pause') : (lang === 'fa' ? 'پخش حرکت' : 'Play')}
+                className="min-h-[34px] min-w-[34px] rounded-lg hover:bg-slate-800 flex items-center justify-center cursor-pointer"
+              >
+                {isPlaying ? <Pause className="w-3.5 h-3.5 text-sky-400" /> : <Play className="w-3.5 h-3.5 text-emerald-400" />}
+              </button>
+              <button
+                type="button"
+                onClick={() => setAutoRotate((r) => !r)}
+                title={lang === 'fa' ? 'چرخش خودکار دوربین' : 'Auto-orbit'}
+                className={`min-h-[34px] px-2 rounded-lg text-[11px] font-semibold flex items-center gap-1 cursor-pointer whitespace-nowrap ${
+                  autoRotate ? 'bg-sky-600 text-white' : 'hover:bg-slate-800 text-slate-300'
+                }`}
+              >
+                <Compass className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{lang === 'fa' ? 'مدار' : 'Orbit'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleZoom(0.84)}
+                title={lang === 'fa' ? 'بزرگنمایی' : 'Zoom In'}
+                className="min-h-[34px] min-w-[34px] rounded-lg hover:bg-slate-800 flex items-center justify-center cursor-pointer"
+              >
+                <ZoomIn className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleZoom(1.18)}
+                title={lang === 'fa' ? 'کوچک‌نمایی' : 'Zoom Out'}
+                className="min-h-[34px] min-w-[34px] rounded-lg hover:bg-slate-800 flex items-center justify-center cursor-pointer"
+              >
+                <ZoomOut className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={handleResetView}
+                title={lang === 'fa' ? 'بازنشانی زاویه دید' : 'Reset View'}
+                className="min-h-[34px] px-2 rounded-lg hover:bg-slate-800 text-[11px] font-medium flex items-center gap-1 cursor-pointer whitespace-nowrap"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{lang === 'fa' ? 'ریست' : 'Reset'}</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 

@@ -22,6 +22,47 @@ export interface DeepEnrichmentBundle {
 export function infer3DModelForCourse(fieldId: string, code: string): Concept3DModelType {
   const c = code.toUpperCase();
   if (
+    fieldId === 'nuclear' ||
+    fieldId.startsWith('nuclear-') ||
+    fieldId === 'renewable' ||
+    c.startsWith('NUC-') ||
+    c.startsWith('NFUL-') ||
+    c.startsWith('RAD-') ||
+    c.startsWith('FUS-')
+  ) {
+    return 'nuclear_reactor';
+  }
+  if (
+    fieldId.startsWith('pol-') ||
+    fieldId.startsWith('law-') ||
+    fieldId === 'econ-pure' ||
+    fieldId === 'eng-econ' ||
+    fieldId === 'mgmt-business' ||
+    fieldId === 'accounting' ||
+    fieldId === 'finance-banking' ||
+    fieldId === 'psych-clinical' ||
+    fieldId === 'sociology' ||
+    fieldId === 'media-comm' ||
+    fieldId === 'philosophy' ||
+    fieldId === 'history' ||
+    fieldId === 'literature-ling' ||
+    fieldId.startsWith('art-') ||
+    c.startsWith('POL-') ||
+    c.startsWith('IR-') ||
+    c.startsWith('LAW-') ||
+    c.startsWith('ECN-') ||
+    c.startsWith('MGT-') ||
+    c.startsWith('ACC-') ||
+    c.startsWith('FIN-') ||
+    c.startsWith('PSY-') ||
+    c.startsWith('SOC-') ||
+    c.startsWith('PHI-') ||
+    c.startsWith('HIS-') ||
+    c.startsWith('LIT-')
+  ) {
+    return 'geopolitical_globe';
+  }
+  if (
     fieldId.startsWith('cs-') ||
     fieldId === 'data-sci' ||
     c.startsWith('CS-') ||
@@ -32,11 +73,22 @@ export function infer3DModelForCourse(fieldId: string, code: string): Concept3DM
   }
   if (
     fieldId.startsWith('chem-') ||
-    fieldId === 'materials' ||
+    fieldId.startsWith('med-') ||
+    fieldId === 'bio-cell' ||
+    fieldId === 'geology' ||
+    fieldId === 'vet-med' ||
+    fieldId === 'agri-agronomy' ||
+    fieldId === 'food-sci' ||
+    fieldId.startsWith('materials') ||
     fieldId === 'nano' ||
     fieldId === 'biotech' ||
     fieldId === 'polymer' ||
     c.startsWith('CHEM-') ||
+    c.startsWith('CHM-') ||
+    c.startsWith('BIOL-') ||
+    c.startsWith('MED-') ||
+    c.startsWith('PHAR-') ||
+    c.startsWith('DENT-') ||
     c.startsWith('MAT-')
   ) {
     return 'crystal_lattice';
@@ -601,6 +653,280 @@ const DOMAIN_ENRICHMENT: Record<Concept3DModelType, DeepEnrichmentBundle> = {
             'Ratio 0.50 uniquely identifies BCC with first reflection (110). Using d₁₁₀ = 0.2036 nm gives a = d₁₁₀√2 = 0.2879 nm. Since BCC body diagonal satisfies 4R = a√3, atomic radius R = a√3/4 ≈ 0.1247 nm (pure α-iron!).',
           mathLatex:
             'a = \\frac{\\lambda \\sqrt{2}}{2\\sin(22.25^\\circ)} \\approx 0.2879\\,\\text{nm}, \\qquad R = \\frac{a\\sqrt{3}}{4} \\approx 0.1247\\,\\text{nm}',
+        },
+      ],
+    },
+  },
+
+  nuclear_reactor: {
+    model3dType: 'nuclear_reactor',
+    historicalOriginFa:
+      'تاریخ مهندسی هسته‌ای با کشف شکافت اورانیوم توسط اوتو هان و لیزه مایتنر در سال ۱۹۳۸ و نخستین واکنش زنجیره‌ای خودپایدار در راکتور Chicago Pile-1 به سرپرستی انریکو فرمی در سال ۱۹۴۲ آغاز شد. در دهه‌های بعد، مهندسان راکتورهای آب تحت فشار (PWR)، نیروگاه‌های تولید رادیوداروهای پزشکی (PET/SPECT) و پژوهش‌های محصورسازی مغناطیسی پلاسما (توکامک) را برای تولید انرژی پاک بدون کربن و درمان سرطان توسعه دادند.',
+    historicalOriginEn:
+      'Nuclear engineering began with Otto Hahn and Lise Meitner’s 1938 discovery of nuclear fission and Enrico Fermi’s 1942 Chicago Pile-1 self-sustaining chain reaction. Over subsequent decades, engineers developed pressurized water reactors (PWR), medical radioisotope production (PET/SPECT), and tokamak magnetic fusion confinement.',
+    mathematicalProof: {
+      theoremTitleFa: 'اثبات شرط بحرانیت هندسی و مادی راکتور از معادله پخش تک‌گروهی نوترون',
+      theoremTitleEn: 'Derivation of Geometric & Material Buckling Criticality from One-Group Diffusion',
+      steps: [
+        {
+          labelFa: 'گام ۱ — نگارش موازنه شار نوترون در حالت ماندگار',
+          labelEn: 'Step 1 — Steady-State Neutron Balance',
+          textFa: 'در یک هسته همگن بدون منبع خارجی، مجموع نشت نوترون و جذب باید دقیقاً برابر نرخ تولید نوترون ناشی از شکافت باشد:',
+          textEn: 'In a homogeneous critical core, neutron leakage plus absorption must balance fission production:',
+          latex: '-D\\nabla^2\\phi(\\mathbf{r}) + \\Sigma_a\\phi(\\mathbf{r}) = \\frac{1}{k_{\\text{eff}}}\\nu\\Sigma_f\\phi(\\mathbf{r})',
+        },
+        {
+          labelFa: 'گام ۲ — تعریف ضریب تکثیر نامحدود k∞ و طول پخش L',
+          labelEn: 'Step 2 — Define Infinite Multiplication k∞ and Diffusion Length L',
+          textFa: 'با تقسیم طرفین بر ضریب پخش D و معرفی سطح مقطع‌ها، معادله به فرم هلمهولتز با خمش مادی B_m² تبدیل می‌شود:',
+          textEn: 'Dividing through by diffusion coefficient D yields the Helmholtz equation with material buckling B_m²:',
+          latex: '\\nabla^2\\phi + B_m^2\\phi = 0, \\qquad B_m^2 = \\frac{k_\\infty - 1}{L^2}, \\quad L^2 = \\frac{D}{\\Sigma_a}',
+        },
+        {
+          labelFa: 'گام ۳ — شرط بحرانیت هندسی و احتمال عدم فرار نوترون',
+          labelEn: 'Step 3 — Geometric Criticality & Non-Leakage Probability',
+          textFa: 'برای پایداری دقیق راکتور (k_eff = 1)، خمش مادی باید با خمش هندسی هسته B_g² برابر شود که احتمال عدم نشت P_NL را نتیجه می‌دهد:',
+          textEn: 'Exact criticality (k_eff = 1) requires B_m² = B_g², revealing the fast/thermal non-leakage factor:',
+          latex: 'k_{\\text{eff}} = \\frac{k_\\infty}{1 + L^2 B_g^2} = 1 \\iff B_m^2 = B_g^2',
+        },
+      ],
+    },
+    formulaCheatSheet: [
+      {
+        nameFa: 'فرمول شش‌عاملی بحرانیت راکتور',
+        nameEn: 'Six-Factor Criticality Formula',
+        latex: 'k_{\\text{eff}} = \\eta f p \\varepsilon P_{FNL} P_{TNL}',
+        conditionFa: 'تعادل تکثیر نوترون در راکتور حرارتی محدود',
+        conditionEn: 'Finite thermal reactor neutron economy',
+      },
+      {
+        nameFa: 'معادله سینتیک نقطه‌ای (نوترون‌های تاخیری)',
+        nameEn: 'Point Reactor Kinetics Equation',
+        latex: '\\frac{dn}{dt} = \\frac{\\rho - \\beta}{\\Lambda}n + \\sum_{i=1}^6 \\lambda_i C_i',
+        conditionFa: 'کنترل‌پذیری راکتور به واسطه کسر نوترون تاخیری β ≈ 0.0065',
+        conditionEn: 'Delayed neutron fraction β makes control feasible',
+      },
+      {
+        nameFa: 'قانون تضعیف نمایی پرتو گاما',
+        nameEn: 'Gamma Attenuation & Buildup Law',
+        latex: 'I(x) = I_0 B(\\mu x) e^{-\\mu x}',
+        conditionFa: 'طراحی حفاظ سربی/بتنی با ضریب تضعیف خطی μ',
+        conditionEn: 'Radiation shielding with buildup factor B',
+      },
+      {
+        nameFa: 'دز موثر تابش (استاندارد ICRP)',
+        nameEn: 'ICRP Effective Dose (Sievert)',
+        latex: 'E = \\sum_T w_T \\sum_R w_R D_{T,R}',
+        conditionFa: 'ضرایب وزنی بافت w_T و نوع تابش w_R',
+        conditionEn: 'Tissue and radiation weighting factors',
+      },
+      {
+        nameFa: 'واحد کار جداسازی غنی‌سازی (SWU)',
+        nameEn: 'Separative Work Unit (SWU)',
+        latex: '\\text{SWU} = P V(x_p) + W V(x_w) - F V(x_f)',
+        conditionFa: 'محاسبه ظرفیت آبشار سانتریفیوژ در چرخه سوخت',
+        conditionEn: 'Isotope enrichment cascade value function',
+      },
+      {
+        nameFa: 'معیار سه‌گانه اشتعال همجوشی لاوسون',
+        nameEn: 'Lawson Triple Product (Fusion)',
+        latex: 'n_e T \\tau_E \\ge 3 \\times 10^{21}\\;\\text{keV}\\cdot\\text{s}\\cdot\\text{m}^{-3}',
+        conditionFa: 'شرط اشتعال پلاسمای D-T در راکتور توکامک',
+        conditionEn: 'D-T ignition threshold in magnetic confinement',
+      },
+    ],
+    hardestExam: {
+      sourceFa: 'چالش نهایی مهندسی هسته‌ای شریف / MIT 22.05 Reactor Physics Boss',
+      sourceEn: 'Sharif Nuclear / MIT 22.05 Reactor Physics & Kinetics Challenge',
+      difficultyBadgeFa: 'سطح: فوق‌پیشرفته فیزیک راکتور',
+      difficultyBadgeEn: 'Difficulty: Final Boss / Nuclear',
+      problemStatementFa:
+        'یک راکتور تحقیقاتی همگن کروی با سوخت اورانیوم غنی‌شده در حالت بحرانی (k_eff = 1) با k∞ = 1.25 و طول پخش L = 12 cm کار می‌کند. ابتدا کمترین شعاع بحرانی هسته R_c را بیابید و سپس توضیح دهید اگر در اثر افزایش ناگهانی توان، راکتیویته پله‌ای مثبت ρ = 0.008 (با β = 0.0065) اعمال شود، چرا راکتور وارد رژیم «فوق‌بحرانی آنی (Prompt Critical)» می‌شود و چه خطری دارد؟',
+      problemStatementEn:
+        'A bare spherical homogeneous reactor operates critically (k_eff = 1) with k∞ = 1.25 and diffusion length L = 12 cm. Find the minimum critical radius R_c, then prove why inserting a step reactivity ρ = 0.008 (when delayed neutron fraction β = 0.0065) drives the core into Prompt Criticality.',
+      problemFormulaLatex:
+        'B_g^2 = \\left(\\frac{\\pi}{R_c}\\right)^2 = B_m^2 = \\frac{k_\\infty - 1}{L^2}, \\qquad \\rho > \\beta',
+      steps: [
+        {
+          stepNumber: 1,
+          titleFa: 'گام ۱: رمزگشایی صورت سوال و دام‌های رایج',
+          titleEn: 'Step 1: Decoding the Prompt & Common Traps',
+          explanationFa:
+            'دام کلاسیک اول: در کره برهنه، خمش هندسی برابر (π / R)² است نه (2.405 / R)² (که مخصوص استوانه است). دام دوم: مقایسه ρ با ۱ نیست! مرز ایمنی کنترل راکتور، عدد بسیار کوچک β = 0.0065 (معادل یک دلار راکتیویته) است نه ۱.',
+          explanationEn:
+            'Trap #1: A bare sphere has geometric buckling (π/R)², whereas 2.405/R belongs to cylindrical cores. Trap #2: The safety boundary for reactivity ρ is β = 0.0065 (1 dollar), not 1!',
+          trapWarningFa: 'هشدار طراح: عبور ρ از β حتی به اندازه ۰.۰۰۱۵ باعث خروج راکتور از کنترل میله‌های مکانیکی می‌شود!',
+          trapWarningEn: 'Trap Warning: Exceeding ρ = β removes delayed-neutron braking completely!',
+        },
+        {
+          stepNumber: 2,
+          titleFa: 'گام ۲: انتخاب استراتژی و فرمول‌های کلیدی (LaTeX Math)',
+          titleEn: 'Step 2: Strategy Selection & Key Governing Equations',
+          explanationFa:
+            'برای بخش اول، شرط بحرانیت B_g² = B_m² را برای شعاع R_c حل می‌کنیم. برای بخش دوم، زمان دوره راکتور T_p را در معادله سینتیک نقطه‌ای زمانی که ρ > β است ارزیابی می‌کنیم:',
+          explanationEn:
+            'Equate spherical geometric buckling to material buckling for R_c, then evaluate the prompt period T_p = Λ / (ρ - β):',
+          mathLatex:
+            'R_c = \\frac{\\pi L}{\\sqrt{k_\\infty - 1}}, \\qquad T_{\\text{prompt}} \\approx \\frac{\\Lambda}{\\rho - \\beta}',
+        },
+        {
+          stepNumber: 3,
+          titleFa: 'گام ۳: حل تشریحی خط‌به‌خط محاسبات',
+          titleEn: 'Step 3: Line-by-Line Analytical Derivation',
+          explanationFa:
+            'با جایگذاری L = 12 cm و k∞ - 1 = 0.25، شعاع بحرانی دقیقاً ۷۵.۴ سانتی‌متر به دست می‌آید. با ρ - β = 0.0015 و عمر نوترون آنی Λ ≈ 10⁻⁴ s، زمان دو برابر شدن توان به حدود ۰.۰۴۶ ثانیه سقوط می‌کند!',
+          explanationEn:
+            'Plugging L = 12 cm and k∞ - 1 = 0.25 yields R_c = 24π ≈ 75.4 cm. With ρ - β = 0.0015 and Λ ≈ 10⁻⁴ s, the reactor period plunges to 67 milliseconds!',
+          mathLatex:
+            'R_c = \\frac{\\pi \\times 12}{\\sqrt{0.25}} = 24\\pi \\approx 75.4\\,\\text{cm} \\\\[6pt] T_{\\text{prompt}} = \\frac{10^{-4}}{0.008 - 0.0065} \\approx 0.067\\,\\text{s} \\implies n(t) = n_0 e^{15t}',
+        },
+        {
+          stepNumber: 4,
+          titleFa: 'گام ۴: جمع‌بندی شهودی و اصل ایمنی ذاتی راکتورها',
+          titleEn: 'Step 4: Intuitive Synthesis & Inherent Safety Feedback',
+          explanationFa:
+            'در راکتورهای مدرن PWR، ضریب دمای سوخت (اثر دوپلر) و ضریب حفره آب هر دو منفی طراحی می‌شوند؛ یعنی با گرم‌شدن هسته، جذب تشدیدی اورانیوم-۲۳۸ بالا رفته و خودبه‌خود راکتیویته منفی وارد شده و واکنش را مهار می‌کند.',
+          explanationEn:
+            'Modern PWRs guarantee inherent safety through negative Doppler fuel temperature and void reactivity coefficients, automatically quenching power excursions faster than mechanical control rods.',
+          mathLatex:
+            '\\alpha_T = \\frac{\\partial \\rho}{\\partial T} < 0 \\implies \\text{Inherently Self-Stabilizing Core}',
+        },
+      ],
+    },
+  },
+
+  geopolitical_globe: {
+    model3dType: 'geopolitical_globe',
+    historicalOriginFa:
+      'مطالعه نظام‌مند سیاست، حقوق، اقتصاد و جوامع انسانی از «سیاست» ارسطو، «مدینه فاضله» فارابی و «مقدمه» ابن‌خلدون تا صلح وستفالی (۱۶۴۸ — تولد دولت-ملت مدرن)، تفکیک قوای مونتسکیو، «ثروت ملل» آدام اسمیت و نظریه‌های روابط بین‌الملل هانس مورگنتا، کنت والتز و جان راولز تکامل یافته است. امروزه علوم سیاسی، حقوق و اقتصاد با ابزارهای نظریه بازی‌ها، اقتصادسنجی و تحلیل نهادهای بین‌المللی پیوند خورده‌اند.',
+    historicalOriginEn:
+      'Systematic inquiry into politics, law, economics, and society spans Aristotle’s Politics, Farabi and Ibn Khaldun, the 1648 Peace of Westphalia, Montesquieu’s separation of powers, Adam Smith, and modern IR & justice theories (Morgenthau, Waltz, Rawls), now integrated with game theory and empirical econometrics.',
+    mathematicalProof: {
+      theoremTitleFa: 'تحلیل رسمی «معمای امنیت» و «تعادل نش» در روابط بین‌الملل و اقتصاد سیاسی',
+      theoremTitleEn: 'Formal Game-Theoretic Proof of the Security Dilemma & Cooperative Instability',
+      steps: [
+        {
+          labelFa: 'گام ۱ — مدل‌سازی دو دولت در فضای آنارشی بین‌المللی (معمای زندانی)',
+          labelEn: 'Step 1 — Modeling Two States Under Structural Anarchy',
+          textFa: 'فرض کنید دو دولت A و B بین «خویشتن‌داری (C)» و «تسلیح/تجاوز (D)» انتخاب کنند؛ در نبود اقتدار فراملی، ترجیحات هر دولت به ترتیب T > R > P > S است:',
+          textEn: 'With no supranational enforcer, each state ranks Temptation (T) > Reward (R) > Punishment (P) > Sucker (S):',
+          latex: 'U_i(D, C) = T > U_i(C, C) = R > U_i(D, D) = P > U_i(C, D) = S',
+        },
+        {
+          labelFa: 'گام ۲ — اثبات استراتژی غالب تسلیح در بازی تک‌مرحله‌ای',
+          labelEn: 'Step 2 — Dominant Strategy Proof in One-Shot Anarchy',
+          textFa: 'صرف‌نظر از انتخاب رقیب، تسلیح (D) پیامد بالاتری می‌دهد؛ در نتیجه هر دو دولت به تعادل نش ناکارآمد (D, D) با امنیت کمتر سقوط می‌کنند:',
+          textEn: 'Regardless of the rival’s move, Defect (D) strictly dominates Cooperate (C), trapping both states at suboptimal (D, D):',
+          latex: '(D, D) = \\text{Unique Nash Equilibrium}, \\quad \\text{yet } (R, R) \\succ_{\\text{Pareto}} (P, P)',
+        },
+        {
+          labelFa: 'گام ۳ — خروج از معمای امنیت با نهادها و بازی تکرارشونده (قضیه فولک)',
+          labelEn: 'Step 3 — Institutional Escape via Repeated Games & Shadow of the Future',
+          textFa: 'اگر تعامل دیپلماتیک و نهادهای بین‌المللی (معاهدات و راستی‌آزمایی) عامل تنزیل آینده δ را به اندازه کافی بالا ببرند، همکاری پایدار (C, C) به تعادل نش تبدیل می‌شود:',
+          textEn: 'When treaties, transparency, and repeated diplomacy raise the discount factor δ above the threshold, cooperation stabilizes:',
+          latex: '\\frac{R}{1 - \\delta} \\ge T + \\frac{\\delta P}{1 - \\delta} \\iff \\delta \\ge \\frac{T - R}{T - P}',
+        },
+      ],
+    },
+    formulaCheatSheet: [
+      {
+        nameFa: 'تعداد موثر احزاب (شاخص لاکسو-تاگپرا)',
+        nameEn: 'Effective Number of Parties (ENP)',
+        latex: 'N_{\\text{eff}} = \\frac{1}{\\sum_{i=1}^n s_i^2}',
+        conditionFa: 'سنجش تمرکز یا چندحزبی بودن پارلمان از سهم کرسی s_i',
+        conditionEn: 'Measures legislative fragmentation from seat shares s_i',
+      },
+      {
+        nameFa: 'شاخص توانمندی ملی ترکیبی (CINC)',
+        nameEn: 'Composite Index of National Capability',
+        latex: '\\text{CINC} = \\frac{1}{6}\\left(\\text{TPR} + \\text{UPR} + \\text{ISPR} + \\text{ECR} + \\text{MER} + \\text{MPR}\\right)',
+        conditionFa: 'سنجش قدرت سخت دولت‌ها در مطالعات روابط بین‌الملل',
+        conditionEn: 'Correlates of War material power metric',
+      },
+      {
+        nameFa: 'شرط همکاری پایدار در دیپلماسی و نهادها',
+        nameEn: 'Institutional Cooperation Threshold',
+        latex: '\\delta \\ge \\frac{T - R}{T - P}',
+        conditionFa: 'سایه آینده δ در بازی‌های تکرارشونده بین‌المللی',
+        conditionEn: 'Shadow of the future in multilateral regimes',
+      },
+      {
+        nameFa: 'تعادل درآمد ملی در اقتصاد کلان',
+        nameEn: 'Macroeconomic National Income Identity',
+        latex: 'Y = C(Y - T) + I(r) + G + (X - M)',
+        conditionFa: 'اقتصاد باز با سیاست مالی و تراز تجاری',
+        conditionEn: 'Open-economy GDP aggregate expenditure',
+      },
+      {
+        nameFa: 'شاخص قدرت رای‌دهی بنزاف در شوراها',
+        nameEn: 'Banzhaf Voting Power Index',
+        latex: 'B_i = \\frac{\\eta_i}{\\sum_{j=1}^n \\eta_j}',
+        conditionFa: 'تحلیل قدرت وتو و ائتلاف‌های بحرانی در سازمان‌های بین‌المللی',
+        conditionEn: 'Quantifies decisive coalition & veto power',
+      },
+      {
+        nameFa: 'اصل عدالت حداقلی جان راولز (Maximin)',
+        nameEn: 'Rawlsian Difference Principle (Maximin)',
+        latex: 'P^* = \\arg\\max_{P \\in \\mathcal{P}} \\min_{i \\in \\text{Society}} U_i(P)',
+        conditionFa: 'انتخاب نهادهای عادلانه پشت پرده بی‌خبری',
+        conditionEn: 'Maximizing welfare of the least-advantaged group',
+      },
+    ],
+    hardestExam: {
+      sourceFa: 'چالش نهایی دانشکده حقوق و علوم سیاسی دانشگاه تهران / LSE Political Science Boss',
+      sourceEn: 'University of Tehran Law & Politics / LSE Analytical Policy Challenge',
+      difficultyBadgeFa: 'سطح: فوق‌پیشرفته تحلیلی و نظری',
+      difficultyBadgeEn: 'Difficulty: Final Boss / Analytical',
+      problemStatementFa:
+        'در یک بحران ژئوپلیتیکی و تجاری میان دو بلوک منطقه‌ای، بلوک A برای افزایش بازدارندگی اقدام به استقرار سامانه جدید و وضع تعرفه متقابل می‌کند. با مقایسه دقیق سه پارادایم «نئورئالیسم (والتز)»، «لیبرالیسم نهادی (کوهن و نای)» و «سازه‌انگاری (الکساندر ونت)»، تبیین کنید چگونه هر مکتب این بحران را تفسیر می‌کند و دقیقاً چه مکانیزم حقوقی-نهادی (مطابق شرط δ در بازی تکرارشونده) می‌تواند چرخه تشدید تنش را متوقف کند؟',
+      problemStatementEn:
+        'During a regional geopolitical and trade standoff, Bloc A deploys new deterrence assets and reciprocal tariffs. Contrasting Structural Realism (Waltz), Neoliberal Institutionalism (Keohane & Nye), and Constructivism (Wendt), explain each paradigm’s diagnosis and prove which institutional verification mechanism satisfies the repeated-game stability bound δ to halt escalation.',
+      problemFormulaLatex:
+        '\\delta_{\\min} = \\frac{T - R}{T - P}, \\qquad \\text{Anarchy} \\xrightarrow{\\text{Regime Transparency}} \\text{Stable Equilibrium}',
+      steps: [
+        {
+          stepNumber: 1,
+          titleFa: 'گام ۱: رمزگشایی صورت سوال و دام‌های تحلیلی رایج',
+          titleEn: 'Step 1: Decoding the Prompt & Analytical Traps',
+          explanationFa:
+            'دام رایج در آزمون‌های علوم سیاسی و حقوق بین‌الملل، «توصیف خبری به جای تبیین نظری» است! طراح سوال انتظار ندارد فقط بگویید دو طرف دعوا می‌کنند؛ باید نشان دهید واحد تحلیل در هر مکتب چیست: ساختار توزیع قدرت (نئورئالیسم)، هزینه‌های مبادله و عدم تقارن اطلاعات (لیبرالیسم نهادی)، یا هویت و ادراک تهدید (سازه‌انگاری).',
+          explanationEn:
+            'Classic exam trap: writing journalism instead of structural theory! Explicitly anchor each paradigm to its causal variable: distribution of material capabilities (Neorealism), transaction costs & information asymmetry (Institutionalism), and intersubjective threat identity (Constructivism).',
+          trapWarningFa: 'هشدار طراح: هرگز رئالیسم را با «جنگ‌طلبی» اشتباه نگیرید؛ معمای امنیت حتی میان دولت‌های صرفاً تدافعی رخ می‌دهد!',
+          trapWarningEn: 'Trap Warning: Never equate Realism with warmongering—the Security Dilemma occurs even between purely defensive states.',
+        },
+        {
+          stepNumber: 2,
+          titleFa: 'گام ۲: تطبیق سه‌گانه مکاتب روی بحران و فرمول‌بندی بازی',
+          titleEn: 'Step 2: Three-Paradigm Mapping & Payoff Structure',
+          explanationFa:
+            'نئورئالیسم (والتز): در غیاب دولت جهانی، اقدام تدافعی بلوک A توسط بلوک B تهاجمی تلقی شده و موازنه‌سازی اجتناب‌ناپذیر است. لیبرالیسم نهادی: ریشه بحران «نبود شفافیت و ترس از تقلب» است و نهادهایی مانند WTO یا مکانیزم‌های راستی‌آزمایی IAEA هزینه تقلب را بالا می‌برند. سازه‌انگاری (ونت): «آنارشی آن چیزی است که دولت‌ها از آن می‌سازند»؛ تغییر گفتمان از دشمنی به رقیبِ قاعده‌مند، تهدید ادراک‌شده را دگرگون می‌کند.',
+          explanationEn:
+            'Neorealism focuses on relative gains and defensive balancing; Institutionalism targets verification regimes that lower cheating payoffs T; Constructivism transforms perceived threat identity ("anarchy is what states make of it").',
+          mathLatex:
+            '\\text{Realism: } \\max(G_A - G_B), \\quad \\text{Liberalism: } \\max(G_A + G_B), \\quad \\text{Constructivism: } \\text{Identity} \\to \\text{Interest}',
+        },
+        {
+          stepNumber: 3,
+          titleFa: 'گام ۳: استخراج شرط کمی مهار بحران (مدل راستی‌آزمایی و هزینه نقض)',
+          titleEn: 'Step 3: Quantitative Stabilization Mechanism',
+          explanationFa:
+            'فرض کنید پیامدهای بازی T = 10 (فریب یک‌جانبه)، R = 7 (همکاری و تجارت آزاد)، P = 3 (جنگ تعرفه‌ای و تنش) و S = 0 باشد. برای پایداری توافق بدون نهاد ناظر نیاز به δ ≥ (10-7)/(10-3) = 0.43 است؛ اما با ایجاد نهاد حقوقی داوری و جریمه نقض (کاهش T به ۸)، آستانه اعتماد لازم به δ ≥ 0.20 سقوط می‌کند و توافق دست‌یافتنی می‌شود!',
+          explanationEn:
+            'With payoffs T=10, R=7, P=3, S=0, sustaining peace requires δ ≥ 3/7 ≈ 0.43. Adding a binding dispute-settlement & verification treaty lowers defection gain T from 10 to 8, slashing the threshold to δ ≥ 1/5 = 0.20.',
+          mathLatex:
+            '\\delta_{\\text{raw}} = \\frac{10 - 7}{10 - 3} = 0.429 \\xrightarrow{\\text{Treaty Verification } (T \\to 8)} \\delta_{\\text{inst}} = \\frac{8 - 7}{8 - 3} = 0.20',
+        },
+        {
+          stepNumber: 4,
+          titleFa: 'گام ۴: جمع‌بندی راهبردی ویژه داوران و اساتید علوم سیاسی و حقوق',
+          titleEn: 'Step 4: Synthesis for Policy & Legal Scholars',
+          explanationFa:
+            'یک تحلیل نمره‌کامل در علوم سیاسی و حقوق بین‌الملل هر سه لایه را ترکیب می‌کند: ۱) به رسمیت شناختن واقعیت موازنه قدرت (تأمین بازدارندگی حداقلی)، ۲) طراحی معاهدات مرحله‌به‌مرحله با راستی‌آزمایی شفاف (کاهش T و افزایش δ)، و ۳) دیپلماسی عمومی و حقوقی برای کاهش سوءبرداشت هویتی.',
+          explanationEn:
+            'Top-scoring synthesis bridges all three lenses: maintain minimum deterrence stability, lock in incremental verifiable treaties (lowering T, lengthening shadow of the future δ), and deploy legal-diplomatic confidence building.',
+          mathLatex:
+            '\\text{Stable Order} = \\text{Deterrence} + \\text{Verifiable Treaties} + \\text{Normative Legitimacy}',
         },
       ],
     },

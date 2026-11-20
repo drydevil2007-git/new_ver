@@ -15,12 +15,26 @@ export type NavSection =
 
 export type DifficultyLevel = 'introductory' | 'intermediate' | 'advanced';
 
+export type FacultyGroupId =
+  | 'all'
+  | 'nuclear-energy'
+  | 'engineering'
+  | 'basic-sciences'
+  | 'medical'
+  | 'economics-mgmt'
+  | 'law'
+  | 'political-ir'
+  | 'humanities-psych'
+  | 'arts-arch'
+  | 'agriculture-vet';
+
 export interface FieldCategory {
   id: string;
   nameFa: string;
   nameEn: string;
   facultyFa: string;
   facultyEn: string;
+  facultyGroup?: Exclude<FacultyGroupId, 'all'>;
 }
 
 export type UserRole = 'student' | 'professor' | 'admin';
@@ -176,7 +190,9 @@ export type Concept3DModelType =
   | 'electromagnetic'
   | 'mechanical_piston'
   | 'neural_network'
-  | 'crystal_lattice';
+  | 'crystal_lattice'
+  | 'nuclear_reactor'
+  | 'geopolitical_globe';
 
 export interface ProofStepItem {
   labelFa: string;

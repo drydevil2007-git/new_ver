@@ -4,7 +4,6 @@ import {
   CuratedVideoLecture,
   ReelLesson,
   ReelVisualType,
-  ScientificResourceItem,
 } from '../types/app';
 import { getDeepEnrichmentForCourse } from './deepCourseEnrichment';
 
@@ -203,13 +202,109 @@ export const DANESH_REELS: ReelLesson[] = [
     saves: 420,
     shares: 170,
   },
+  {
+    id: 'reel-nuclear',
+    courseCode: 'NUC-310',
+    storyTitleFa: 'مهندسی هسته‌ای',
+    storyTitleEn: 'Nuclear Eng.',
+    titleFa: 'چگونه نوترون‌های تاخیری کنترل ایمن راکتور هسته‌ای را ممکن می‌کنند؟',
+    titleEn: 'How Delayed Neutrons Make Nuclear Reactors Controllable',
+    categoryFa: 'مهندسی هسته‌ای',
+    categoryEn: 'Nuclear Engineering',
+    fieldId: 'nuclear',
+    image: '/src/assets/images/reel_quantum_wave_1795019065831.jpg',
+    ringGradient: 'from-cyan-400 via-sky-500 to-teal-500',
+    visualType: 'quantum',
+    formulaLatex: 'k_{\\text{eff}} = \\eta f p \\varepsilon P_{FNL} P_{TNL} = 1',
+    feynmanBulletsFa: [
+      'در هر شکافت اورانیوم-۲۳۵، بیش از ۹۹٪ نوترون‌ها آنی (در کسری از میلی‌ثانیه) آزاد می‌شوند.',
+      'اما حدود ۰.۶۵٪ نوترون‌ها با تاخیر چند ثانیه‌ای (Delayed Neutrons) ظاهر می‌شوند و سرعت واکنش را مثل ترمز طبیعی کند می‌کنند.',
+      'میله‌های کنترل بور و کادمیوم دقیقاً با تنظیم همین کسر کوچک، ضریب تکثیر k_eff را روی ۱ ثابت نگه می‌دارند.',
+    ],
+    feynmanBulletsEn: [
+      'Over 99% of fission neutrons appear instantaneously, far too fast for mechanical rods.',
+      'The tiny 0.65% delayed neutron fraction slows reactor time constants from milliseconds to seconds.',
+      'Boron control rods adjust absorption smoothly to hold effective multiplication k_eff at exactly 1.0.',
+    ],
+    narrationFa:
+      'اگر همه نوترون‌های شکافت آنی بودند، کنترل راکتور هسته‌ای تقریباً غیرممکن می‌شد! اما حدود شش‌دهم درصد نوترون‌ها چند ثانیه دیرتر آزاد می‌شوند و همین تاخیر طلایی به میله‌های کنترل و سیستم‌های ایمنی فرصت دقیق برای تنظیم توان نیروگاه می‌دهد.',
+    narrationEn:
+      'If every fission neutron arrived instantly, controlling a reactor would be impossible. That tiny 0.65 percent delayed fraction stretches reaction times from milliseconds to seconds, allowing boron rods to stabilize power effortlessly.',
+    likes: 1640,
+    saves: 590,
+    shares: 274,
+  },
+  {
+    id: 'reel-politics',
+    courseCode: 'IR-201',
+    storyTitleFa: 'علوم سیاسی و IR',
+    storyTitleEn: 'Political Sci',
+    titleFa: 'معمای امنیت در روابط بین‌الملل: چرا دولت‌های تدافعی دچار رقابت تسلیحاتی می‌شوند؟',
+    titleEn: 'The Security Dilemma: Why Defensive States Still Trigger Arms Races',
+    categoryFa: 'علوم سیاسی و روابط بین‌الملل',
+    categoryEn: 'Political Science & IR',
+    fieldId: 'pol-ir',
+    image: '/src/assets/images/course_algorithms_cs_1795017178932.jpg',
+    ringGradient: 'from-indigo-500 via-sky-500 to-amber-400',
+    visualType: 'graph',
+    formulaLatex: '\\delta \\ge \\frac{T - R}{T - P} \\implies \\text{Stable Treaty}',
+    feynmanBulletsFa: [
+      'در نبود یک پلیس جهانی، وقتی کشور A برای دفاع از خود دیوارش را بلندتر می‌کند، کشور B آن را تهدید می‌بیند.',
+      'در پاسخ، کشور B هم مسلح می‌شود و در نهایت هر دو هزینه بیشتری داده‌اند ولی امنیت کمتری دارند (معمای امنیت).',
+      'معاهدات شفاف، راستی‌آزمایی و سازمان‌های بین‌المللی با کاهش عدم قطعیت راه خروج از این تله هستند.',
+    ],
+    feynmanBulletsEn: [
+      'Under international anarchy, defensive measures by State A look potentially offensive to State B.',
+      'State B counters in kind, leaving both states spending more yet feeling less secure.',
+      'Transparent treaties, verification regimes, and repeated diplomacy break the escalation cycle.',
+    ],
+    narrationFa:
+      'معمای امنیت یکی از مهم‌ترین مفاهیم علوم سیاسی و روابط بین‌الملل است: حتی وقتی دو کشور فقط قصد دفاع دارند، نبود اعتماد و شفافیت باعث می‌شود تقویت امنیت یکی، ناامنی دیگری را رقم بزند؛ به همین دلیل دیپلماسی و معاهدات راستی‌آزمایی نقش حیاتی دارند.',
+    narrationEn:
+      'The Security Dilemma explains why even purely defensive states slip into arms races: without transparency, one state’s security feels like another’s threat—making diplomacy and verifiable treaties essential.',
+    likes: 1520,
+    saves: 540,
+    shares: 289,
+  },
+  {
+    id: 'reel-medicine',
+    courseCode: 'PHAR-301',
+    storyTitleFa: 'پزشکی و دارو',
+    storyTitleEn: 'Medicine',
+    titleFa: 'نیمه‌عمر دارو و قانون ۵ نیمه‌عمر برای رسیدن به غلظت درمانی پایدار',
+    titleEn: 'Drug Half-Life & Why Steady State Takes 5 Half-Lives',
+    categoryFa: 'پزشکی و داروسازی',
+    categoryEn: 'Medicine & Pharmacy',
+    fieldId: 'med-pharmacy',
+    image: '/src/assets/images/reel_ai_neural_1795019066672.jpg',
+    ringGradient: 'from-emerald-400 via-teal-500 to-cyan-500',
+    visualType: 'oscilloscope',
+    formulaLatex: 't_{1/2} = \\frac{0.693 \\cdot V_d}{CL}',
+    feynmanBulletsFa: [
+      'نیمه‌عمر زمانی است که غلظت دارو در پلاسمای خون دقیقاً نصف می‌شود و به حجم توزیع (Vd) و کلیرانس (CL) وابسته است.',
+      'صرف‌نظر از اندازه دوز، بعد از گذشت ۴ تا ۵ نیمه‌عمر بیش از ۹۷٪ غلظت پایدار (Steady State) در خون شکل می‌گیرد.',
+      'در بیماران با کاهش عملکرد کلیه یا کبد، کلیرانس کم شده و نیمه‌عمر دارو طولانی‌تر می‌شود؛ پس باید دوز را تعدیل کرد.',
+    ],
+    feynmanBulletsEn: [
+      'Half-life is the time for plasma drug concentration to halve, governed by Volume of Distribution and Clearance.',
+      'Regardless of dose size, steady state (~97%) is reached after 4 to 5 half-lives.',
+      'Impaired renal or hepatic clearance prolongs half-life, requiring careful clinical dose adjustments.',
+    ],
+    narrationFa:
+      'در فارماکولوژی بالینی، نیمه‌عمر دارو نشان می‌دهد بدن با چه سرعتی دارو را پاکسازی می‌کند. پس از حدود پنج نیمه‌عمر، میزان ورود و دفع دارو به تعادل می‌رسد و دوز درمانی پایدار در خون تثبیت می‌شود.',
+    narrationEn:
+      'In clinical pharmacology, drug half-life connects volume of distribution to organ clearance. After roughly five half-lives, intake and elimination balance out at steady-state therapeutic levels.',
+    likes: 1410,
+    saves: 475,
+    shares: 210,
+  },
 ];
 
 function inferVisualType(fieldId: string): ReelVisualType {
-  if (fieldId.startsWith('ee-') || fieldId === 'embedded' || fieldId === 'robotics') return 'oscilloscope';
-  if (fieldId === 'physics' || fieldId === 'optics' || fieldId === 'nuclear') return 'quantum';
-  if (fieldId === 'cs-ai' || fieldId === 'data-sci') return 'neural';
-  if (fieldId.startsWith('cs-') || fieldId === 'math' || fieldId === 'stats' || fieldId === 'numerical') return 'graph';
+  if (fieldId.startsWith('ee-') || fieldId === 'embedded' || fieldId === 'robotics' || fieldId.startsWith('med-')) return 'oscilloscope';
+  if (fieldId === 'physics' || fieldId === 'optics' || fieldId === 'nuclear' || fieldId.startsWith('nuclear-') || fieldId === 'astronomy') return 'quantum';
+  if (fieldId === 'cs-ai' || fieldId === 'data-sci' || fieldId === 'psych-clinical') return 'neural';
+  if (fieldId.startsWith('cs-') || fieldId === 'math' || fieldId === 'stats' || fieldId === 'numerical' || fieldId.startsWith('pol-') || fieldId.startsWith('law-') || fieldId === 'econ-pure' || fieldId === 'philosophy') return 'graph';
   return 'thermo';
 }
 
@@ -503,9 +598,419 @@ const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
       },
     ],
   },
+  nuclear: {
+    child5Fa:
+      'هسته اتم مثل یک قطار دومینوهای فوق‌العاده پرانرژی است: یک نوترون به اولین دومینو می‌زند، گرمای زیادی آزاد می‌شود و آب را به بخار تبدیل می‌کند تا توربین برق بچرخد؛ میله‌های کنترل هم مثل دست ما هستند که سرعت افتادن دومینوها را دقیق و امن تنظیم می‌کنند!',
+    child5En:
+      'Think of a nuclear core like an ultra-energetic chain of dominoes: one neutron tips the next, releasing clean heat to spin steam turbines, while control rods act like careful hands pacing the chain reaction safely!',
+    industryFa: [
+      'بهره‌برداری، تحلیل ایمنی و طراحی هسته نیروگاه‌های هسته‌ای آب تحت فشار (PWR) و راکتورهای نسل چهارم (SMR)',
+      'تولید رادیوداروهای تشخیصی و درمانی (تکنسیم-99m، PET/SPECT) و پرتودرمانی سرطان در بیمارستان‌ها',
+      'پژوهش‌های پلاسما و همجوشی هسته‌ای، آشکارسازی پرتوها و حفاظت در برابر اشعه در صنعت و پزشکی',
+    ],
+    industryEn: [
+      'PWR & Small Modular Reactor (SMR) core physics, thermal-hydraulics, and nuclear safety engineering',
+      'Medical radioisotope production (Tc-99m, FDG), PET/SPECT imaging, and clinical radiation therapy',
+      'Tokamak magnetic fusion R&D, MCNP radiation transport modeling, and health physics shielding',
+    ],
+    marketFa:
+      'فرصت‌های تخصصی در نیروگاه‌های انرژی پاک، مراکز پزشکی هسته‌ای و رادیوتراپی، آزمایشگاه‌های فیزیک پلاسما و نهادهای نظارت و ایمنی تابش.',
+    marketEn:
+      'Specialized careers across nuclear power plants, medical physics & oncology centers, national fusion labs, and IAEA safety compliance.',
+    tools: ['MCNP6 / OpenMC', 'RELAP5 / TRACE', 'GEANT4', 'MATLAB / Python'],
+    videos: [
+      {
+        id: 'v-nuc-1',
+        titleFa: 'اصول مهندسی هسته‌ای و فیزیک راکتور — دانشگاه صنعتی شریف و امیرکبیر',
+        titleEn: 'Introduction to Nuclear Engineering & Ionizing Radiation (MIT 22.01)',
+        source: 'MIT OCW / دانشکده مهندسی انرژی',
+        instructor: 'Prof. Michael Short / اساتید مهندسی هسته‌ای',
+        duration: '26 Lectures · Full Course',
+        language: 'en',
+        focusFa: 'واکنش زنجیره‌ای شکافت، پخش نوترون، دوزیمتری و ایمنی راکتور',
+        focusEn: 'Fission kinetics, neutron diffusion, radiation shielding, and reactor safety',
+      },
+      {
+        id: 'v-nuc-2',
+        titleFa: 'آشنایی با فیزیک پرتوپزشکی، دوزیمتری و شبیه‌سازی مونت‌کارلو',
+        titleEn: 'Reactor Thermal-Hydraulics & Plasma Confinement Deep Dive',
+        source: 'فرادرس / IAEA Open Learning',
+        instructor: 'متخصصان پرتوپزشکی و راکتور',
+        duration: '۱۸ جلسه تخصصی',
+        language: 'fa',
+        focusFa: 'برهمکنش پرتو با بافت، اصول ALARA و تحلیل حرارتی قلب راکتور',
+        focusEn: 'Radiation-tissue interactions, ALARA shielding, and core heat removal',
+      },
+    ],
+  },
+  medical: {
+    child5Fa:
+      'بدن انسان مثل یک شهر هوشمند شگفت‌انگیز است: قلب پمپ مرکزی آب‌رسانی است، عصب‌ها کابل‌های اینترنت پرسرعت هستند، گلبول‌های سفید پلیس شهرند و داروها مثل تعمیرکارهای دقیق دقیقاً سر آدرس مشکل می‌روند!',
+    child5En:
+      'The human body is like a bustling smart city: the heart is the central pump, nerves are fiber-optic cables, immune cells are the security patrol, and medicines act like precision repair technicians!',
+    industryFa: [
+      'تشخیص بالینی، درمان بیمارستانی، مراقبت‌های ویژه (ICU) و پزشکی مبتنی بر شواهد (EBM)',
+      'صنایع داروسازی، فرمولاسیون داروهای نوین، فارماکووژیلانس و کارآزمایی‌های بالینی (Clinical Trials)',
+      'اپیدمیولوژی سلامت عمومی، مدیریت نظام سلامت، دندانپزشکی دیجیتال و سلامت دیجیتال',
+    ],
+    industryEn: [
+      'Clinical diagnostics, hospital internal medicine, critical care, and evidence-based practice',
+      'Pharmaceutical R&D, drug formulation, clinical pharmacokinetics, and biopharma trials',
+      'Public health epidemiology, digital dentistry, preventive nutrition, and health-tech',
+    ],
+    marketFa:
+      'جایگاه حیاتی و پایدار در بیمارستان‌ها، کلینیک‌های تخصصی، شرکت‌های داروسازی و بیوتکنولوژی، و مراکز پژوهش پزشکی.',
+    marketEn:
+      'Resilient global demand across hospitals, specialty clinics, pharmaceutical companies, and biomedical research.',
+    tools: ['UpToDate / PubMed', 'SPSS / R Biostatistics', 'ChemDraw / AutoDock', 'DICOM / ECG Monitors'],
+    videos: [
+      {
+        id: 'v-med-1',
+        titleFa: 'آموزش جامع فیزیولوژی گایتون و فارماکولوژی بالینی',
+        titleEn: 'Medical Physiology & Pharmacology Visual Series (Osmosis / Ninja Nerd)',
+        source: 'دانشگاه علوم پزشکی تهران / Ninja Nerd',
+        instructor: 'اساتید علوم پایه پزشکی',
+        duration: '۳۲ جلسه جامع',
+        language: 'fa',
+        focusFa: 'فیزیولوژی قلب و کلیه، مکانیزم اثر داروها و تفسیر علائم بالینی',
+        focusEn: 'Cardiorenal physiology, receptor pharmacology, and clinical reasoning',
+      },
+      {
+        id: 'v-med-2',
+        titleFa: 'اپیدمیولوژی و آمار زیستی کاربردی (Johns Hopkins / Harvard)',
+        titleEn: 'Clinical Epidemiology & Evidence-Based Medicine (HarvardX)',
+        source: 'Coursera / HarvardX',
+        instructor: 'Prof. Miguel Hernán',
+        duration: '14 Modules',
+        language: 'en',
+        focusFa: 'تحلیل کارآزمایی بالینی، حساسیت/ویژگی آزمون‌ها و مدل‌های همه‌گیری',
+        focusEn: 'RCT design, predictive values, and causal inference in medicine',
+      },
+    ],
+  },
+  economics: {
+    child5Fa:
+      'تصور کن توی حیاط مدرسه فقط ۱۰ تا بستنی هست ولی ۲۰ نفر می‌خواهند بخرند! اقتصاد یاد می‌دهد چطور منابع محدود را عاقلانه تقسیم کنیم، پس‌انداز و سرمایه‌گذاری کنیم و بفهمیم چرا قیمت‌ها بالا و پایین می‌روند.',
+    child5En:
+      'Imagine there are 10 ice creams at recess but 20 kids want one! Economics studies how people, businesses, and governments make smart choices with limited resources and why prices rise or fall.',
+    industryFa: [
+      'تحلیل بازار سرمایه، مدیریت سبد سهام، بانکداری سرمایه‌گذاری و مهندسی مالی (FinTech)',
+      'سیاست‌گذاری پولی و مالی، تحلیل کلان اقتصادی، بودجه‌ریزی و مشاوره مدیریت استراتژیک',
+      'حسابرسی مستقل، گزارشگری مالی IFRS، علم داده اقتصادی (اقتصادسنجی) و تحلیل کسب‌وکار',
+    ],
+    industryEn: [
+      'Capital markets, portfolio management, investment banking, and quantitative fintech',
+      'Central bank monetary policy, macro forecasting, and management consulting',
+      'IFRS financial reporting, auditing, causal econometrics, and corporate strategy',
+    ],
+    marketFa:
+      'بازار کار بسیار پویا در بانک‌ها، شرکت‌های سرمایه‌گذاری و بورس، استارتاپ‌های فین‌تک، موسسات حسابرسی و مشاوران مدیریت.',
+    marketEn:
+      'Strong demand in investment firms, consulting, fintech, corporate finance, and public economic institutions.',
+    tools: ['Stata / EViews / R', 'Python (Quant / Pandas)', 'Bloomberg / Excel Financial Modeling', 'Power BI'],
+    videos: [
+      {
+        id: 'v-ecn-1',
+        titleFa: 'اصول اقتصاد خرد، کلان و اقتصادسنجی — دانشگاه تهران و شریف',
+        titleEn: 'Principles of Microeconomics & Macroeconomics (MIT 14.01)',
+        source: 'مکتب‌خونه / MIT OCW',
+        instructor: 'Prof. Jonathan Gruber / اساتید دانشکده اقتصاد',
+        duration: '۲۴ جلسه کامل',
+        language: 'fa',
+        focusFa: 'تعادل بازار، سیاست پولی، رگرسیون اقتصادسنجی و ارزش‌گذاری دارایی‌ها',
+        focusEn: 'Market equilibrium, monetary policy, econometrics, and CAPM valuation',
+      },
+      {
+        id: 'v-ecn-2',
+        titleFa: 'بازارهای مالی و مهندسی مالی (Yale ECON 252 — Robert Shiller)',
+        titleEn: 'Financial Markets Full Course (Yale — Nobel Laureate Robert Shiller)',
+        source: 'Yale Open Courses',
+        instructor: 'Prof. Robert Shiller',
+        duration: '23 Lectures',
+        language: 'en',
+        focusFa: 'نظریه سبد سهام، مدیریت ریسک، مشتقات مالی و اقتصاد رفتاری',
+        focusEn: 'Portfolio theory, derivatives, risk management, and behavioral finance',
+      },
+    ],
+  },
+  law: {
+    child5Fa:
+      'قانون مثل قوانین یک بازی فوتبال است: بدون داور و قوانین روشن که برای همه یکسان باشد، هیچ‌کس نمی‌داند خطا چیست و بازی به هم می‌ریزد! علم حقوق همین قوانین عادلانه را برای زندگی، قراردادها و کشورها می‌سازد.',
+    child5En:
+      'Law is like the rulebook of a soccer match: without clear, fair rules applied equally to everyone, no one knows what counts as a foul! Legal studies build fair rules for contracts, citizens, and nations.',
+    industryFa: [
+      'وکالت دادگستری، قضاوت، سردفتری و مشاوره حقوقی تخصصی شرکت‌ها و استارتاپ‌ها',
+      'تنظیم قراردادهای تجاری و بین‌المللی، داوری تجاری بین‌المللی و مالکیت فکری',
+      'حقوق فناوری، حریم خصوصی داده، حقوق انرژی و مشاوره در سازمان‌های بین‌المللی',
+    ],
+    industryEn: [
+      'Litigation, judiciary, corporate legal counsel, and startup contract architecture',
+      'International commercial arbitration, M&A transactions, and intellectual property law',
+      'Tech regulation, data privacy compliance, constitutional review, and treaty law',
+    ],
+    marketFa:
+      'تقاضای مستمر در دفاتر حقوقی و وکالت، واحدهای حقوقی بانک‌ها و شرکت‌های بزرگ، داوری بین‌المللی و بخش عمومی.',
+    marketEn:
+      'Enduring careers across law firms, corporate counsel, arbitration chambers, compliance, and public institutions.',
+    tools: ['سامانه قوانین و آرای وحدت رویه', 'Westlaw / LexisNexis', 'Contract Drafting Templates', 'ICC Arbitration Rules'],
+    videos: [
+      {
+        id: 'v-law-1',
+        titleFa: 'مجموعه درس حقوق مدنی، قراردادها و حقوق اساسی — دانشکده حقوق دانشگاه تهران',
+        titleEn: 'Contract Law: From Trust to Promise to Contract (HarvardX)',
+        source: 'دانشکده حقوق دانشگاه تهران / HarvardX',
+        instructor: 'Prof. Charles Fried / اساتید حقوق',
+        duration: '۲۰ جلسه تحلیلی',
+        language: 'fa',
+        focusFa: 'قواعد عمومی قراردادها، مسئولیت مدنی، تفکیک قوا و اصول دادرسی',
+        focusEn: 'Contract formation, tort liability, separation of powers, and due process',
+      },
+      {
+        id: 'v-law-2',
+        titleFa: 'حقوق بین‌الملل عمومی و معاهدات (Leiden / UN Audiovisual Library)',
+        titleEn: 'Public International Law & Treaty Law (UN Audiovisual Library)',
+        source: 'United Nations Law Library',
+        instructor: 'ICJ Judges & Scholars',
+        duration: '18 Lectures',
+        language: 'en',
+        focusFa: 'کنوانسیون وین، قواعد آمره، حل مسالمت‌آمیز اختلافات و حقوق بشر',
+        focusEn: 'Vienna Convention, Jus Cogens norms, ICJ cases, and humanitarian law',
+      },
+    ],
+  },
+  political: {
+    child5Fa:
+      'وقتی یک گروه بزرگ از آدم‌ها در یک خانه یا محله زندگی می‌کنند، باید تصمیم بگیرند چه کسی مدیریت کند، بودجه چطور خرج شود و با همسایه‌ها چطور صلح و دوستی بسازند؛ علوم سیاسی و روابط بین‌الملل دقیقاً علم همین تصمیم‌های بزرگ است!',
+    child5En:
+      'When millions of people share a country—and countries share one planet—they have to decide who leads, how rules are made fairly, and how neighbors keep peace and trade; that is Political Science and IR!',
+    industryFa: [
+      'تحلیل‌گری سیاسی و ژئوپلیتیک، اندیشکده‌ها (Think Tanks) و پژوهش‌های استراتژیک',
+      'دیپلماسی، وزارت امور خارجه، سازمان‌های بین‌المللی و مدیریت بحران‌های منطقه‌ای',
+      'سیاست‌گذاری عمومی، حکمرانی داده، مشاوره رسانه‌ای و ارزیابی اثر قوانین و برنامه‌های توسعه',
+    ],
+    industryEn: [
+      'Geopolitical risk analysis, policy think tanks, and strategic intelligence research',
+      'Diplomacy, foreign service, multilateral organizations (UN/WTO), and crisis negotiation',
+      'Public policy evaluation, governance consulting, and political economy advisory',
+    ],
+    marketFa:
+      'فرصت‌های شغلی در اندیشکده‌های سیاست‌گذاری، رسانه‌های تحلیلی، سازمان‌های بین‌المللی، مشاوره ریسک ژئوپلیتیک و بخش عمومی.',
+    marketEn:
+      'Roles across policy think tanks, diplomatic corps, international organizations, political risk consultancies, and media.',
+    tools: ['R / SPSS Political Data', 'V-Dem & Polity V Datasets', 'COW / SIPRI Databases', 'Policy Brief Frameworks'],
+    videos: [
+      {
+        id: 'v-pol-1',
+        titleFa: 'مبانی علم سیاست، اندیشه سیاسی و روابط بین‌الملل — دانشکده حقوق و علوم سیاسی تهران',
+        titleEn: 'Introduction to Political Philosophy (Yale PLSC 114 — Steven Smith)',
+        source: 'دانشگاه تهران / Yale Open Courses',
+        instructor: 'Prof. Steven B. Smith / اساتید علوم سیاسی',
+        duration: '۲۴ جلسه تحلیلی',
+        language: 'fa',
+        focusFa: 'اندیشه سیاسی غرب و اسلام، دموکراسی، رئالیسم، لیبرالیسم و سازه‌انگاری',
+        focusEn: 'Classical & modern political philosophy, realism, liberalism, and constructivism',
+      },
+      {
+        id: 'v-pol-2',
+        titleFa: 'نظریه‌های روابط بین‌الملل و سیاست خارجی (LSE / Oxford)',
+        titleEn: 'International Relations, Game Theory & Global Order (LSE / Yale)',
+        source: 'LSE Public Lectures / Coursera',
+        instructor: 'Prof. Ian Shapiro & IR Faculty',
+        duration: '16 Seminars',
+        language: 'en',
+        focusFa: 'معمای امنیت، موازنه قوا، اقتصاد سیاسی بین‌الملل و دیپلماسی بحران',
+        focusEn: 'Security dilemma, balance of power, IPE, and multilateral diplomacy',
+      },
+    ],
+  },
+  psychology: {
+    child5Fa:
+      'مغز ما مثل یک ابرکامپیوتر پر از احساسات، خاطره‌ها و عادت‌هاست! روان‌شناسی و جامعه‌شناسی مثل عینک‌های جادویی هستند که نشان می‌دهند چرا آدم‌ها خوشحال، مضطرب یا شجاع می‌شوند و چطور در کنار هم جامعه می‌سازند.',
+    child5En:
+      'Our mind is an amazing living supercomputer of memories, feelings, and habits! Psychology and sociology are special lenses that explain how we think, heal, and connect with communities.',
+    industryFa: [
+      'مشاوره و روان‌درمانی بالینی (CBT/ACT)، سنجش روانسنجی و کلینیک‌های سلامت روان',
+      'پژوهش تجربه کاربری (UX Research)، علوم شناختی، اقتصاد رفتاری و هوش مصنوعی انسان‌محور',
+      'پژوهش‌های اجتماعی، افکارسنجی، مدیریت منابع انسانی و راهبرد ارتباطات و رسانه',
+    ],
+    industryEn: [
+      'Clinical psychotherapy (CBT/ACT), psychological assessment, and mental health services',
+      'UX research, cognitive science, behavioral economics, and human-centered AI',
+      'Social research, public opinion polling, organizational psychology, and media strategy',
+    ],
+    marketFa:
+      'رشد سریع بازار کار در کلینیک‌های تخصصی، تیم‌های UX و محصول در شرکت‌های فناوری، مراکز پژوهش اجتماعی و رسانه.',
+    marketEn:
+      'Fast-growing opportunities in clinical care, tech UX/behavioral science teams, HR analytics, and social research.',
+    tools: ['SPSS / JASP / R', 'NVivo / MAXQDA', 'DSM-5 Diagnostic Guides', 'Qualtrics / PsychoPy'],
+    videos: [
+      {
+        id: 'v-psy-1',
+        titleFa: 'مقدمه‌ای بر روان‌شناسی و علوم شناختی (Yale PSYC 110 — Paul Bloom)',
+        titleEn: 'Introduction to Psychology (Yale PSYC 110 — Prof. Paul Bloom)',
+        source: 'Yale Open Courses / مکتب‌خونه',
+        instructor: 'Prof. Paul Bloom',
+        duration: '20 Lectures',
+        language: 'en',
+        focusFa: 'ادراک، حافظه، رشد شناختی، آسیب‌شناسی روانی و روان‌شناسی اجتماعی',
+        focusEn: 'Perception, memory, development, psychopathology, and social behavior',
+      },
+      {
+        id: 'v-psy-2',
+        titleFa: 'نظریه‌های جامعه‌شناسی و روش تحقیق علوم اجتماعی',
+        titleEn: 'Foundations of Modern Social Theory (Yale SOCY 151)',
+        source: 'دانشگاه تهران / Yale Open Courses',
+        instructor: 'Prof. Iván Szelényi / اساتید علوم اجتماعی',
+        duration: '۲۴ جلسه',
+        language: 'fa',
+        focusFa: 'آرای دورکیم، وبر، مارکس، بوردیو و تحلیل داده‌های پیمایشی',
+        focusEn: 'Durkheim, Weber, Marx, Bourdieu, and empirical social research',
+      },
+    ],
+  },
+  humanities: {
+    child5Fa:
+      'فلسفه، تاریخ و ادبیات مثل گنجینه داستان‌ها و سوال‌های بزرگ بشر هستند: تاریخ می‌گوید دیروز چه یاد گرفتیم، ادبیات به فکرها بال و زیبایی می‌دهد و فلسفه یاد می‌دهد چطور عمیق، منطقی و بدون خطا فکر کنیم!',
+    child5En:
+      'Philosophy, history, and literature are humanity’s treasure chest of big questions: history remembers our lessons, literature gives ideas beauty, and philosophy trains us to reason clearly without fallacies!',
+    industryFa: [
+      'پژوهش دانشگاهی، ویراستاری تخصصی، نشر علمی، ترجمه و تولید محتوای راهبردی',
+      'اخلاق هوش مصنوعی (AI Ethics)، منطق صوری، زبان‌شناسی محاسباتی و پردازش زبان طبیعی (NLP)',
+      'میراث فرهنگی، موزه‌داری، مستندسازی تاریخی و مشاوره فرهنگی و آموزشی',
+    ],
+    industryEn: [
+      'Academic research, publishing, literary translation, and editorial leadership',
+      'AI Ethics, formal logic, computational linguistics, and NLP language design',
+      'Cultural heritage, historical archiving, curatorial studies, and documentary writing',
+    ],
+    marketFa:
+      'فرصت‌های بین‌رشته‌ای نوین در زبان‌شناسی محاسباتی، اخلاق فناوری، آموزش، نشر، رسانه‌های فرهنگی و پژوهش‌های تاریخی.',
+    marketEn:
+      'Growing interdisciplinary niches in AI ethics, computational linguistics, education, publishing, and cultural media.',
+    tools: ['Zotero / LaTeX Humanities', 'Praat / NLTK Linguistics', 'Archival Databases', 'Critical Discourse Frameworks'],
+    videos: [
+      {
+        id: 'v-hum-1',
+        titleFa: 'فلسفه اخلاق و عدالت (Harvard — Michael Sandel) و منطق نقادانه',
+        titleEn: 'Justice: What’s the Right Thing to Do? (Harvard — Michael Sandel)',
+        source: 'Harvard University / مکتب‌خونه',
+        instructor: 'Prof. Michael Sandel',
+        duration: '12 Iconic Lectures',
+        language: 'en',
+        focusFa: 'فایده‌گرایی، وظیفه‌گرایی کانت، قرارداد اجتماعی و استدلال منطقی',
+        focusEn: 'Utilitarianism, Kantian ethics, Rawlsian justice, and moral reasoning',
+      },
+      {
+        id: 'v-hum-2',
+        titleFa: 'تاریخ ادبیات فارسی، سبک‌شناسی و زبان‌شناسی معاصر',
+        titleEn: 'Persian Classical Literature & Modern Linguistics Seminar',
+        source: 'دانشکده ادبیات دانشگاه تهران',
+        instructor: 'اساتید ادبیات و فلسفه',
+        duration: '۲۰ جلسه تخصصی',
+        language: 'fa',
+        focusFa: 'تحلیل شاهنامه، مثنوی، منطق و تاریخ‌نگاری تحلیلی ایران و جهان',
+        focusEn: 'Classical Persian poetics, linguistics, philosophy, and historiography',
+      },
+    ],
+  },
+  arts: {
+    child5Fa:
+      'هنر، سینما و شهرسازی یعنی تبدیل کردن ایده‌های توی سرمان به رنگ، داستان، موسیقی و شهرهایی که آدم‌ها از قدم زدن در آن‌ها لذت ببرند — جایی که خلاقیت با هندسه و احساس یکی می‌شود!',
+    child5En:
+      'Art, cinema, and urban design turn imagination into color, stories, music, and welcoming cities—where creativity meets geometry and human emotion!',
+    industryFa: [
+      'طراحی شهری پایدار، تحلیل مکانی GIS، بازآفرینی محلات و مشاوره طرح‌های جامع شهری',
+      'تولید فیلم، فیلم‌نامه‌نویسی، کارگردانی، تدوین، انیمیشن و استودیوهای رسانه‌ای',
+      'طراحی محصول صنعتی، برندینگ، تایپوگرافی و طراحی تجربه کاربری (UI/UX)',
+    ],
+    industryEn: [
+      'Sustainable urban planning, GIS spatial design, and transit-oriented city studios',
+      'Filmmaking, screenwriting, cinematography, editing, and interactive media',
+      'Industrial product design, visual branding, typography, and digital UX systems',
+    ],
+    marketFa:
+      'بازار خلاقانه و بین‌المللی در استودیوهای طراحی محصول و UX، دفاتر شهرسازی، صنعت سینما و رسانه، و برندینگ.',
+    marketEn:
+      'Vibrant creative demand across UX/product studios, urban consultancies, cinema production, and brand design.',
+    tools: ['QGIS / ArcGIS', 'Figma / Adobe Creative Cloud', 'DaVinci Resolve / Blender', 'Rhino / KeyShot'],
+    videos: [
+      {
+        id: 'v-art-1',
+        titleFa: 'اصول شهرسازی مدرن، زیبایی‌شناسی سینما و طراحی صنعتی',
+        titleEn: 'Visual Storytelling, Typography & Urban Design Masterclass',
+        source: 'دانشکده هنرهای زیبا / MIT Urban Studies',
+        instructor: 'اساتید هنر، سینما و شهرسازی',
+        duration: '۱۸ کارگاه عملی',
+        language: 'fa',
+        focusFa: 'ترکیب‌بندی، دراماتورژی، خوانایی شهری و تفکر طراحی',
+        focusEn: 'Composition, screenwriting, urban imageability, and design thinking',
+      },
+    ],
+  },
+  science: {
+    child5Fa:
+      'دانشمندان علوم پایه و طبیعت مثل کارآگاه‌های کنجکاو هستند: زیر میکروسکوپ از مولکول‌ها و سلول‌ها سرنخ می‌گیرند، سنگ‌های زمین را می‌خوانند و با تلسکوپ راز ستاره‌ها و رشد گیاهان را کشف می‌کنند!',
+    child5En:
+      'Natural scientists are nature’s curious detectives: reading clues inside molecules, cells, Earth’s rocks, living crops, and distant stars to discover how the universe works!',
+    industryFa: [
+      'آزمایشگاه‌های شیمی دارویی، پلیمر، کنترل کیفیت مواد غذایی و طیف‌سنجی پیشرفته',
+      'پژوهش‌های ژنتیک، بیوتکنولوژی، کشاورزی هوشمند، مدیریت منابع آب و کلینیک‌های دامپزشکی',
+      'اکتشافات زمین‌شناسی، پایش لرزه‌خیزی، آب‌شناسی و رصدخانه‌های اخترفیزیک',
+    ],
+    industryEn: [
+      'Analytical chemistry labs, pharmaceutical synthesis, food safety (HACCP), and spectroscopy',
+      'Genomics, molecular biotech, precision agriculture, and veterinary health',
+      'Geophysical exploration, hydrogeology, climate modeling, and astrophysics R&D',
+    ],
+    marketFa:
+      'فرصت‌های گسترده در مراکز تحقیق و توسعه (R&D)، صنایع غذایی و دارویی، آزمایشگاه‌های ژنتیک، کشاورزی نوین و شرکت‌های اکتشاف.',
+    marketEn:
+      'Broad careers across R&D labs, biotech/genomics, agri-tech, food quality, veterinary clinics, and geosciences.',
+    tools: ['ChemDraw / Gaussian', 'BLAST / BioPython', 'QGIS / Petrel', 'R / Python SciPy'],
+    videos: [
+      {
+        id: 'v-sci-1',
+        titleFa: 'زیست‌شناسی مولکولی، شیمی آلی و اخترفیزیک (MIT 7.012 / 5.12)',
+        titleEn: 'Fundamentals of Biology, Organic Chemistry & Astrophysics (MIT OCW)',
+        source: 'MIT OpenCourseWare / دانشگاه تهران',
+        instructor: 'Prof. Eric Lander & Science Faculty',
+        duration: '28 Lectures',
+        language: 'en',
+        focusFa: 'بیوشیمی و ژنتیک، مکانیزم‌های شیمی آلی، زمین‌ساخت و کیهان‌شناسی',
+        focusEn: 'Molecular genetics, organic synthesis, plate tectonics, and cosmology',
+      },
+    ],
+  },
 };
 
 function selectBlueprint(fieldId: string): DomainBlueprint {
+  if (fieldId === 'nuclear' || fieldId.startsWith('nuclear-')) {
+    return DOMAIN_BLUEPRINTS.nuclear;
+  }
+  if (fieldId.startsWith('med-') || fieldId === 'vet-med') {
+    return DOMAIN_BLUEPRINTS.medical;
+  }
+  if (fieldId === 'econ-pure' || fieldId === 'mgmt-business' || fieldId === 'accounting' || fieldId === 'finance-banking' || fieldId === 'eng-econ') {
+    return DOMAIN_BLUEPRINTS.economics;
+  }
+  if (fieldId.startsWith('law-')) {
+    return DOMAIN_BLUEPRINTS.law;
+  }
+  if (fieldId.startsWith('pol-')) {
+    return DOMAIN_BLUEPRINTS.political;
+  }
+  if (fieldId === 'psych-clinical' || fieldId === 'sociology' || fieldId === 'media-comm') {
+    return DOMAIN_BLUEPRINTS.psychology;
+  }
+  if (fieldId === 'philosophy' || fieldId === 'history' || fieldId === 'literature-ling') {
+    return DOMAIN_BLUEPRINTS.humanities;
+  }
+  if (fieldId.startsWith('art-')) {
+    return DOMAIN_BLUEPRINTS.arts;
+  }
+  if (fieldId === 'chem-pure' || fieldId === 'bio-cell' || fieldId === 'geology' || fieldId === 'astronomy' || fieldId === 'agri-agronomy' || fieldId === 'food-sci') {
+    return DOMAIN_BLUEPRINTS.science;
+  }
   if (fieldId.startsWith('ee-') || fieldId === 'embedded' || fieldId === 'optics' || fieldId === 'bme-bioelectric') {
     return DOMAIN_BLUEPRINTS.ee;
   }
@@ -517,7 +1022,6 @@ function selectBlueprint(fieldId: string): DomainBlueprint {
     fieldId.startsWith('aerospace-') ||
     fieldId.startsWith('chem-') ||
     fieldId === 'petroleum' ||
-    fieldId === 'nuclear' ||
     fieldId === 'renewable' ||
     fieldId === 'robotics'
   ) {
@@ -529,347 +1033,17 @@ function selectBlueprint(fieldId: string): DomainBlueprint {
   return DOMAIN_BLUEPRINTS.math;
 }
 
-export function buildCuratedResourcesForCourse(course: CourseItem): ScientificResourceItem[] {
-  const code = course.code.toUpperCase();
-  const f = course.fieldId;
-  const resources: ScientificResourceItem[] = [];
-
-  // 1. Electrical Engineering & Circuits
-  if (code.startsWith('EE-201') || code.startsWith('EE-202') || f === 'ee-power' || f === 'ee-electronics') {
-    resources.push(
-      {
-        id: `res-${course.id}-book1`,
-        type: 'book',
-        titleFa: 'مبانی مدارهای الکتریکی (سادیکو و الکساندر)',
-        titleEn: 'Fundamentals of Electric Circuits (Alexander & Sadiku)',
-        authors: 'Charles K. Alexander, Matthew N. O. Sadiku',
-        editionOrJournal: 'ویرایش ۷ام (7th Edition)',
-        year: '2021',
-        summaryFa: 'معتبرترین تکست‌بوک مدارهای الکتریکی دانشگاهی؛ تحلیل کامل گره و مش، مدارهای مرتبه اول و دوم RLC و تبدیل لاپلاس.',
-        summaryEn: 'Standard university circuit theory textbook covering nodal/mesh laws, RLC transient dynamics, and Laplace transfer functions.',
-        downloadUrl: `https://libgen.rs/search.php?req=${encodeURIComponent('Fundamentals of Electric Circuits Alexander Sadiku')}`,
-        platform: 'LibGen',
-        isLegalOpenAccess: false,
-      },
-      {
-        id: `res-${course.id}-book2`,
-        type: 'book',
-        titleFa: 'تحلیل مدارهای مهندسی (ویلیام هیت و جک کمرلی)',
-        titleEn: 'Engineering Circuit Analysis (Hayt, Kemmerly & Durbin)',
-        authors: 'William H. Hayt, Jack E. Kemmerly, Steven M. Durbin',
-        editionOrJournal: 'ویرایش ۹ام (9th Edition)',
-        year: '2019',
-        summaryFa: 'کتاب مرجع همراه با مثال‌های کاربردی، تحلیل پاسخ فرکانسی، تشدید و شبیه‌سازی رایانه‌ای مدارها.',
-        summaryEn: 'Engineering circuits reference emphasizing AC sinusoidal steady-state, frequency response, resonance, and state equations.',
-        downloadUrl: `https://libgen.rs/search.php?req=${encodeURIComponent('Engineering Circuit Analysis Hayt Kemmerly')}`,
-        platform: 'LibGen',
-        isLegalOpenAccess: false,
-      },
-      {
-        id: `res-${course.id}-paper1`,
-        type: 'paper',
-        titleFa: 'کاربرد مقادیر مختلط در مهندسی برق (مقاله تاریخی اشتاینمتز)',
-        titleEn: 'Complex Quantities and Their Use in Electrical Engineering',
-        authors: 'Charles Proteus Steinmetz',
-        editionOrJournal: 'AIEE / IEEE Historic Open Access Milestone',
-        year: 'Historic',
-        doi: '10.1109/PAIEE.1893.6593452',
-        summaryFa: 'مقاله انقلابی اشتاینمتز که استفاده از فازورها و اعداد مختلط را برای تحلیل مدارهای جریان متناوب پایه نهاد.',
-        summaryEn: 'The historic seminal milestone that introduced complex numbers and phasors for AC steady-state circuit solutions.',
-        downloadUrl: 'https://core.ac.uk/search?q=Steinmetz+Complex+Quantities+Electrical+Engineering',
-        platform: 'CORE',
-        isLegalOpenAccess: true,
-      }
-    );
-  }
-  // 2. Control Systems & Signals
-  else if (code.startsWith('EE-341') || code.startsWith('EE-301') || f === 'ee-control') {
-    resources.push(
-      {
-        id: `res-${course.id}-book1`,
-        type: 'book',
-        titleFa: 'سیگنال‌ها و سیستم‌ها (آلن وی. اوپنهایم - دانشگاه MIT)',
-        titleEn: 'Signals and Systems (Alan V. Oppenheim & Alan S. Willsky)',
-        authors: 'Alan V. Oppenheim, Alan S. Willsky, S. Hamid Nawab',
-        editionOrJournal: 'ویرایش ۲ام (2nd Edition, Prentice Hall)',
-        year: '1997',
-        summaryFa: 'مرجع استاندارد دانشگاه‌های شریف، تهران و MIT؛ سیستم‌های LTI، کانولوشن، سری و تبدیل فوریه پیوسته/گسسته و تبدیل Z.',
-        summaryEn: 'The definitive textbook on continuous and discrete LTI systems, convolution, Fourier representations, and sampling theory.',
-        downloadUrl: `https://libgen.rs/search.php?req=${encodeURIComponent('Signals and Systems Oppenheim Willsky')}`,
-        platform: 'LibGen',
-        isLegalOpenAccess: false,
-      },
-      {
-        id: `res-${course.id}-book2`,
-        type: 'book',
-        titleFa: 'مهندسی کنترل مدرن (کاتسوهیکو اوگاتا)',
-        titleEn: 'Modern Control Engineering (Katsuhiko Ogata)',
-        authors: 'Katsuhiko Ogata',
-        editionOrJournal: 'ویرایش ۵ام (5th Edition, Pearson)',
-        year: '2010',
-        summaryFa: 'کتاب جامع کنترل خطی؛ مکان ریشه‌ها (Root Locus)، دیاگرام‌های بود، پایداری نایکویست و کنترل در فضای حالت.',
-        summaryEn: 'Comprehensive guide covering classical feedback, Bode/Nyquist stability criteria, and modern state-space control.',
-        downloadUrl: `https://libgen.rs/search.php?req=${encodeURIComponent('Modern Control Engineering Ogata')}`,
-        platform: 'LibGen',
-        isLegalOpenAccess: false,
-      },
-      {
-        id: `res-${course.id}-paper1`,
-        type: 'paper',
-        titleFa: 'رویکردی نو در فیلترینگ و پیش‌بینی خطی (مقاله بنیادین فیلتر کالمن)',
-        titleEn: 'A New Approach to Linear Filtering and Prediction Problems',
-        authors: 'Rudolf E. Kalman',
-        editionOrJournal: 'Journal of Basic Engineering (ASME)',
-        year: '1960',
-        doi: '10.1115/1.3662552',
-        summaryFa: 'مقاله سرنوشت‌ساز کالمن برای تخمین بهینه حالت سیستم‌های دینامیکی در حضور نویز (مبنای ناوبری آپولو و پهپادها).',
-        summaryEn: 'The landmark formulation of the discrete/continuous recursive Kalman Filter for optimal state estimation.',
-        downloadUrl: 'https://core.ac.uk/search?q=Kalman+New+Approach+Linear+Filtering+Prediction',
-        platform: 'CORE',
-        isLegalOpenAccess: true,
-      }
-    );
-  }
-  // 3. Computer Science, AI & Algorithms
-  else if (f.startsWith('cs-') || f === 'data-sci' || code.startsWith('CS-') || code.startsWith('AI-')) {
-    resources.push(
-      {
-        id: `res-${course.id}-book1`,
-        type: 'book',
-        titleFa: 'مقدمه‌ای بر الگوریتم‌ها (CLRS)',
-        titleEn: 'Introduction to Algorithms (CLRS)',
-        authors: 'Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, Clifford Stein',
-        editionOrJournal: 'ویرایش ۴ام (4th Edition, MIT Press)',
-        year: '2022',
-        summaryFa: 'معتبرترین مرجع الگوریتم‌ها؛ پیچیدگی زمانی، درخت‌ها، برنامه‌نویسی پویا، الگوریتم‌های حریصانه، گراف و NP-کامل.',
-        summaryEn: 'The international standard textbook on algorithmic design, dynamic programming, amortized analysis, and graph theory.',
-        downloadUrl: `https://libgen.rs/search.php?req=${encodeURIComponent('Introduction to Algorithms Cormen Leiserson Rivest Stein')}`,
-        platform: 'LibGen',
-        isLegalOpenAccess: false,
-      },
-      {
-        id: `res-${course.id}-book2`,
-        type: 'book',
-        titleFa: 'هوش مصنوعی: رویکردی مدرن (AIMA)',
-        titleEn: 'Artificial Intelligence: A Modern Approach (Stuart Russell & Peter Norvig)',
-        authors: 'Stuart Russell, Peter Norvig',
-        editionOrJournal: 'ویرایش ۴ام (4th Edition, Pearson)',
-        year: '2020',
-        summaryFa: 'کتاب مرجع شماره یک دانشگاه‌های جهان در هوش مصنوعی؛ عامل‌های منطقی، جستجوی آگاهانه، استنتاج بیزی و یادگیری تقویتی.',
-        summaryEn: 'Leading university AI text covering rational agents, probabilistic reasoning, deep learning, and reinforcement learning.',
-        downloadUrl: `https://libgen.rs/search.php?req=${encodeURIComponent('Artificial Intelligence A Modern Approach Russell Norvig')}`,
-        platform: 'LibGen',
-        isLegalOpenAccess: false,
-      },
-      {
-        id: `res-${course.id}-paper1`,
-        type: 'paper',
-        titleFa: 'توجه تنها چیزی است که نیاز دارید (معماری انقلابی ترنسفورمرها)',
-        titleEn: 'Attention Is All You Need',
-        authors: 'Ashish Vaswani, Noam Shazeer, Niki Parmar, et al. (Google Brain)',
-        editionOrJournal: 'NeurIPS / Open Access arXiv',
-        year: '2017',
-        doi: '10.48550/arXiv.1706.03762',
-        summaryFa: 'مقاله بنیادین ترنسفورمرها و مکانیزم Self-Attention که هوش مصنوعی مدرن، مدل‌های زبانی بزرگ (LLM) و دانشیار را ممکن کرد.',
-        summaryEn: 'Introduced the Transformer architecture and self-attention, replacing recurrence and revolutionizing modern generative AI.',
-        downloadUrl: 'https://oa.mg/search?q=Attention+Is+All+You+Need+Vaswani',
-        platform: 'OA.mg',
-        isLegalOpenAccess: true,
-      },
-      {
-        id: `res-${course.id}-paper2`,
-        type: 'paper',
-        titleFa: 'یادگیری عمیق بازمانده برای بازشناسی تصویر (ResNet)',
-        titleEn: 'Deep Residual Learning for Image Recognition',
-        authors: 'Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun',
-        editionOrJournal: 'IEEE CVPR Open Access Repository',
-        year: '2016',
-        doi: '10.1109/CVPR.2016.90',
-        summaryFa: 'مقاله انقلابی با اتصالات جهشی (Skip Connections) که امکان آموزش شبکه‌های عصبی بسیار عمیق (۱۵۲ لایه) را فراهم ساخت.',
-        summaryEn: 'Introduced residual skip connections solving vanishing gradients in deep architectures with 200,000+ citations.',
-        downloadUrl: 'https://core.ac.uk/search?q=Deep+Residual+Learning+Image+Recognition+He',
-        platform: 'CORE',
-        isLegalOpenAccess: true,
-      }
-    );
-  }
-  // 4. Mathematics & Calculus
-  else if (f === 'math' || f === 'stats' || code.startsWith('MATH-')) {
-    resources.push(
-      {
-        id: `res-${course.id}-book1`,
-        type: 'book',
-        titleFa: 'حساب دیفرانسیل و انتگرال توابع متعالی اولیه (جیمز استوارت)',
-        titleEn: 'Calculus: Early Transcendentals (James Stewart)',
-        authors: 'James Stewart, Daniel Clegg, Saleem Watson',
-        editionOrJournal: 'ویرایش ۹ام (9th Edition, Cengage)',
-        year: '2020',
-        summaryFa: 'محبوب‌ترین کتاب ریاضی عمومی ۱ و ۲ مهندسی؛ انتگرال‌های چندگانه، میدان‌های برداری، قضیه گرین، استوکس و دیورژانس گاوس.',
-        summaryEn: 'Standard engineering calculus reference covering multivariable analysis, line integrals, Stokes theorem, and vector fields.',
-        downloadUrl: `https://libgen.rs/search.php?req=${encodeURIComponent('Calculus Early Transcendentals James Stewart')}`,
-        platform: 'LibGen',
-        isLegalOpenAccess: false,
-      },
-      {
-        id: `res-${course.id}-book2`,
-        type: 'book',
-        titleFa: 'ریاضیات مهندسی پیشرفته (اروین کریزیک)',
-        titleEn: 'Advanced Engineering Mathematics (Erwin Kreyszig)',
-        authors: 'Erwin Kreyszig',
-        editionOrJournal: 'ویرایش ۱۰ام (10th Edition, Wiley)',
-        year: '2011',
-        summaryFa: 'کتاب جامع ریاضی مهندسی شامل معادلات دیفرانسیل با مشتقات جزئی (PDE)، متغیرهای مختلط، سری فوریه و جبر خطی کاربردی.',
-        summaryEn: 'Encyclopedic reference across ODEs, PDEs, complex analysis, Laplace transforms, and numerical linear algebra.',
-        downloadUrl: `https://libgen.rs/search.php?req=${encodeURIComponent('Advanced Engineering Mathematics Erwin Kreyszig')}`,
-        platform: 'LibGen',
-        isLegalOpenAccess: false,
-      },
-      {
-        id: `res-${course.id}-paper1`,
-        type: 'paper',
-        titleFa: 'تحلیل برداری و تعمیم قضیه استوکس در فیزیک مهندسی',
-        titleEn: 'Vector Field Formulations and the Generalized Stokes Theorem',
-        authors: 'Mathematical Physics Open Archive',
-        editionOrJournal: 'DOAJ Open Mathematics Review',
-        year: 'Open Review',
-        summaryFa: 'مقاله پژوهشی داوری‌شده با دسترسی آزاد درباره ارتباط انتگرال‌های سطحی، حجمی و کاربرد آن در الکترومغناطیس و سیالات.',
-        summaryEn: 'Peer-reviewed open review exploring differential forms, flux integrals, and physical boundary conditions.',
-        downloadUrl: 'https://doaj.org/search/articles?ref=doaj&q=generalized+Stokes+theorem+vector+calculus',
-        platform: 'DOAJ',
-        isLegalOpenAccess: true,
-      }
-    );
-  }
-  // 5. Mechanical Engineering & Thermodynamics
-  else if (f.startsWith('me-') || f.startsWith('aerospace-') || code.startsWith('ME-')) {
-    resources.push(
-      {
-        id: `res-${course.id}-book1`,
-        type: 'book',
-        titleFa: 'ترمودینامیک: رویکردی مهندسی (یونس سنجل و مایکل بولز)',
-        titleEn: 'Thermodynamics: An Engineering Approach (Cengel & Boles)',
-        authors: 'Yunus A. Cengel, Michael A. Boles, Mehmet Kanoglu',
-        editionOrJournal: 'ویرایش ۹ام (9th Edition, McGraw-Hill)',
-        year: '2019',
-        summaryFa: 'کتاب مرجع ترمودینامیک مهندسی؛ قانون اول و دوم، محاسبه اگزرژی، چرخه‌های کارنو، رانکین، برایتون و نمودارهای فازی.',
-        summaryEn: 'World standard engineering thermodynamics text on closed/open volume energy analysis, entropy, and power cycles.',
-        downloadUrl: `https://libgen.rs/search.php?req=${encodeURIComponent('Thermodynamics An Engineering Approach Cengel Boles')}`,
-        platform: 'LibGen',
-        isLegalOpenAccess: false,
-      },
-      {
-        id: `res-${course.id}-book2`,
-        type: 'book',
-        titleFa: 'مکانیک سیالات (فرانک ام. وایت)',
-        titleEn: 'Fluid Mechanics (Frank M. White)',
-        authors: 'Frank M. White, Henry Xue',
-        editionOrJournal: 'ویرایش ۹ام (9th Edition)',
-        year: '2021',
-        summaryFa: 'مرجع کامل مکانیک سیالات؛ معادلات ناویر-استوکس، جریان لزج در لوله‌ها، تئوری لایه مرزی و جریان تراکم‌پذیر.',
-        summaryEn: 'Definitive reference covering Navier-Stokes derivations, viscous pipe flow, boundary layers, and compressible aerodynamics.',
-        downloadUrl: `https://libgen.rs/search.php?req=${encodeURIComponent('Fluid Mechanics Frank White')}`,
-        platform: 'LibGen',
-        isLegalOpenAccess: false,
-      },
-      {
-        id: `res-${course.id}-paper1`,
-        type: 'paper',
-        titleFa: 'تاملاتی پیرامون قدرت محرکه آتش و چرخه‌های حرارتی (سادی کارنو)',
-        titleEn: 'Reflections on the Motive Power of Fire (Carnot Cycle Foundations)',
-        authors: 'Nicolas Léonard Sadi Carnot',
-        editionOrJournal: 'Classic Physics Repository / Open History',
-        year: 'Historic',
-        summaryFa: 'رساله تاریخی کارنو که پایه‌گذار علم ترمودینامیک نوین، بازده بیشینه موتورهای حرارتی و مفهوم آنتروپی شد.',
-        summaryEn: 'Foundational treatise establishing maximum thermal efficiency and paving the way to the Second Law of Thermodynamics.',
-        downloadUrl: 'https://core.ac.uk/search?q=Sadi+Carnot+Reflections+Motive+Power+Heat',
-        platform: 'CORE',
-        isLegalOpenAccess: true,
-      }
-    );
-  }
-  // 6. Physics & Electromagnetics
-  else if (f === 'physics' || f === 'optics' || code.startsWith('PHYS-')) {
-    resources.push(
-      {
-        id: `res-${course.id}-book1`,
-        type: 'book',
-        titleFa: 'مبانی فیزیک هالیدی، رزنیک و واکر',
-        titleEn: 'Fundamentals of Physics (Halliday, Resnick & Walker)',
-        authors: 'David Halliday, Robert Resnick, Jearl Walker',
-        editionOrJournal: 'ویرایش ۱۲ام (12th Edition, Wiley)',
-        year: '2021',
-        summaryFa: 'مرجع بی‌رقیب فیزیک ۱ و ۲ دانشگاهی؛ مکانیک کلاسیک، امواج، الکترواستاتیک، مغناطیس و معادلات ماکسول.',
-        summaryEn: 'Premier physics textbook covering Newtonian mechanics, thermodynamics, electromagnetism, and modern optics.',
-        downloadUrl: `https://libgen.rs/search.php?req=${encodeURIComponent('Fundamentals of Physics Halliday Resnick Walker')}`,
-        platform: 'LibGen',
-        isLegalOpenAccess: false,
-      },
-      {
-        id: `res-${course.id}-book2`,
-        type: 'book',
-        titleFa: 'الکترومغناطیس میدان و امواج (دیوید چنگ)',
-        titleEn: 'Field and Wave Electromagnetics (David K. Cheng)',
-        authors: 'David K. Cheng',
-        editionOrJournal: 'ویرایش ۲ام (2nd Edition, Addison-Wesley)',
-        year: '1989',
-        summaryFa: 'تکست‌بوک شماره یک الکترومغناطیس مهندسی برق؛ پتانسیل برداری، شرایط مرزی، امواج صفحه‌ای و خطوط انتقال.',
-        summaryEn: 'Classic electromagnetic field theory reference detailing electrostatic potentials, plane wave propagation, and transmission lines.',
-        downloadUrl: `https://libgen.rs/search.php?req=${encodeURIComponent('Field and Wave Electromagnetics David Cheng')}`,
-        platform: 'LibGen',
-        isLegalOpenAccess: false,
-      },
-      {
-        id: `res-${course.id}-paper1`,
-        type: 'paper',
-        titleFa: 'نظریه دینامیکی میدان الکترومغناطیسی (جیمز کلارک ماکسول)',
-        titleEn: 'A Dynamical Theory of the Electromagnetic Field',
-        authors: 'James Clerk Maxwell',
-        editionOrJournal: 'Philosophical Transactions of the Royal Society',
-        year: '1865',
-        doi: '10.1098/rstl.1865.0008',
-        summaryFa: 'مقاله تاریخی ماکسول که ثابت کرد نور خود یک موج الکترومغناطیسی است و چهار معادله بنیادین ماکسول را فرمول‌بندی کرد.',
-        summaryEn: 'The historic Royal Society paper demonstrating light as an electromagnetic wave and introducing the four Maxwell Equations.',
-        downloadUrl: 'https://core.ac.uk/search?q=Maxwell+Dynamical+Theory+Electromagnetic+Field',
-        platform: 'CORE',
-        isLegalOpenAccess: true,
-      }
-    );
-  }
-  // 7. General Fallback with curated quality items
-  else {
-    resources.push(
-      {
-        id: `res-${course.id}-book1`,
-        type: 'book',
-        titleFa: `کتاب مرجع دانشگاهی درس ${course.titleFa}`,
-        titleEn: `Standard University Textbook for ${course.titleEn}`,
-        authors: 'پژوهشگران و اساتید بین‌المللی مرجع',
-        editionOrJournal: 'ویرایش معتبر دانشگاهی',
-        year: '2022',
-        summaryFa: `تکست‌بوک مرجع جهت تسلط بر سرفصل‌های ${course.topicsFa.slice(0, 3).join('، ')}.`,
-        summaryEn: `Standard course reference covering ${course.topicsEn.slice(0, 3).join(', ')}.`,
-        downloadUrl: `https://libgen.rs/search.php?req=${encodeURIComponent(course.titleEn || course.titleFa)}`,
-        platform: 'LibGen',
-        isLegalOpenAccess: false,
-      },
-      {
-        id: `res-${course.id}-paper1`,
-        type: 'paper',
-        titleFa: `مقاله پژوهشی و مروری جامع پیرامون ${course.titleFa}`,
-        titleEn: `Comprehensive Open Access Survey on ${course.titleEn}`,
-        authors: 'Open Science Academic Consortium',
-        editionOrJournal: 'Open Access Research Archive',
-        year: '2023',
-        summaryFa: `مقاله مروری با دسترسی آزاد جهت آشنایی با جدیدترین پیشرفت‌های علمی درس ${course.titleFa}.`,
-        summaryEn: `Open access survey synthesizing recent breakthroughs in ${course.titleEn}.`,
-        downloadUrl: `https://core.ac.uk/search?q=${encodeURIComponent(course.titleEn || course.titleFa)}`,
-        platform: 'CORE',
-        isLegalOpenAccess: true,
-      }
-    );
-  }
-
-  return resources;
+function getDefaultPrerequisitesForField(fieldId: string): string[] {
+  if (fieldId.startsWith('pol-')) return ['POL-101', 'LAW-101'];
+  if (fieldId.startsWith('law-')) return ['LAW-101', 'PHI-101'];
+  if (fieldId === 'econ-pure' || fieldId === 'finance-banking' || fieldId === 'mgmt-business' || fieldId === 'accounting') return ['ECN-201', 'STAT-201'];
+  if (fieldId.startsWith('med-') || fieldId === 'vet-med') return ['MED-101', 'BIOL-201'];
+  if (fieldId === 'psych-clinical' || fieldId === 'sociology' || fieldId === 'media-comm') return ['PSY-101', 'SOC-201'];
+  if (fieldId === 'philosophy' || fieldId === 'history' || fieldId === 'literature-ling') return ['PHI-101', 'HIS-201'];
+  if (fieldId.startsWith('art-')) return ['DES-201', 'ARC-101'];
+  if (fieldId === 'nuclear' || fieldId.startsWith('nuclear-')) return ['NUC-301', 'PHYS-201'];
+  if (fieldId === 'chem-pure' || fieldId === 'bio-cell' || fieldId === 'agri-agronomy' || fieldId === 'food-sci') return ['CHM-201', 'BIOL-201'];
+  return ['MATH-101', 'PHYS-101'];
 }
 
 export function getCourseRichDetail(course: CourseItem, allCourses: CourseItem[]): CourseRichDetail {
@@ -895,7 +1069,7 @@ export function getCourseRichDetail(course: CourseItem, allCourses: CourseItem[]
       ? 'Think of a giant puzzle brain looking at thousands of pictures; every time it guesses wrong, we gently nudge its tiny knobs so it gets smarter on the next try.'
       : `${bp.child5En} In "${course.titleEn}", we apply this exact everyday intuition to master ${topicZeroEn}.`);
 
-  // Derive sibling prerequisite / unlocked courses cleanly within same field or math/physics
+  // Derive sibling prerequisite / unlocked courses cleanly within same field or domain defaults
   const sameField = allCourses.filter((c) => c.fieldId === course.fieldId && c.id !== course.id);
   const diffOrder: Record<string, number> = { introductory: 1, intermediate: 2, advanced: 3 };
   const myLevel = diffOrder[course.difficulty] || 2;
@@ -906,7 +1080,7 @@ export function getCourseRichDetail(course: CourseItem, allCourses: CourseItem[]
     .map((c) => c.code);
 
   if (prerequisiteCodes.length === 0 && course.difficulty !== 'introductory') {
-    prerequisiteCodes.push('MATH-101', 'PHYS-101');
+    prerequisiteCodes.push(...getDefaultPrerequisitesForField(course.fieldId));
   }
 
   const unlockedCodes = sameField
@@ -998,6 +1172,5 @@ export function getCourseRichDetail(course: CourseItem, allCourses: CourseItem[]
     marketDemandEn: bp.marketEn,
     industryTools: bp.tools,
     curatedVideos: bp.videos,
-    curatedResources: buildCuratedResourcesForCourse(course),
   };
 }

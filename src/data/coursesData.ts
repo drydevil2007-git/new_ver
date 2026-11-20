@@ -1,6 +1,14 @@
 import { CourseItem, DifficultyLevel, EngineeringArticle, FieldCategory } from '../types/app';
+import {
+  EXPANDED_ACADEMIC_COURSES,
+  EXPANDED_ACADEMIC_FIELDS,
+  FACULTY_GROUPS,
+  getFieldFacultyGroup,
+} from './academicExpansionData';
 
-export const ENGINEERING_FIELDS: FieldCategory[] = [
+export { FACULTY_GROUPS, getFieldFacultyGroup };
+
+const BASE_ENGINEERING_FIELDS: FieldCategory[] = [
   { id: 'math', nameFa: 'ریاضیات پایه مهندسی', nameEn: 'Engineering Mathematics', facultyFa: 'علوم پایه', facultyEn: 'Basic Sciences' },
   { id: 'physics', nameFa: 'فیزیک مهندسی', nameEn: 'Engineering Physics', facultyFa: 'علوم پایه', facultyEn: 'Basic Sciences' },
   { id: 'ee-power', nameFa: 'مهندسی برق — قدرت', nameEn: 'Electrical — Power Systems', facultyFa: 'مهندسی برق', facultyEn: 'Electrical Engineering' },
@@ -46,6 +54,11 @@ export const ENGINEERING_FIELDS: FieldCategory[] = [
   { id: 'embedded', nameFa: 'سیستم‌های نهفته و FPGA', nameEn: 'Embedded Systems & FPGA', facultyFa: 'برق و کامپیوتر', facultyEn: 'Embedded Systems' },
   { id: 'marine', nameFa: 'مهندسی دریا و هیدرودینامیک', nameEn: 'Marine & Naval Engineering', facultyFa: 'مهندسی دریا', facultyEn: 'Marine Engineering' },
   { id: 'eng-econ', nameFa: 'اقتصاد و مدیریت مهندسی', nameEn: 'Engineering Economics & Mgmt', facultyFa: 'مدیریت مهندسی', facultyEn: 'Engineering Management' },
+];
+
+export const ENGINEERING_FIELDS: FieldCategory[] = [
+  ...BASE_ENGINEERING_FIELDS,
+  ...EXPANDED_ACADEMIC_FIELDS,
 ];
 
 type SeedTuple = [
@@ -330,20 +343,23 @@ const SUPPLEMENTARY_ELECTIVES: SeedTuple[] = [
   ['NUM-415', 'numerical', 'حل عددی بهینه‌سازی و ماتریس‌های تنک', 'Sparse Linear Solvers', 3, 'advanced', ['روش گرادیان مزدوج CG', 'پیش‌شرطی‌سازها', 'تجزیه Cholesky تنک'], ['Conjugate Gradient', 'Preconditioners', 'Sparse Cholesky'], 'x_{k+1} = x_k + \\alpha_k p_k'],
 ];
 
-export const ENGINEERING_COURSES: CourseItem[] = [...COURSE_SEEDS, ...SUPPLEMENTARY_ELECTIVES].map(
-  ([code, fieldId, titleFa, titleEn, credits, difficulty, topicsFa, topicsEn, keyFormula], idx) => ({
-    id: `course-${idx + 1}`,
-    code,
-    fieldId,
-    titleFa,
-    titleEn,
-    credits,
-    difficulty,
-    topicsFa,
-    topicsEn,
-    keyFormula,
-  })
-);
+export const ENGINEERING_COURSES: CourseItem[] = [
+  ...[...COURSE_SEEDS, ...SUPPLEMENTARY_ELECTIVES].map(
+    ([code, fieldId, titleFa, titleEn, credits, difficulty, topicsFa, topicsEn, keyFormula], idx) => ({
+      id: `course-${idx + 1}`,
+      code,
+      fieldId,
+      titleFa,
+      titleEn,
+      credits,
+      difficulty,
+      topicsFa,
+      topicsEn,
+      keyFormula,
+    })
+  ),
+  ...EXPANDED_ACADEMIC_COURSES,
+];
 
 export const ENGINEERING_ARTICLES: EngineeringArticle[] = [
   {

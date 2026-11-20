@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import {
   Search,
   Sparkles,
@@ -14,10 +15,10 @@ import {
   Box,
   Swords,
 } from 'lucide-react';
-import { ENGINEERING_FIELDS } from '../data/coursesData';
+import { ENGINEERING_FIELDS, FACULTY_GROUPS, getFieldFacultyGroup } from '../data/coursesData';
 import { MIND_MAP_TRACKS } from '../data/mindMapData';
 import { infer3DModelForCourse } from '../data/deepCourseEnrichment';
-import { CourseItem, DifficultyLevel, Lang } from '../types/app';
+import { CourseItem, DifficultyLevel, FacultyGroupId, Lang } from '../types/app';
 import { CourseDetailTab } from './CourseDetailModal';
 import { EngineeringConcept3DViewer } from './EngineeringConcept3DViewer';
 import { LatexBlock } from './MathRenderer';
@@ -128,54 +129,92 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
     const container = mountRef.current;
     if (!container) return;
 
+    const isSoftwareGl = (() => {
+      try {
+        const probe = document.createElement('canvas').getContext('webgl2');
+        if (!probe) return true;
+        const ext = probe.getExtension('WEBGL_debug_renderer_info');
+        const param = ext ? ext.UNMASKED_RENDERER_WEBGL : probe.RENDERER;
+        const gpu = String(probe.getParameter(param));
+        probe.getExtension('WEBGL_lose_context')?.loseContext();
+        return /SwiftShader|llvmpipe|softpipe|Software|Basic Render/i.test(gpu);
+      } catch {
+        return true;
+      }
+    })();
+
     const width = container.clientWidth || 720;
     const height = container.clientHeight || 460;
 
     const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0b1222);
+    scene.fog = new THREE.FogExp2(0x0b1222, 0.028);
+
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: !isSoftwareGl, powerPreference: 'high-performance' });
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.08;
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(isSoftwareGl ? 1 : Math.min(window.devicePixelRatio, 2));
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    const envTarget = pmremGenerator.fromScene(new RoomEnvironment(), 0.04);
+    scene.environment = envTarget.texture;
+    pmremGenerator.dispose();
+
+    const disposables: Array<{ dispose: () => void }> = [envTarget];
+    const track = <T extends { dispose: () => void }>(item: T): T => {
+      disposables.push(item);
+      return item;
+    };
+
     // Subtle spatial reference grid
-    const grid = new THREE.GridHelper(16, 16, 0x0284c7, 0x334155);
+    const grid = new THREE.GridHelper(16, 16, 0x0284c7, 0x1e293b);
     grid.position.y = -3.2;
-    (grid.material as THREE.Material).opacity = 0.22;
+    (grid.material as THREE.Material).opacity = 0.28;
     (grid.material as THREE.Material).transparent = true;
     scene.add(grid);
 
-    // Lights
-    scene.add(new THREE.AmbientLight(0xffffff, 0.75));
-    const dirLight = new THREE.DirectionalLight(0x38bdf8, 1.3);
+    // Warm/Cool Studio 3-Point Rig
+    scene.add(new THREE.HemisphereLight(0xbae6fd, 0x0f172a, 0.78));
+    const dirLight = new THREE.DirectionalLight(0xfff3e0, 1.85);
     dirLight.position.set(6, 10, 8);
     scene.add(dirLight);
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 1.15);
+    rimLight.position.set(-7, 4, -6);
+    scene.add(rimLight);
 
     // Build Nodes & Edges
     const nodeMeshes = new Map<string, THREE.Mesh>();
     const nodeGlows = new Map<string, THREE.Mesh>();
-    const sphereGeo = new THREE.SphereGeometry(0.42, 28, 28);
-    const haloGeo = new THREE.RingGeometry(0.54, 0.65, 32);
+    const sphereGeo = track(new THREE.SphereGeometry(0.42, 28, 28));
+    const haloGeo = track(new THREE.RingGeometry(0.54, 0.65, 32));
 
     currentTrack.nodes.forEach((node) => {
-      const mat = new THREE.MeshStandardMaterial({
-        color: 0x0284c7,
-        roughness: 0.25,
-        metalness: 0.35,
-      });
+      const mat = track(
+        new THREE.MeshStandardMaterial({
+          color: 0x0284c7,
+          roughness: 0.24,
+          metalness: 0.42,
+        })
+      );
       const mesh = new THREE.Mesh(sphereGeo, mat);
       mesh.position.set(...node.position);
       mesh.userData = { nodeId: node.id };
       scene.add(mesh);
       nodeMeshes.set(node.id, mesh);
 
-      const haloMat = new THREE.MeshBasicMaterial({
-        color: 0x38bdf8,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.0,
-      });
+      const haloMat = track(
+        new THREE.MeshBasicMaterial({
+          color: 0x38bdf8,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.0,
+        })
+      );
       const halo = new THREE.Mesh(haloGeo, haloMat);
       halo.position.set(...node.position);
       scene.add(halo);
@@ -185,7 +224,7 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
     // Prerequisite directional edges + moving energy particles
     const edgeLines: Array<{ line: THREE.Line; from: string; to: string }> = [];
     const pulseDots: Array<{ mesh: THREE.Mesh; start: THREE.Vector3; end: THREE.Vector3; phase: number }> = [];
-    const dotGeo = new THREE.SphereGeometry(0.08, 12, 12);
+    const dotGeo = track(new THREE.SphereGeometry(0.08, 12, 12));
 
     currentTrack.nodes.forEach((node) => {
       node.prereqs.forEach((prereqId, i) => {
@@ -193,16 +232,16 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
         if (!fromNode) return;
         const p1 = new THREE.Vector3(...fromNode.position);
         const p2 = new THREE.Vector3(...node.position);
-        const geom = new THREE.BufferGeometry().setFromPoints([p1, p2]);
-        const mat = new THREE.LineBasicMaterial({ color: 0x64748b, transparent: true, opacity: 0.45 });
+        const geom = track(new THREE.BufferGeometry().setFromPoints([p1, p2]));
+        const mat = track(new THREE.LineBasicMaterial({ color: 0x64748b, transparent: true, opacity: 0.45 }));
         const line = new THREE.Line(geom, mat);
         scene.add(line);
         edgeLines.push({ line, from: prereqId, to: node.id });
 
-        const dotMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+        const dotMat = track(new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
         const dot = new THREE.Mesh(dotGeo, dotMat);
         scene.add(dot);
-        pulseDots.push({ mesh: dot, start: p1, end: p2, phase: (i * 0.35 + Math.random()) % 1 });
+        pulseDots.push({ mesh: dot, start: p1, end: p2, phase: (i * 0.35 + ((node.semester * 17 + i * 7) % 10) / 10) % 1 });
       });
     });
 
@@ -265,17 +304,47 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
     window.addEventListener('resize', onResize);
 
     let animId = 0;
+    let disposed = false;
     const clock = new THREE.Clock();
+    const projVec = new THREE.Vector3();
+    const smoothOrbit = { theta: orbitRef.current.theta, phi: orbitRef.current.phi, radius: orbitRef.current.radius };
+
+    const afterDraw = (cb: () => void) => {
+      const gl = renderer.getContext() as WebGL2RenderingContext;
+      if (!gl || typeof gl.fenceSync !== 'function') {
+        animId = window.setTimeout(cb, 80);
+        return;
+      }
+      const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+      gl.flush();
+      const poll = () => {
+        if (disposed) return;
+        const state = sync && gl.getSyncParameter(sync, gl.SYNC_STATUS);
+        if (state === gl.UNSIGNALED) {
+          animId = window.setTimeout(poll, 5);
+        } else {
+          if (sync) gl.deleteSync(sync);
+          animId = window.setTimeout(cb, 80);
+        }
+      };
+      animId = window.setTimeout(poll, 5);
+    };
 
     const animate = () => {
-      animId = requestAnimationFrame(animate);
-      const elapsed = clock.getElapsedTime();
+      if (disposed) return;
+      const dt = Math.min(clock.getDelta(), 0.05);
+      const elapsed = clock.elapsedTime;
 
       if (!orbitRef.current.dragging) {
-        orbitRef.current.theta += 0.0008;
+        orbitRef.current.theta += 0.06 * dt;
       }
 
-      const { theta, phi, radius } = orbitRef.current;
+      const damp = isSoftwareGl ? 1 : 1 - Math.exp(-8 * dt);
+      smoothOrbit.theta += (orbitRef.current.theta - smoothOrbit.theta) * damp;
+      smoothOrbit.phi += (orbitRef.current.phi - smoothOrbit.phi) * damp;
+      smoothOrbit.radius += (orbitRef.current.radius - smoothOrbit.radius) * damp;
+
+      const { theta, phi, radius } = smoothOrbit;
       camera.position.set(
         radius * Math.sin(phi) * Math.sin(theta),
         radius * Math.cos(phi),
@@ -338,46 +407,83 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
       const w = container.clientWidth || 720;
       const h = container.clientHeight || 460;
       const nextLabels: ProjectedLabel[] = currentTrack.nodes.map((node) => {
-        const v = new THREE.Vector3(...node.position);
-        v.y += 0.62;
-        v.project(camera);
-        const visible = v.z < 1 && v.z > -1;
+        projVec.set(node.position[0], node.position[1] + 0.62, node.position[2]);
+        projVec.project(camera);
+        const visible = projVec.z < 1 && projVec.z > -1;
         return {
           id: node.id,
-          x: (v.x * 0.5 + 0.5) * w,
-          y: (-v.y * 0.5 + 0.5) * h,
+          x: (projVec.x * 0.5 + 0.5) * w,
+          y: (-projVec.y * 0.5 + 0.5) * h,
           visible,
-          scale: Math.max(0.8, 1.15 - v.z * 0.25),
+          scale: Math.max(0.8, 1.15 - projVec.z * 0.25),
         };
       });
       setProjectedLabels(nextLabels);
+
+      if (isSoftwareGl) {
+        afterDraw(animate);
+      } else {
+        animId = requestAnimationFrame(animate);
+      }
     };
 
     animate();
 
     return () => {
+      disposed = true;
       cancelAnimationFrame(animId);
+      clearTimeout(animId);
       dom.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
       dom.removeEventListener('wheel', onWheel);
       window.removeEventListener('resize', onResize);
+      disposables.forEach((d) => d.dispose());
       renderer.dispose();
     };
   }, [currentTrack, viewMode, subTab]);
 
   // ==========================================================================
-  // 2. 170+ Courses & 45 Fields Filterable Catalog State
+  // 2. All-Discipline University Catalog (Nuclear Eng. to Political Science)
   // ==========================================================================
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFacultyGroup, setSelectedFacultyGroup] = useState<FacultyGroupId>('all');
   const [selectedFieldId, setSelectedFieldId] = useState<string>('all');
   const [difficultyFilter, setDifficultyFilter] = useState<'all' | DifficultyLevel>('all');
   const [visibleCount, setVisibleCount] = useState(18);
+
+  const fieldMap = useMemo(() => {
+    const map = new Map<string, (typeof ENGINEERING_FIELDS)[number]>();
+    ENGINEERING_FIELDS.forEach((f) => map.set(f.id, f));
+    return map;
+  }, []);
+
+  const facultyFields = useMemo(() => {
+    if (selectedFacultyGroup === 'all') return ENGINEERING_FIELDS;
+    return ENGINEERING_FIELDS.filter((f) => getFieldFacultyGroup(f) === selectedFacultyGroup);
+  }, [selectedFacultyGroup]);
+
+  const facultyCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: 0 };
+    courses.forEach((c) => {
+      if (c.visible === false) return;
+      counts.all += 1;
+      const field = fieldMap.get(c.fieldId);
+      const g = field ? getFieldFacultyGroup(field) : 'engineering';
+      counts[g] = (counts[g] || 0) + 1;
+    });
+    return counts;
+  }, [courses, fieldMap]);
 
   const filteredCourses = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return courses.filter((c) => {
       if (c.visible === false) return false;
+      const field = fieldMap.get(c.fieldId);
+      if (selectedFacultyGroup !== 'all') {
+        const g = field ? getFieldFacultyGroup(field) : 'engineering';
+        if (g !== selectedFacultyGroup) return false;
+      }
       if (selectedFieldId !== 'all' && c.fieldId !== selectedFieldId) return false;
       if (difficultyFilter !== 'all' && c.difficulty !== difficultyFilter) return false;
       if (!q) return true;
@@ -385,17 +491,13 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
         c.titleFa.toLowerCase().includes(q) ||
         c.titleEn.toLowerCase().includes(q) ||
         c.code.toLowerCase().includes(q) ||
+        (field?.nameFa.toLowerCase().includes(q) ?? false) ||
+        (field?.nameEn.toLowerCase().includes(q) ?? false) ||
         c.topicsFa.some((t) => t.toLowerCase().includes(q)) ||
         c.topicsEn.some((t) => t.toLowerCase().includes(q))
       );
     });
-  }, [courses, searchQuery, selectedFieldId, difficultyFilter]);
-
-  const fieldMap = useMemo(() => {
-    const map = new Map<string, (typeof ENGINEERING_FIELDS)[number]>();
-    ENGINEERING_FIELDS.forEach((f) => map.set(f.id, f));
-    return map;
-  }, []);
+  }, [courses, searchQuery, selectedFacultyGroup, selectedFieldId, difficultyFilter, fieldMap]);
 
   const difficultyLabel = (d: DifficultyLevel) => {
     if (d === 'introductory') return lang === 'fa' ? 'پایه' : 'Introductory';
@@ -406,10 +508,19 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
   const resolveSelectedNodeCourse = (): CourseItem => {
     const existing = courses.find((c) => c.code === selectedNode.code);
     if (existing) return existing;
+    const trackFallbackField: Record<string, string> = {
+      electrical: 'ee',
+      computer: 'ce',
+      mechanical: 'me',
+      nuclear: 'nuclear',
+      medical: 'med-general',
+      'law-econ': 'econ-pure',
+      'political-ir': 'pol-science',
+    };
     return {
       id: selectedNode.id,
       code: selectedNode.code,
-      fieldId: currentTrack.id === 'electrical' ? 'ee' : currentTrack.id === 'computer' ? 'ce' : 'me',
+      fieldId: trackFallbackField[currentTrack.id] || 'ee',
       titleFa: selectedNode.titleFa,
       titleEn: selectedNode.titleEn,
       difficulty: selectedNode.semester <= 2 ? 'introductory' : selectedNode.semester <= 4 ? 'intermediate' : 'advanced',
@@ -433,12 +544,14 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-            {lang === 'fa' ? 'نقشه پیش‌نیازها و بانک دروس مهندسی' : 'Course Mind Map & Academic Catalog'}
+            {lang === 'fa'
+              ? 'بانک جامع دروس دانشگاهی (از مهندسی هسته‌ای تا علوم سیاسی)'
+              : 'All-Discipline University Catalog (Nuclear Eng. to Political Science)'}
           </h2>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             {lang === 'fa'
-              ? `${courses.length} درس دانشگاهی در ${ENGINEERING_FIELDS.length} گرایش مهندسی با گراف تعاملی پیش‌نیازها`
-              : `${courses.length} academic courses across ${ENGINEERING_FIELDS.length} fields with interactive prerequisite graph`}
+              ? `${courses.length} درس سرفصل رسمی در ${ENGINEERING_FIELDS.length} رشته و ۱۰ دانشکده همراه با نقشه سه‌بعدی پیش‌نیازها`
+              : `${courses.length} curriculum courses across ${ENGINEERING_FIELDS.length} disciplines & 10 faculties with 3D prerequisite graphs`}
           </p>
         </div>
 
@@ -564,7 +677,7 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
                     );
                   })}
                 </div>
-                <div className="pointer-events-none absolute bottom-3 inset-x-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-300 bg-slate-900/75 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-700/60">
+                <div className="pointer-events-none absolute bottom-3 inset-x-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-300 bg-slate-950/90 px-3 py-1.5 rounded-lg border border-slate-700/70">
                   <span>
                     {lang === 'fa'
                       ? 'چرخش: کشیدن ماوس · بزرگنمایی: اسکرول · انتخاب درس: کلیک روی گره'
@@ -582,7 +695,7 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
             ) : (
               /* Accessible 2D Semester Grid View */
               <div className="min-h-[430px] rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-4 space-y-4 overflow-y-auto">
-                {[1, 2, 3, 4, 5, 6, 7].map((sem) => {
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => {
                   const semNodes = currentTrack.nodes.filter((n) => n.semester === sem);
                   if (semNodes.length === 0) return null;
                   return (
@@ -805,10 +918,45 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
       )}
 
       {/* ===================================================================== */}
-      {/* TAB 2: 174 Engineering & Academic Courses across 45 Fields            */}
+      {/* TAB 2: All-Discipline University Courses across 80 Fields & 10 Faculties */}
       {/* ===================================================================== */}
       {subTab === 'catalog' && (
         <div className="space-y-5">
+          {/* Faculty Group Quick Filter Bar (Nuclear Eng. -> Political Science) */}
+          <div className="glass-surface rounded-2xl p-2.5 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-1.5 min-w-max">
+              {FACULTY_GROUPS.map((group) => {
+                const active = selectedFacultyGroup === group.id;
+                const count = facultyCounts[group.id] || 0;
+                return (
+                  <button
+                    key={group.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedFacultyGroup(group.id);
+                      setSelectedFieldId('all');
+                      setVisibleCount(18);
+                    }}
+                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
+                      active
+                        ? 'bg-sky-600 text-white shadow-sm'
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-800/80'
+                    }`}
+                  >
+                    <span>{lang === 'fa' ? group.nameFa : group.nameEn}</span>
+                    <span
+                      className={`font-mono text-[11px] tabular-nums ${
+                        active ? 'text-sky-100' : 'text-slate-400 dark:text-slate-500'
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Search + Field Dropdown + Difficulty Segmented Bar */}
           <div className="glass-surface rounded-2xl p-4 sm:p-5 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
             <div className="md:col-span-4 relative">
@@ -820,7 +968,11 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
                   setSearchQuery(e.target.value);
                   setVisibleCount(18);
                 }}
-                placeholder={lang === 'fa' ? 'جستجوی نام درس، کد (مثلاً EE-201) یا سرفصل...' : 'Search course title, code (e.g. EE-201), or topic...'}
+                placeholder={
+                  lang === 'fa'
+                    ? 'جستجوی درس، رشته یا کد (مثلاً NUC-301، POL-301، MED-201)...'
+                    : 'Search course, field, or code (e.g. NUC-301, POL-301, MED-201)...'
+                }
                 className="w-full ps-10 pe-3.5 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
@@ -836,10 +988,10 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
               >
                 <option value="all">
                   {lang === 'fa'
-                    ? `همه ${ENGINEERING_FIELDS.length} رشته دانشگاهی (${courses.length} درس)`
-                    : `All ${ENGINEERING_FIELDS.length} Fields (${courses.length} Courses)`}
+                    ? `همه ${facultyFields.length} رشته این گروه (${facultyCounts[selectedFacultyGroup] || 0} درس)`
+                    : `All ${facultyFields.length} Fields in Group (${facultyCounts[selectedFacultyGroup] || 0} Courses)`}
                 </option>
-                {ENGINEERING_FIELDS.map((field) => (
+                {facultyFields.map((field) => (
                   <option key={field.id} value={field.id}>
                     {lang === 'fa' ? `${field.nameFa} (${field.facultyFa})` : `${field.nameEn} (${field.facultyEn})`}
                   </option>
@@ -870,16 +1022,17 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
 
           {/* Results Summary */}
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
-            <span>
+            <span className="tabular-nums">
               {lang === 'fa'
                 ? `نمایش ${Math.min(visibleCount, filteredCourses.length)} از ${filteredCourses.length} درس منطبق`
                 : `Showing ${Math.min(visibleCount, filteredCourses.length)} of ${filteredCourses.length} matching courses`}
             </span>
-            {(searchQuery || selectedFieldId !== 'all' || difficultyFilter !== 'all') && (
+            {(searchQuery || selectedFacultyGroup !== 'all' || selectedFieldId !== 'all' || difficultyFilter !== 'all') && (
               <button
                 type="button"
                 onClick={() => {
                   setSearchQuery('');
+                  setSelectedFacultyGroup('all');
                   setSelectedFieldId('all');
                   setDifficultyFilter('all');
                 }}
@@ -1038,7 +1191,7 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
       )}
 
       {/* ===================================================================== */}
-      {/* TAB 3: Interactive 3D Engineering Concept Models Showcase             */}
+      {/* TAB 3: Interactive 3D University Concept Models Showcase (6 Models)   */}
       {/* ===================================================================== */}
       {subTab === 'models3d' && (
         <div className="space-y-4">
@@ -1046,20 +1199,20 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
             <div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                 {lang === 'fa'
-                  ? 'آزمایشگاه سه‌بعدی تعاملی مفاهیم مهندسی (WebGL)'
-                  : 'Interactive 3D Engineering Concepts Lab'}
+                  ? 'آزمایشگاه سه‌بعدی تعاملی علوم دانشگاهی (از راکتور هسته‌ای تا ژئوپلیتیک)'
+                  : 'Interactive 3D University Concept Lab (Nuclear Reactor to Geopolitics)'}
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-0.5">
                 {lang === 'fa'
-                  ? 'مدل‌ها را بچرخانید، زوم کنید و روی پین‌های شماره‌دار کلیک کنید تا فرمول و عملکرد هر قطعه نمایش داده شود.'
-                  : 'Orbit, zoom, and inspect numbered 3D hotspot pins for physical intuition and governing LaTeX formulas.'}
+                  ? '۶ مدل سه‌بعدی تعاملی (الکترومغناطیس، پیستون و تیر، شبکه عصبی، بلور، راکتور هسته‌ای PWR و کره ژئوپلیتیک) با پین‌های آموزشی و فرمول‌های LaTeX.'
+                  : '6 interactive 3D models (EM Coil, Piston & Beam, Neural Net, Crystal Lattice, PWR Nuclear Reactor, and Geopolitical Globe) with clickable pins.'}
               </p>
             </div>
           </div>
 
           <EngineeringConcept3DViewer
             lang={lang}
-            initialModelType="electromagnetic"
+            initialModelType="nuclear_reactor"
             heightClass="h-[400px] sm:h-[460px]"
             allowModelSwitch={true}
           />

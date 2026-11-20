@@ -16,6 +16,7 @@ import {
   Target,
 } from 'lucide-react';
 import { Lang, NavSection } from '../types/app';
+import { ENGINEERING_COURSES, ENGINEERING_FIELDS } from '../data/coursesData';
 import { LatexBlock } from './MathRenderer';
 import { StoryCirclesBar } from './StoryCirclesBar';
 import { LabTab } from './AiEngineeringLab';
@@ -135,20 +136,20 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({
 
   const stats = [
     {
-      value: lang === 'fa' ? '۱۷۴+' : '174+',
-      label: lang === 'fa' ? 'درس مهندسی و علوم پایه' : 'Academic & Engineering Courses',
+      value: `${ENGINEERING_COURSES.length}+`,
+      label: lang === 'fa' ? 'درس از هسته‌ای تا علوم سیاسی' : 'Courses: Nuclear to Political Sci.',
     },
     {
-      value: lang === 'fa' ? '۴۵' : '45',
-      label: lang === 'fa' ? 'گرایش و رشته تخصصی' : 'Specialized Engineering Fields',
+      value: `${ENGINEERING_FIELDS.length}`,
+      label: lang === 'fa' ? 'رشته دانشگاهی در ۱۰ دانشکده' : 'University Fields · 10 Faculties',
     },
     {
-      value: lang === 'fa' ? '۶ ابزار' : '6 Engines',
-      label: lang === 'fa' ? 'هوش مصنوعی و یادگیری فعال' : 'Active AI & Collaboration Modules',
+      value: lang === 'fa' ? '۶ مدل سه‌بعدی' : '6 3D Labs',
+      label: lang === 'fa' ? 'راکتور، ژئوپلیتیک، شبکه عصبی و...' : 'Reactor, Globe, Neural Net & more',
     },
     {
       value: 'LaTeX',
-      label: lang === 'fa' ? 'رندر دقیق معادلات مهندسی' : 'Precision Mathematical Typesetting',
+      label: lang === 'fa' ? 'رندر دقیق معادلات و چارچوب‌ها' : 'Precision Mathematical Typesetting',
     },
   ];
 
@@ -165,18 +166,18 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({
             <div className="space-y-4">
               <p className="text-xs sm:text-sm font-medium text-sky-700 dark:text-sky-400">
                 {lang === 'fa'
-                  ? 'نسل جدید پلتفرم آموزش دانشگاهی و مهندسی · danshyar.ir'
-                  : 'Next-Generation University & Engineering Platform · danshyar.ir'}
+                  ? 'نسل جدید پلتفرم جامع آموزش دانشگاهی · danshyar.ir'
+                  : 'Next-Generation All-Discipline University Platform · danshyar.ir'}
               </p>
               <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.22] [text-wrap:balance]">
                 {lang === 'fa'
-                  ? 'تسلط عمیق بر دروس مهندسی؛ از شهود فاینمن تا حل گام‌به‌گام فرمول‌ها'
-                  : 'Master University Engineering from Feynman Intuition to Exact Derivations'}
+                  ? 'تسلط عمیق بر همه علوم دانشگاهی؛ از مهندسی هسته‌ای تا علوم سیاسی'
+                  : 'Master University Disciplines from Nuclear Engineering to Political Science'}
               </h1>
               <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
                 {lang === 'fa'
-                  ? 'دانشیار ۱۷۴ درس دانشگاهی در ۴۵ رشته مهندسی، جزوات رتبه‌بندی‌شده دانشجویان، دستیار فاینمن و ۶ ابزار پیشرفته شامل حل معادلات LaTeX، نقشه سه‌بعدی پیش‌نیازها، مربی صوتی زنده و اتاق مطالعه اشتراکی را یکجا گرد آورده است.'
-                  : 'DaneshYar unifies 174 academic courses across 45 engineering fields, peer-rated cheat-sheets, Feynman AI intuition, step-by-step LaTeX solving, 3D prerequisite maps, live voice coaching, and collaborative study rooms.'}
+                  ? `دانشیار ${ENGINEERING_COURSES.length} درس سرفصل رسمی در ${ENGINEERING_FIELDS.length} رشته دانشگاهی (مهندسی هسته‌ای، برق، کامپیوتر، پزشکی، حقوق، اقتصاد، روان‌شناسی تا علوم سیاسی و روابط بین‌الملل) را همراه با نقشه سه‌بعدی پیش‌نیازها، مدل‌های سه‌بعدی تعاملی و دستیار فاینمن یکجا گرد آورده است.`
+                  : `DaneshYar unifies ${ENGINEERING_COURSES.length} official curriculum courses across ${ENGINEERING_FIELDS.length} disciplines (from Nuclear Engineering, Medicine, Law, and Economics to Political Science & IR) with 3D prerequisite graphs, interactive 3D labs, and Feynman AI.`}
               </p>
             </div>
 

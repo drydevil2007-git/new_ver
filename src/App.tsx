@@ -198,13 +198,20 @@ export default function App() {
     );
   };
 
-  // Stateful Courses Catalog (synchronized with Admin Panel CRUD)
+  // Stateful Courses Catalog (synchronized with Admin Panel CRUD & auto-merged with new built-in disciplines)
   const [courses, setCourses] = useState<CourseItem[]>(() => {
     try {
       const saved = localStorage.getItem('daneshyar_courses_v1');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const existingIds = new Set(parsed.map((c: CourseItem) => c.id));
+          const existingCodes = new Set(parsed.map((c: CourseItem) => c.code));
+          const missingDefaults = ENGINEERING_COURSES.filter(
+            (c) => !existingIds.has(c.id) && !existingCodes.has(c.code)
+          );
+          return missingDefaults.length > 0 ? [...parsed, ...missingDefaults] : parsed;
+        }
       }
     } catch {
       // fallback
