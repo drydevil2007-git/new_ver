@@ -22,7 +22,9 @@ import {
   KeyRound,
   Baby,
   Swords,
+  Download,
 } from 'lucide-react';
+import { exportCourseDatabaseAsJson } from '../lib/courseDatabase';
 import { ENGINEERING_FIELDS } from '../data/coursesData';
 import {
   CourseItem,
@@ -789,14 +791,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 className="w-full ps-10 pe-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white/85 dark:bg-slate-900/85 text-slate-900 dark:text-white"
               />
             </div>
-            <button
-              type="button"
-              onClick={openCreateCourse}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold cursor-pointer shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              <span>{lang === 'fa' ? 'افزودن درس جدید' : 'Add New Course'}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => exportCourseDatabaseAsJson()}
+                title={lang === 'fa' ? 'دانلود دیتابیس جامع تمام دروس دانشگاهی در فرمت JSON' : 'Download Complete Courses Database as JSON'}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-xs sm:text-sm font-bold cursor-pointer transition-colors shadow-sm"
+              >
+                <Download className="w-4 h-4" />
+                <span>{lang === 'fa' ? 'خروجی بانک دروس (JSON)' : 'Export Database'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={openCreateCourse}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold cursor-pointer shadow-sm"
+              >
+                <Plus className="w-4 h-4" />
+                <span>{lang === 'fa' ? 'افزودن درس جدید' : 'Add New Course'}</span>
+              </button>
+            </div>
           </div>
 
           {/* Course Table */}

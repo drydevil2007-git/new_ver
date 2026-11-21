@@ -14,7 +14,9 @@ import {
   Play,
   Box,
   Swords,
+  Download,
 } from 'lucide-react';
+import { exportCourseDatabaseAsJson } from '../lib/courseDatabase';
 import { ENGINEERING_FIELDS, FACULTY_GROUPS, getFieldFacultyGroup } from '../data/coursesData';
 import { MIND_MAP_TRACKS } from '../data/mindMapData';
 import { infer3DModelForCourse } from '../data/deepCourseEnrichment';
@@ -591,6 +593,15 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
           >
             <Box className="w-4 h-4" />
             <span>{lang === 'fa' ? 'مدل‌های سه‌بعدی مفاهیم' : '3D Engineering Models'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => exportCourseDatabaseAsJson()}
+            title={lang === 'fa' ? 'دانلود بانک جامع دروس دانشگاهی در قالب استاندارد JSON' : 'Export Full Course Database as JSON'}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+          >
+            <Download className="w-4 h-4" />
+            <span>{lang === 'fa' ? 'دریافت بانک داده (JSON)' : 'Export JSON DB'}</span>
           </button>
         </div>
       </div>
