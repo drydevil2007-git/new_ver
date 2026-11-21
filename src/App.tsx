@@ -27,6 +27,7 @@ import { CampusVoiceHub } from './components/CampusVoiceHub';
 import { MercuryAgentHub } from './components/MercuryAgentHub';
 import { OpenMausBotHub } from './components/OpenMausBotHub';
 import { StrataHub } from './components/StrataHub';
+import { ClaudableHub } from './components/ClaudableHub';
 import { ArticlesHub } from './components/ArticlesHub';
 import { AdminPanel } from './components/AdminPanel';
 import { DaneshReelsModal } from './components/DaneshReelsModal';
@@ -434,6 +435,7 @@ export default function App() {
                   {activeSection === 'study-rooms' && (lang === 'fa' ? 'اتاق مطالعه اشتراکی' : 'Study Rooms & Tools')}
                   {activeSection === 'community' && (lang === 'fa' ? 'چت علمی، انجمن و جزوات' : 'Academic Chat, Forum & Notes')}
                   {activeSection === 'campus' && (lang === 'fa' ? 'هم‌دانشگاهی · صدای دانشجو و جامعه' : 'Campus & Society Student Voice')}
+                  {activeSection === 'claudable' && (lang === 'fa' ? '✨ استودیوی وب‌ساز کلودبل (Claudable Studio)' : '✨ Claudable Web Builder Studio')}
                   {activeSection === 'mercury' && (lang === 'fa' ? '⚡ دانشیار مرکیوری · دستیار خودگردان و مغز دوم' : '⚡ Mercury Agent Hub & Second Brain')}
                   {activeSection === 'admin' && (lang === 'fa' ? 'پنل مدیریت جامع ادمین' : 'Comprehensive Admin Panel')}
                 </span>
@@ -562,6 +564,8 @@ export default function App() {
           {activeSection === 'mausbot' && <OpenMausBotHub lang={lang} onNavigate={setActiveSection} />}
 
           {activeSection === 'strata' && <StrataHub lang={lang} onNavigate={setActiveSection} />}
+
+          {activeSection === 'claudable' && <ClaudableHub lang={lang} onNavigate={setActiveSection} />}
 
           {activeSection === 'admin' && user?.role === 'admin' && (
             <AdminPanel

@@ -14,6 +14,7 @@ import {
   Cpu,
   Bot,
   Zap,
+  Code2,
 } from 'lucide-react';
 import { Lang, NavSection, UserSession } from '../types/app';
 
@@ -50,8 +51,9 @@ export const Header: React.FC<HeaderProps> = ({
     return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
 
-  const navItems: Array<{ id: NavSection; labelFa: string; labelEn: string; isCampus?: boolean; isMercury?: boolean; isMaus?: boolean; isStrata?: boolean }> = [
+  const navItems: Array<{ id: NavSection; labelFa: string; labelEn: string; isCampus?: boolean; isMercury?: boolean; isMaus?: boolean; isStrata?: boolean; isClaudable?: boolean }> = [
     { id: 'exam-sprint', labelFa: '🎯 آمادگی امتحان', labelEn: '🎯 Exam Prep' },
+    { id: 'claudable', labelFa: '✨ کلودبل استودیو', labelEn: '✨ Claudable Studio', isClaudable: true },
     { id: 'mercury', labelFa: '⚡ مرکیوری ایجنت', labelEn: '⚡ Mercury Agent', isMercury: true },
     { id: 'mausbot', labelFa: '🐭 اوپن‌ماوس‌بات', labelEn: '🐭 OpenMausBot', isMaus: true },
     { id: 'strata', labelFa: '⚡ استراتا محلی', labelEn: '⚡ Strata Local', isStrata: true },
@@ -110,6 +112,14 @@ export const Header: React.FC<HeaderProps> = ({
                   >
                     <GraduationCap className="w-3.5 h-3.5" />
                     <Landmark className="w-3.5 h-3.5" />
+                  </span>
+                )}
+                {item.isClaudable && (
+                  <span
+                    className="inline-flex items-center text-indigo-500 dark:text-indigo-400"
+                    aria-hidden="true"
+                  >
+                    <Code2 className="w-3.5 h-3.5" />
                   </span>
                 )}
                 {item.isMercury && (
@@ -355,6 +365,14 @@ export const Header: React.FC<HeaderProps> = ({
                   >
                     <GraduationCap className="w-4 h-4" />
                     <Landmark className="w-4 h-4" />
+                  </span>
+                )}
+                {item.isClaudable && (
+                  <span
+                    className="inline-flex items-center text-indigo-500 dark:text-indigo-400"
+                    aria-hidden="true"
+                  >
+                    <Code2 className="w-3.5 h-3.5" />
                   </span>
                 )}
                 {item.isMercury && (

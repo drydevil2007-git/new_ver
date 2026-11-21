@@ -12,6 +12,7 @@ export type NavSection =
   | 'mercury'
   | 'mausbot'
   | 'strata'
+  | 'claudable'
   | 'study-deck'
   | 'study-rooms'
   | 'admin';
@@ -570,6 +571,79 @@ export interface StrataServingConfig {
   ramAllocatedGb: number;
   nvmeStreamBandwidthGbS: number;
 }
+
+// ============================================================================
+// CLAUDABLE — Open-Source AI Web App Builder & CLI Coding Agents Studio
+// ============================================================================
+
+export type ClaudableAgentEngine =
+  | 'claude-code'
+  | 'codex-cli'
+  | 'cursor-cli'
+  | 'gemini-cli'
+  | 'qwen-code';
+
+export interface ClaudableEngineSpec {
+  id: ClaudableAgentEngine;
+  name: string;
+  provider: string;
+  model: string;
+  contextWindow: string;
+  descriptionFa: string;
+  descriptionEn: string;
+  badge: string;
+  cliCommand: string;
+  isPopular?: boolean;
+}
+
+export interface ClaudableProjectFile {
+  name: string;
+  path: string;
+  language: 'typescript' | 'javascript' | 'html' | 'css' | 'json';
+  content: string;
+  isMain?: boolean;
+}
+
+export interface ClaudableStepItem {
+  id: string;
+  titleFa: string;
+  titleEn: string;
+  tool: 'cli_command' | 'create_file' | 'edit_file' | 'npm_install' | 'run_dev' | 'db_migrate';
+  command?: string;
+  output?: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  timestamp: string;
+}
+
+export interface ClaudableProject {
+  id: string;
+  titleFa: string;
+  titleEn: string;
+  prompt: string;
+  engine: ClaudableAgentEngine;
+  framework: 'nextjs' | 'vite-react';
+  status: 'idle' | 'thinking' | 'building' | 'ready' | 'error';
+  files: ClaudableProjectFile[];
+  steps: ClaudableStepItem[];
+  thinkingLog: string[];
+  previewUrl: string;
+  githubUrl?: string;
+  vercelUrl?: string;
+  supabaseConnected: boolean;
+  createdAt: string;
+}
+
+export interface ClaudableTemplatePreset {
+  id: string;
+  titleFa: string;
+  titleEn: string;
+  category: 'engineering' | 'ai' | 'simulation' | 'iot' | 'academic';
+  promptFa: string;
+  promptEn: string;
+  iconName: string;
+  tags: string[];
+}
+
 
 
 

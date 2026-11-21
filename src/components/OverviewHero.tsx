@@ -17,6 +17,7 @@ import {
   Cpu,
   Bot,
   Zap,
+  Code2,
 } from 'lucide-react';
 import { Lang, NavSection } from '../types/app';
 import { ENGINEERING_COURSES, ENGINEERING_FIELDS } from '../data/coursesData';
@@ -125,6 +126,15 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({
       descFa: 'تیم بات‌های هوش مصنوعی با کامپیوتر ایزوله اختصاصی (VM)، کارت‌های تایید مجوز (Approval Cards)، اتاق‌های چندرباته و پشتیبانی از مدل‌های Claude، Gemini، Grok و DeepSeek.',
       descEn: 'Your AI team in a chat app. Every bot gets an isolated computer sandbox, interactive approval cards for dangerous actions, and multi-bot collaborative rooms.',
       action: () => onNavigate('mausbot'),
+    },
+    {
+      id: 'claudable',
+      icon: Code2,
+      titleFa: '✨ وب‌ساز هوشمند کلودبل (Claudable Studio)',
+      titleEn: '✨ Claudable Studio: Lovable for CLI Agents',
+      descFa: 'ساخت و دیپلوی آنی وب‌اپلیکیشن‌ها و شبیه‌سازهای مهندسی با ایجنت‌های محلی Claude Code، Cursor و Codex همراه با پیش‌نمایش زنده و هات‌لود.',
+      descEn: 'Build and deploy full-stack engineering tools effortlessly with local CLI coding agents, live hot-reload sandbox, and Vercel edge deployment.',
+      action: () => onNavigate('claudable'),
     },
     {
       id: 'strata',
