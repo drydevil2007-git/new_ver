@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
@@ -11,6 +11,10 @@ import {
   Building2,
   ShieldCheck,
   Loader2,
+  RefreshCw,
+  Shield,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { Lang, UserRole, UserSession } from '../types/app';
 import { signInWithGoogleAccount } from '../lib/googleAuth';
@@ -28,6 +32,16 @@ interface StoredRegisteredUser extends UserSession {
 }
 
 const REGISTERED_USERS_KEY = 'daneshyar_registered_users_v1';
+
+// Alphanumeric CAPTCHA generator excluding visually ambiguous characters (0, O, 1, I)
+function createRandomCaptcha(): string {
+  const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+  let result = '';
+  for (let i = 0; i < 5; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
 // Authorized system administrator accounts (recognized strictly upon standard email + password or verified Google sign-in)
 const AUTHORIZED_ADMIN_EMAILS = [
@@ -88,6 +102,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [regUniversity, setRegUniversity] = useState('');
   const [regField, setRegField] = useState('');
   const [regRole, setRegRole] = useState<Exclude<UserRole, 'admin'>>('student');
+
+  // CAPTCHA verification state
+  const [captchaCode, setCaptchaCode] = useState<string>(() => createRandomCaptcha());
+  const [captchaInput, setCaptchaInput] = useState('');
+
+  // Background video state for registration
+  const [isVideoMuted, setIsVideoMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const regenerateCaptcha = () => {
+    setCaptchaCode(createRandomCaptcha());
+    setCaptchaInput('');
+  };
+
+  useEffect(() => {
+    if (tab === 'register' && videoRef.current) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, [tab, isOpen]);
 
   const getStoredUsers = (): StoredRegisteredUser[] => {
     try {
@@ -272,6 +305,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
+    // CAPTCHA verification check
+    if (!captchaInput.trim() || captchaInput.trim().toUpperCase() !== captchaCode.toUpperCase()) {
+      setErrorMsg(
+        lang === 'fa'
+          ? 'کد امنیتی کپچا نادرست است؛ لطفاً کد جدید را وارد کنید.'
+          : 'Security CAPTCHA is incorrect. Please try again with the new code.'
+      );
+      regenerateCaptcha();
+      return;
+    }
+
     // Standard registration strictly assigns student or professor role
     const session: UserSession = {
       id: `usr-${Date.now()}`,
@@ -322,6 +366,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           onClick={onClose}
           className="fixed inset-0 z-[100] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
         >
+          {/* Background Video during registration */}
+          {tab === 'register' && (
+            <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+              <video
+                ref={videoRef}
+                autoPlay
+                loop
+                muted={isVideoMuted}
+                playsInline
+                className="w-full h-full object-cover opacity-60 scale-105 filter brightness-75 contrast-110 transition-opacity duration-700"
+                src="/videos/auth_bg.mp4"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/65 to-slate-900/80 backdrop-blur-[2px]" />
+            </div>
+          )}
+
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 14 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -345,14 +405,39 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     : 'Sign in with Google or your university email to sync courses and notes.'}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label={lang === 'fa' ? 'بستن' : 'Close'}
-                className="min-w-[40px] min-h-[40px] rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                {tab === 'register' && (
+                  <button
+                    type="button"
+                    onClick={() => setIsVideoMuted(!isVideoMuted)}
+                    title={
+                      isVideoMuted
+                        ? lang === 'fa'
+                          ? 'پخش صدای ویدیو'
+                          : 'Unmute video audio'
+                        : lang === 'fa'
+                        ? 'قطع صدای ویدیو'
+                        : 'Mute video audio'
+                    }
+                    aria-label={isVideoMuted ? 'Unmute video audio' : 'Mute video audio'}
+                    className={`min-w-[40px] min-h-[40px] rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+                      !isVideoMuted
+                        ? 'border-rose-500 bg-rose-500/10 text-rose-500 shadow-sm animate-pulse'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {isVideoMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label={lang === 'fa' ? 'بستن' : 'Close'}
+                  className="min-w-[40px] min-h-[40px] rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Official Continue with Google Button */}
@@ -589,6 +674,73 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         onChange={(e) => setRegField(e.target.value)}
                         placeholder={lang === 'fa' ? 'مهندسی برق / کامپیوتر' : 'Major / Field'}
                         className="w-full ps-9 pe-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* CAPTCHA Security Verification */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <Shield className="w-3.5 h-3.5 text-sky-500" />
+                      <span>{lang === 'fa' ? 'کد امنیتی کپچا' : 'Security CAPTCHA'}</span>
+                    </label>
+                    <span className="text-[11px] text-slate-400">
+                      {lang === 'fa' ? 'تأیید هویت ضد ربات' : 'Anti-bot verification'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 items-center">
+                    {/* Visual Captcha Box with distortion and noise lines */}
+                    <div className="relative overflow-hidden flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-900/90 dark:bg-slate-950 border border-slate-700 select-none shadow-inner">
+                      <div className="absolute inset-0 pointer-events-none opacity-30">
+                        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                          <line x1="0" y1="10" x2="220" y2="38" stroke="#38bdf8" strokeWidth="1.5" />
+                          <line x1="0" y1="36" x2="220" y2="12" stroke="#f43f5e" strokeWidth="1.5" />
+                          <line x1="15" y1="42" x2="190" y2="6" stroke="#a855f7" strokeWidth="1" />
+                        </svg>
+                      </div>
+                      <div className="flex items-center gap-2 font-mono text-lg font-black tracking-widest text-white drop-shadow-md z-10" dir="ltr">
+                        {captchaCode.split('').map((char, idx) => (
+                          <span
+                            key={idx}
+                            style={{
+                              transform: `rotate(${(idx % 2 === 0 ? 1 : -1) * ((idx + 2) * 3)}deg) translateY(${idx % 2 === 0 ? '-1px' : '2px'})`,
+                              display: 'inline-block',
+                            }}
+                            className={
+                              idx % 3 === 0
+                                ? 'text-sky-400'
+                                : idx % 3 === 1
+                                ? 'text-emerald-400'
+                                : 'text-amber-300'
+                            }
+                          >
+                            {char}
+                          </span>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={regenerateCaptcha}
+                        title={lang === 'fa' ? 'تغییر کد کپچا' : 'Refresh captcha code'}
+                        className="z-10 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* User Captcha Input */}
+                    <div className="relative">
+                      <input
+                        type="text"
+                        dir="ltr"
+                        required
+                        maxLength={8}
+                        value={captchaInput}
+                        onChange={(e) => setCaptchaInput(e.target.value.toUpperCase())}
+                        placeholder={lang === 'fa' ? 'کد بالا را وارد کنید' : 'Enter captcha'}
+                        className="w-full px-3.5 py-2.5 text-sm font-mono tracking-widest uppercase rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 placeholder:normal-case placeholder:font-sans placeholder:tracking-normal"
                       />
                     </div>
                   </div>
