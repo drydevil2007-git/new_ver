@@ -12,6 +12,7 @@ import {
   LiveServerMessage,
 } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
+import { registerNewAiRoutes } from './src/server/newAiRoutes';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -2550,6 +2551,11 @@ async function startServer() {
 
     res.json({ message: userMsg, botMessage: botMsg });
   });
+
+  // ==========================================================================
+  // Register Mercury, OpenMausBot, Strata, and Claudable AI APIs
+  // ==========================================================================
+  registerNewAiRoutes(app, getAI);
 
   // ==========================================================================
   // Comprehensive Admin Panel APIs

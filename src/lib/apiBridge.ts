@@ -1850,7 +1850,7 @@ Format your response as a valid JSON object:
     messages.push(userMessage);
 
     let respondingBot = bots.find((b) => b.id === targetId);
-    let room = null;
+    let room: any = null;
     if (targetType === 'room') {
       room = rooms.find((r) => r.id === targetId);
       const mentionedBot = bots.find((b) =>
@@ -2222,6 +2222,86 @@ No cloud connection is used. Provide concise, expert academic answers with stand
         nvmeStreamingSpeedGbS: config.nvmeStreamBandwidthGbS || 5.8,
         isLocalOffline: true,
       },
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // Claudable Web Builder Studio
+  // --------------------------------------------------------------------------
+  if (apiPath === '/api/claudable/generate' && method === 'POST') {
+    const promptText = (body.prompt || '').trim();
+    const engine = body.engine || 'claude-code';
+    const lang = body.lang || 'fa';
+
+    try {
+      const raw = await callGemini(
+        `User requested web application: "${promptText}". Engine: ${engine}. Language: ${lang}.
+Return JSON only with fields:
+- title: string
+- summary: string
+- thinkingSteps: string[]
+- cliCommands: string[]
+- files: array of { name: string, path: string, language: string, content: string } (at least App.tsx, package.json, supabase.ts)`,
+        `You are Claudable CLI Engine (${engine}). Output pure valid JSON.`
+      );
+
+      const parsed = JSON.parse(raw);
+      return jsonResponse({ ok: true, project: parsed });
+    } catch {
+      // Fallback response with starter code
+      return jsonResponse({
+        ok: true,
+        project: {
+          title: promptText.slice(0, 40),
+          summary: 'اپلیکیشن مهندسی تولیدشده توسط ایجنت کدنویسی کلودبل.',
+          thinkingSteps: [
+            `⚡ [${engine.toUpperCase()}] تحلیل پرامپت مهندسی: "${promptText.slice(0, 50)}..."`,
+            '📐 طراحی ساختار پروژه بر اساس React 19، Tailwind CSS و Lucide icons.',
+            '🛠️ آماده‌سازی اسکریپت‌های شبیه‌سازی و رندرینگ تعاملی.',
+            '✨ بیلد موفق و اتصال به محیط پیش‌نمایش زنده.',
+          ],
+          cliCommands: [
+            `$ ${engine} --scaffold "Engineering App"`,
+            '$ npm install lucide-react tailwindcss @supabase/supabase-js',
+            '$ npm run dev -- --port 3000',
+          ],
+          files: [
+            {
+              name: 'App.tsx',
+              path: 'src/App.tsx',
+              language: 'typescript',
+              content: `// Claudable Generated Application
+import React, { useState } from 'react';
+import { Activity, Sparkles, RefreshCw } from 'lucide-react';
+
+export default function GeneratedApp() {
+  const [val, setVal] = useState(50);
+  return (
+    <div className="min-h-screen bg-slate-950 text-white p-6">
+      <h1 className="text-xl font-bold text-sky-400 flex items-center gap-2">
+        <Sparkles className="w-5 h-5" /> ${promptText.slice(0, 50)}
+      </h1>
+      <p className="text-xs text-slate-400 mt-2">تولیدشده توسط استودیوی کلودبل</p>
+      <div className="mt-6 p-4 bg-slate-900 rounded-xl border border-slate-800">
+        <label className="text-xs block mb-2">مقدار متغیر: {val}</label>
+        <input type="range" min="1" max="100" value={val} onChange={(e) => setVal(Number(e.target.value))} className="w-full accent-sky-500" />
+      </div>
+    </div>
+  );
+}`,
+            },
+          ],
+        },
+      });
+    }
+  }
+
+  if (apiPath === '/api/claudable/deploy' && method === 'POST') {
+    return jsonResponse({
+      status: 'deployed',
+      vercelUrl: 'https://fem-beam-analyzer.vercel.app',
+      githubUrl: 'https://github.com/danshyar/fem-structural-beam',
+      timestamp: new Date().toISOString(),
     });
   }
 

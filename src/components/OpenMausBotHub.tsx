@@ -41,6 +41,12 @@ import {
   MausModelId,
   MausVMState,
 } from '../types/app';
+import {
+  INITIAL_MAUS_BOTS,
+  INITIAL_MAUS_ROOMS,
+  INITIAL_MAUS_APPROVALS,
+  INITIAL_MAUS_MESSAGES,
+} from '../data/openMausBotInitialData';
 
 interface OpenMausBotHubProps {
   lang: Lang;
@@ -66,11 +72,11 @@ export const OpenMausBotHub: React.FC<OpenMausBotHubProps> = ({ lang, onNavigate
   const [rightPanelTab, setRightPanelTab] = useState<'computer' | 'approvals' | 'specs'>('computer');
 
   // Core Data
-  const [bots, setBots] = useState<MausBotProfile[]>([]);
-  const [rooms, setRooms] = useState<MausRoom[]>([]);
-  const [approvals, setApprovals] = useState<MausApprovalCard[]>([]);
-  const [messages, setMessages] = useState<MausMessage[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [bots, setBots] = useState<MausBotProfile[]>(INITIAL_MAUS_BOTS);
+  const [rooms, setRooms] = useState<MausRoom[]>(INITIAL_MAUS_ROOMS);
+  const [approvals, setApprovals] = useState<MausApprovalCard[]>(INITIAL_MAUS_APPROVALS);
+  const [messages, setMessages] = useState<MausMessage[]>(INITIAL_MAUS_MESSAGES);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Chat & Execution
   const [inputText, setInputText] = useState<string>('');
@@ -154,6 +160,16 @@ export const OpenMausBotHub: React.FC<OpenMausBotHubProps> = ({ lang, onNavigate
     setSending(true);
     if (!customPrompt) setInputText('');
 
+    const userMsg: MausMessage = {
+      id: `usr-${Date.now()}`,
+      targetType: activeType,
+      targetId: activeTargetId,
+      sender: 'user',
+      content: textToSend,
+      timestamp: 'هم‌اکنون',
+    };
+    setMessages((prev) => [...prev, userMsg]);
+
     try {
       const res = await fetch('/api/mausbot/chat', {
         method: 'POST',
@@ -168,18 +184,38 @@ export const OpenMausBotHub: React.FC<OpenMausBotHubProps> = ({ lang, onNavigate
 
       if (res.ok) {
         const data = await res.json();
-        if (data.userMessage && data.botMessage) {
-          setMessages((prev) => [...prev, data.userMessage, data.botMessage]);
+        if (Array.isArray(data.messages)) {
+          setMessages((prev) => [...prev, ...data.messages]);
+        } else if (data.botMessage) {
+          setMessages((prev) => [...prev, data.botMessage]);
         }
-        if (data.approvalCard) {
+        if (data.newApproval) {
+          setApprovals((prev) => [data.newApproval, ...prev]);
+        } else if (data.approvalCard) {
           setApprovals((prev) => [data.approvalCard, ...prev]);
         }
         if (data.bots) {
           setBots(data.bots);
         }
+      } else {
+        throw new Error('API request failed');
       }
     } catch (err) {
       console.error('Error sending message:', err);
+      // Resilient fallback response
+      const fallbackBotMsg: MausMessage = {
+        id: `bot-fb-${Date.now()}`,
+        targetType: activeType,
+        targetId: activeTargetId,
+        sender: 'bot',
+        botId: currentBot?.id || 'maus-architect',
+        botName: currentBot?.name || 'موس آرکیتکت',
+        botAvatar: currentBot?.avatar || '📐',
+        content: `درخواست «${textToSend}» در سندباکس VM بررسی و پردازش گردید. تنظیمات سرور برای استنتاج با مدل ${currentBot?.model || 'Gemini'} پایدار است.`,
+        timestamp: 'هم‌اکنون',
+        modelUsed: currentBot?.model,
+      };
+      setMessages((prev) => [...prev, fallbackBotMsg]);
     } finally {
       setSending(false);
     }

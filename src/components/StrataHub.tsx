@@ -33,6 +33,11 @@ import {
   StrataModelSpec,
   StrataServingConfig,
 } from '../types/app';
+import {
+  INITIAL_STRATA_HARDWARE,
+  INITIAL_STRATA_MODELS,
+  INITIAL_STRATA_CONFIG,
+} from '../data/strataInitialData';
 
 interface StrataHubProps {
   lang: Lang;
@@ -44,12 +49,12 @@ type StrataTab = 'playground' | 'planner' | 'models' | 'setup';
 export const StrataHub: React.FC<StrataHubProps> = ({ lang, onNavigate }) => {
   const isFa = lang === 'fa';
   const [activeTab, setActiveTab] = useState<StrataTab>('playground');
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Core Data
-  const [hardware, setHardware] = useState<StrataHardwareProfile | null>(null);
-  const [models, setModels] = useState<StrataModelSpec[]>([]);
-  const [config, setConfig] = useState<StrataServingConfig | null>(null);
+  const [hardware, setHardware] = useState<StrataHardwareProfile | null>(INITIAL_STRATA_HARDWARE);
+  const [models, setModels] = useState<StrataModelSpec[]>(INITIAL_STRATA_MODELS);
+  const [config, setConfig] = useState<StrataServingConfig | null>(INITIAL_STRATA_CONFIG);
   const [endpoints, setEndpoints] = useState<{ openai: string; anthropic: string; health: string }>({
     openai: 'http://127.0.0.1:8080/v1/chat/completions',
     anthropic: 'http://127.0.0.1:8080/v1/messages',

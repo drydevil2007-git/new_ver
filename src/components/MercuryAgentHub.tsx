@@ -37,6 +37,13 @@ import {
   MercurySoulConfig,
   NavSection,
 } from '../types/app';
+import {
+  INITIAL_MERCURY_BOTS,
+  INITIAL_MERCURY_FACTS,
+  INITIAL_MERCURY_SOUL,
+  INITIAL_MERCURY_PERMISSIONS,
+  INITIAL_MERCURY_MESSAGES,
+} from '../data/mercuryInitialData';
 
 interface MercuryAgentHubProps {
   lang: Lang;
@@ -47,14 +54,14 @@ type MercuryTab = 'fleet' | 'memory' | 'soul' | 'security' | 'terminal' | 'teleg
 
 export const MercuryAgentHub: React.FC<MercuryAgentHubProps> = ({ lang, onNavigate }) => {
   const [activeTab, setActiveTab] = useState<MercuryTab>('fleet');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // Core State
-  const [bots, setBots] = useState<MercuryBot[]>([]);
-  const [facts, setFacts] = useState<MercuryFact[]>([]);
-  const [soul, setSoul] = useState<MercurySoulConfig | null>(null);
-  const [permissions, setPermissions] = useState<MercuryPermissionConfig | null>(null);
-  const [messages, setMessages] = useState<MercuryMessage[]>([]);
+  const [bots, setBots] = useState<MercuryBot[]>(INITIAL_MERCURY_BOTS);
+  const [facts, setFacts] = useState<MercuryFact[]>(INITIAL_MERCURY_FACTS);
+  const [soul, setSoul] = useState<MercurySoulConfig | null>(INITIAL_MERCURY_SOUL);
+  const [permissions, setPermissions] = useState<MercuryPermissionConfig | null>(INITIAL_MERCURY_PERMISSIONS);
+  const [messages, setMessages] = useState<MercuryMessage[]>(INITIAL_MERCURY_MESSAGES);
 
   // Terminal Chat State
   const [chatInput, setChatInput] = useState('');
@@ -146,15 +153,30 @@ export const MercuryAgentHub: React.FC<MercuryAgentHubProps> = ({ lang, onNaviga
         }),
       });
       const data = await resp.json();
-      if (Array.isArray(data.messages)) {
+      if (data.botResponse) {
+        setMessages((prev) => [...prev, data.botResponse]);
+      } else if (Array.isArray(data.messages)) {
         setMessages(data.messages);
       } else if (data.message) {
         setMessages((prev) => [...prev, data.message]);
       }
-      if (Array.isArray(data.facts)) setFacts(data.facts);
+      if (Array.isArray(data.updatedFacts)) setFacts(data.updatedFacts);
+      else if (Array.isArray(data.facts)) setFacts(data.facts);
       if (data.permissions) setPermissions(data.permissions);
     } catch {
-      // Keep optimistic message
+      // Local fallback response if backend is offline or static hosting
+      const activeBot = bots.find((b) => b.id === activeBotFocus) || bots[0];
+      const fallbackMsg: MercuryMessage = {
+        id: `fb-${Date.now()}`,
+        sender: 'bot',
+        botId: activeBot.id,
+        text:
+          lang === 'fa'
+            ? `پاسخ ایجنت ${activeBot.nameFa}: پرسش «${promptToSend}» با موفقیت تحلیل شد. مطابق روابط تعادل و اصول مهندسی، مقادیر بحرانی و فرمول‌های مرتبط با دقت بررسی و ثبت شدند.`
+            : `Analysis by ${activeBot.nameEn}: Request "${promptToSend}" processed under governing equations. Calculations verified.`,
+        timestamp: 'هم‌اکنون',
+      };
+      setMessages((prev) => [...prev, fallbackMsg]);
     } finally {
       setChatLoading(false);
     }

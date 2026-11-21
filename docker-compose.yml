@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  danshyar-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: danshyar_unified_server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-AQ.Ab8RN6I7hqw0hnkQ6WgEbIy-nEjDzfm9p69g-9kIiLEuxOuSUg}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/admin/overview"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
