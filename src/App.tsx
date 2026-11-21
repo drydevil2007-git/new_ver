@@ -32,11 +32,7 @@ import { ArticlesHub } from './components/ArticlesHub';
 import { AdminPanel } from './components/AdminPanel';
 import { DaneshReelsModal } from './components/DaneshReelsModal';
 import { CourseDetailModal, CourseDetailTab } from './components/CourseDetailModal';
-import {
-  AuthModal,
-  DEMO_PROFESSOR_PROFILE,
-  DEMO_STUDENT_PROFILE,
-} from './components/AuthModal';
+import { AuthModal } from './components/AuthModal';
 import { signOutGoogle } from './lib/googleAuth';
 import { ENGINEERING_COURSES } from './data/coursesData';
 import { DANESH_REELS, buildReelForCourse } from './data/reelsAndCourseDetails';
@@ -130,7 +126,7 @@ export default function App() {
     initialTab?: CourseDetailTab;
   } | null>(null);
 
-  // Persistent User Authentication Session + Auth Modal + Toast + Quick Switcher
+  // Persistent User Authentication Session + Auth Modal + Toast
   const [user, setUser] = useState<UserSession | null>(() => {
     try {
       const saved = localStorage.getItem('daneshyar_user_session_v1');
@@ -140,7 +136,6 @@ export default function App() {
     }
   });
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [demoSwitcherOpen, setDemoSwitcherOpen] = useState(false);
   const [toast, setToast] = useState<{ id: number; message: string } | null>(null);
 
   const showToast = (message: string) => {
@@ -165,7 +160,6 @@ export default function App() {
 
   const handleLoginSuccess = (nextUser: UserSession, isNewRegistration = false) => {
     setUser(nextUser);
-    setDemoSwitcherOpen(false);
     if (isNewRegistration) {
       showToast(
         lang === 'fa'
@@ -191,7 +185,6 @@ export default function App() {
     const prevName = user?.name;
     signOutGoogle().catch(() => {});
     setUser(null);
-    setDemoSwitcherOpen(false);
     if (activeSection === 'admin') {
       setActiveSection('overview');
     }
@@ -728,98 +721,6 @@ export default function App() {
         onClose={() => setAuthModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
       />
-
-      {/* Floating Quick Demo Student/Professor Switcher (No admin/owner shortcuts) */}
-      <div className="fixed bottom-20 lg:bottom-5 end-4 z-40 flex flex-col items-end gap-2">
-        <AnimatePresence>
-          {demoSwitcherOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.96 }}
-              transition={{ duration: 0.18 }}
-              className="w-64 rounded-2xl glass-surface bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 p-3 shadow-2xl space-y-2"
-            >
-              <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-200 px-1">
-                <span>{lang === 'fa' ? 'ورود سریع حساب نمایشی' : 'Quick Demo Switcher'}</span>
-                <button
-                  type="button"
-                  onClick={() => setDemoSwitcherOpen(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  if (activeSection === 'admin') setActiveSection('overview');
-                  handleLoginSuccess(DEMO_PROFESSOR_PROFILE, false);
-                }}
-                className="w-full text-start px-3 py-2 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-sky-950/40 text-xs font-semibold text-slate-800 dark:text-slate-100 flex items-center justify-between gap-2 cursor-pointer"
-              >
-                <span>{lang === 'fa' ? '🎓 دکتر مریم شریعتی' : '🎓 Dr. Shariati'}</span>
-                <span className="text-[10px] text-slate-500">{lang === 'fa' ? 'استاد' : 'Prof'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  if (activeSection === 'admin') setActiveSection('overview');
-                  handleLoginSuccess(DEMO_STUDENT_PROFILE, false);
-                }}
-                className="w-full text-start px-3 py-2 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-sky-950/40 text-xs font-semibold text-slate-800 dark:text-slate-100 flex items-center justify-between gap-2 cursor-pointer"
-              >
-                <span>{lang === 'fa' ? '📘 امیرحسین رضایی' : '📘 Amirhossein'}</span>
-                <span className="text-[10px] text-slate-500">{lang === 'fa' ? 'دانشجو' : 'Student'}</span>
-              </button>
-
-              <div className="pt-1 border-t border-slate-200 dark:border-slate-800 flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDemoSwitcherOpen(false);
-                    setAuthModalOpen(true);
-                  }}
-                  className="flex-1 py-1.5 rounded-lg bg-sky-600 text-white text-[11px] font-semibold cursor-pointer"
-                >
-                  {lang === 'fa' ? 'پنجره ورود/ثبت‌نام' : 'Sign In / Register'}
-                </button>
-                {user && (
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="px-2.5 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 text-[11px] font-semibold inline-flex items-center gap-1 cursor-pointer"
-                  >
-                    <LogOut className="w-3 h-3" />
-                    <span>{lang === 'fa' ? 'خروج' : 'Exit'}</span>
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <button
-          type="button"
-          onClick={() => setDemoSwitcherOpen((o) => !o)}
-          className="min-h-[42px] inline-flex items-center gap-2 px-3.5 py-2 rounded-full glass-surface bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 shadow-lg hover:border-sky-500 text-xs font-bold text-slate-800 dark:text-slate-100 cursor-pointer"
-        >
-          {user?.role === 'admin' ? (
-            <Crown className="w-4 h-4 text-amber-500" />
-          ) : (
-            <UserCheck className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-          )}
-          <span>
-            {user
-              ? `${user.name}`
-              : lang === 'fa'
-              ? 'ورود سریع نمایشی'
-              : 'Quick Demo Login'}
-          </span>
-        </button>
-      </div>
 
       {/* Smooth Toast Notification */}
       <AnimatePresence>

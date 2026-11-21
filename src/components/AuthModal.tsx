@@ -51,28 +51,6 @@ const AUTHORIZED_ADMIN_EMAILS = [
   'admin@gmail.com',
 ];
 
-export const DEMO_PROFESSOR_PROFILE: UserSession = {
-  id: 'prof-demo',
-  name: 'دکتر مریم شریعتی',
-  email: 'm.shariati@sharif.edu',
-  university: 'دانشگاه صنعتی شریف',
-  field: 'هیئت علمی کنترل و رباتیک',
-  role: 'professor',
-  avatarInitials: 'م ش',
-  joinedAt: '۱۴۰۳/۰۷/۱۴',
-};
-
-export const DEMO_STUDENT_PROFILE: UserSession = {
-  id: 'student-demo',
-  name: 'امیرحسین رضایی',
-  email: 'a.rezaei@ut.ac.ir',
-  university: 'دانشگاه تهران',
-  field: 'کارشناسی ارشد مهندسی برق',
-  role: 'student',
-  avatarInitials: 'ا ر',
-  joinedAt: '۱۴۰۴/۰۱/۲۰',
-};
-
 function computeInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return 'DY';
@@ -103,24 +81,42 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [regField, setRegField] = useState('');
   const [regRole, setRegRole] = useState<Exclude<UserRole, 'admin'>>('student');
 
-  // CAPTCHA verification state
-  const [captchaCode, setCaptchaCode] = useState<string>(() => createRandomCaptcha());
-  const [captchaInput, setCaptchaInput] = useState('');
+  // CAPTCHA verification state (for both login and registration)
+  const [loginCaptchaCode, setLoginCaptchaCode] = useState<string>(() => createRandomCaptcha());
+  const [loginCaptchaInput, setLoginCaptchaInput] = useState('');
+  const [regCaptchaCode, setRegCaptchaCode] = useState<string>(() => createRandomCaptcha());
+  const [regCaptchaInput, setRegCaptchaInput] = useState('');
 
-  // Background video state for registration
-  const [isVideoMuted, setIsVideoMuted] = useState(true);
+  // Background video state (sound enabled with fallback for autoplay policies)
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const regenerateCaptcha = () => {
-    setCaptchaCode(createRandomCaptcha());
-    setCaptchaInput('');
+  const regenerateLoginCaptcha = () => {
+    setLoginCaptchaCode(createRandomCaptcha());
+    setLoginCaptchaInput('');
+  };
+
+  const regenerateRegCaptcha = () => {
+    setRegCaptchaCode(createRandomCaptcha());
+    setRegCaptchaInput('');
   };
 
   useEffect(() => {
-    if (tab === 'register' && videoRef.current) {
-      videoRef.current.play().catch(() => {});
+    if (isOpen && videoRef.current) {
+      videoRef.current.muted = isVideoMuted;
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // If browser policy blocks sound without immediate user interaction, play muted first
+          if (videoRef.current) {
+            videoRef.current.muted = true;
+            setIsVideoMuted(true);
+            videoRef.current.play().catch(() => {});
+          }
+        });
+      }
     }
-  }, [tab, isOpen]);
+  }, [isOpen, isVideoMuted, tab]);
 
   const getStoredUsers = (): StoredRegisteredUser[] => {
     try {
@@ -239,11 +235,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
+    // CAPTCHA verification check for login
+    if (!loginCaptchaInput.trim() || loginCaptchaInput.trim().toUpperCase() !== loginCaptchaCode.toUpperCase()) {
+      setErrorMsg(
+        lang === 'fa'
+          ? 'کد امنیتی کپچا نادرست است؛ لطفاً دوباره تلاش کنید.'
+          : 'Security CAPTCHA is incorrect. Please try again with the new code.'
+      );
+      regenerateLoginCaptcha();
+      return;
+    }
+
     // Recognize authorized administrator only after standard email + password entry
     if (AUTHORIZED_ADMIN_EMAILS.includes(email)) {
       const storedAdmin = getStoredUsers().find((u) => u.email.toLowerCase() === email);
       if (storedAdmin && storedAdmin.password !== pass) {
         setErrorMsg(lang === 'fa' ? 'رمز عبور نادرست است.' : 'Incorrect password.');
+        regenerateLoginCaptcha();
         return;
       }
       const adminSession: UserSession = {
@@ -266,6 +274,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     if (matched) {
       if (matched.password !== pass) {
         setErrorMsg(lang === 'fa' ? 'رمز عبور نادرست است.' : 'Incorrect password.');
+        regenerateLoginCaptcha();
         return;
       }
       const { password: _pwd, ...session } = matched;
@@ -274,19 +283,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
-    const derivedName = email.split('@')[0].replace(/[._-]/g, ' ');
-    const studentSession: UserSession = {
-      id: `usr-${Date.now()}`,
-      name: derivedName.charAt(0).toUpperCase() + derivedName.slice(1),
-      email,
-      university: lang === 'fa' ? 'دانشگاه سراسری' : 'University Campus',
-      field: lang === 'fa' ? 'مهندسی' : 'Engineering',
-      role: 'student',
-      avatarInitials: computeInitials(derivedName),
-      joinedAt: new Date().toLocaleDateString(lang === 'fa' ? 'fa-IR' : 'en-US'),
-    };
-    onLoginSuccess(studentSession, false);
-    onClose();
+    // No mock demo user generation: prompt the user to register first
+    setErrorMsg(
+      lang === 'fa'
+        ? 'حساب کاربری با این مشخصات یافت نشد. لطفاً ابتدا در تب ثبت‌نام حساب بسازید یا با حساب گوگل وارد شوید.'
+        : 'Account not found. Please register first or sign in with Google.'
+    );
+    regenerateLoginCaptcha();
+    return;
   };
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
@@ -306,13 +310,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
 
     // CAPTCHA verification check
-    if (!captchaInput.trim() || captchaInput.trim().toUpperCase() !== captchaCode.toUpperCase()) {
+    if (!regCaptchaInput.trim() || regCaptchaInput.trim().toUpperCase() !== regCaptchaCode.toUpperCase()) {
       setErrorMsg(
         lang === 'fa'
           ? 'کد امنیتی کپچا نادرست است؛ لطفاً کد جدید را وارد کنید.'
           : 'Security CAPTCHA is incorrect. Please try again with the new code.'
       );
-      regenerateCaptcha();
+      regenerateRegCaptcha();
       return;
     }
 
@@ -366,21 +370,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           onClick={onClose}
           className="fixed inset-0 z-[100] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
         >
-          {/* Background Video during registration */}
-          {tab === 'register' && (
-            <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-              <video
-                ref={videoRef}
-                autoPlay
-                loop
-                muted={isVideoMuted}
-                playsInline
-                className="w-full h-full object-cover opacity-60 scale-105 filter brightness-75 contrast-110 transition-opacity duration-700"
-                src="/videos/auth_bg.mp4"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/65 to-slate-900/80 backdrop-blur-[2px]" />
-            </div>
-          )}
+          {/* Background Video during auth modal */}
+          <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+            <video
+              ref={videoRef}
+              autoPlay
+              loop
+              muted={isVideoMuted}
+              playsInline
+              className="w-full h-full object-cover opacity-60 scale-105 filter brightness-75 contrast-110 transition-opacity duration-700"
+              src="/videos/auth_bg.mp4"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/65 to-slate-900/80 backdrop-blur-[2px]" />
+          </div>
 
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 14 }}
@@ -406,29 +408,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                {tab === 'register' && (
-                  <button
-                    type="button"
-                    onClick={() => setIsVideoMuted(!isVideoMuted)}
-                    title={
-                      isVideoMuted
-                        ? lang === 'fa'
-                          ? 'پخش صدای ویدیو'
-                          : 'Unmute video audio'
-                        : lang === 'fa'
-                        ? 'قطع صدای ویدیو'
-                        : 'Mute video audio'
-                    }
-                    aria-label={isVideoMuted ? 'Unmute video audio' : 'Mute video audio'}
-                    className={`min-w-[40px] min-h-[40px] rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
-                      !isVideoMuted
-                        ? 'border-rose-500 bg-rose-500/10 text-rose-500 shadow-sm animate-pulse'
-                        : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {isVideoMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setIsVideoMuted(!isVideoMuted)}
+                  title={
+                    isVideoMuted
+                      ? lang === 'fa'
+                        ? 'پخش صدای موسیقی'
+                        : 'Unmute soundtrack audio'
+                      : lang === 'fa'
+                      ? 'قطع صدای موسیقی'
+                      : 'Mute soundtrack audio'
+                  }
+                  aria-label={isVideoMuted ? 'Unmute soundtrack audio' : 'Mute soundtrack audio'}
+                  className={`min-w-[40px] min-h-[40px] rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+                    !isVideoMuted
+                      ? 'border-rose-500 bg-rose-500/15 text-rose-500 shadow-sm animate-pulse'
+                      : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  {isVideoMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </button>
                 <button
                   type="button"
                   onClick={onClose}
@@ -562,6 +562,73 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       placeholder="••••••••"
                       className="w-full ps-10 pe-3.5 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
                     />
+                  </div>
+                </div>
+
+                {/* Login CAPTCHA Security Verification */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <Shield className="w-3.5 h-3.5 text-sky-500" />
+                      <span>{lang === 'fa' ? 'کد امنیتی کپچا' : 'Security CAPTCHA'}</span>
+                    </label>
+                    <span className="text-[11px] text-slate-400">
+                      {lang === 'fa' ? 'تأیید هویت ضد ربات' : 'Anti-bot verification'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 items-center">
+                    {/* Visual Captcha Box */}
+                    <div className="relative overflow-hidden flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-900/90 dark:bg-slate-950 border border-slate-700 select-none shadow-inner">
+                      <div className="absolute inset-0 pointer-events-none opacity-30">
+                        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                          <line x1="0" y1="10" x2="220" y2="38" stroke="#38bdf8" strokeWidth="1.5" />
+                          <line x1="0" y1="36" x2="220" y2="12" stroke="#f43f5e" strokeWidth="1.5" />
+                          <line x1="15" y1="42" x2="190" y2="6" stroke="#a855f7" strokeWidth="1" />
+                        </svg>
+                      </div>
+                      <div className="flex items-center gap-2 font-mono text-lg font-black tracking-widest text-white drop-shadow-md z-10" dir="ltr">
+                        {loginCaptchaCode.split('').map((char, idx) => (
+                          <span
+                            key={idx}
+                            style={{
+                              transform: `rotate(${(idx % 2 === 0 ? 1 : -1) * ((idx + 2) * 3)}deg) translateY(${idx % 2 === 0 ? '-1px' : '2px'})`,
+                              display: 'inline-block',
+                            }}
+                            className={
+                              idx % 3 === 0
+                                ? 'text-sky-400'
+                                : idx % 3 === 1
+                                ? 'text-emerald-400'
+                                : 'text-amber-300'
+                            }
+                          >
+                            {char}
+                          </span>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={regenerateLoginCaptcha}
+                        title={lang === 'fa' ? 'تغییر کد کپچا' : 'Refresh captcha code'}
+                        className="z-10 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* User Captcha Input */}
+                    <div className="relative">
+                      <input
+                        type="text"
+                        dir="ltr"
+                        required
+                        maxLength={8}
+                        value={loginCaptchaInput}
+                        onChange={(e) => setLoginCaptchaInput(e.target.value.toUpperCase())}
+                        placeholder={lang === 'fa' ? 'کد بالا را وارد کنید' : 'Enter captcha'}
+                        className="w-full px-3.5 py-2.5 text-sm font-mono tracking-widest uppercase rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 placeholder:normal-case placeholder:font-sans placeholder:tracking-normal"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -701,7 +768,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         </svg>
                       </div>
                       <div className="flex items-center gap-2 font-mono text-lg font-black tracking-widest text-white drop-shadow-md z-10" dir="ltr">
-                        {captchaCode.split('').map((char, idx) => (
+                        {regCaptchaCode.split('').map((char, idx) => (
                           <span
                             key={idx}
                             style={{
@@ -722,7 +789,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       </div>
                       <button
                         type="button"
-                        onClick={regenerateCaptcha}
+                        onClick={regenerateRegCaptcha}
                         title={lang === 'fa' ? 'تغییر کد کپچا' : 'Refresh captcha code'}
                         className="z-10 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
                       >
@@ -737,8 +804,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         dir="ltr"
                         required
                         maxLength={8}
-                        value={captchaInput}
-                        onChange={(e) => setCaptchaInput(e.target.value.toUpperCase())}
+                        value={regCaptchaInput}
+                        onChange={(e) => setRegCaptchaInput(e.target.value.toUpperCase())}
                         placeholder={lang === 'fa' ? 'کد بالا را وارد کنید' : 'Enter captcha'}
                         className="w-full px-3.5 py-2.5 text-sm font-mono tracking-widest uppercase rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 placeholder:normal-case placeholder:font-sans placeholder:tracking-normal"
                       />
