@@ -1,6 +1,58 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Design system: "Engineer's notebook"
+ * Blueprint blue (primary) on cool graph paper, ink-navy text, highlighter-yellow for the one
+ * thing that matters on a screen. Overriding the default scales re-skins the whole app.
+ */
+@theme {
+  --color-sky-50: #eef3fd;
+  --color-sky-100: #dce6fa;
+  --color-sky-200: #bdd0f5;
+  --color-sky-300: #90aeec;
+  --color-sky-400: #5f87e0;
+  --color-sky-500: #3a66d1;
+  --color-sky-600: #2450b8;
+  --color-sky-700: #1c4096;
+  --color-sky-800: #1b367a;
+  --color-sky-900: #1a2f63;
+  --color-sky-950: #101d3f;
+
+  --color-indigo-50: #eef3fd;
+  --color-indigo-100: #dce6fa;
+  --color-indigo-200: #bdd0f5;
+  --color-indigo-300: #90aeec;
+  --color-indigo-400: #5f87e0;
+  --color-indigo-500: #3a66d1;
+  --color-indigo-600: #1f46a8;
+  --color-indigo-700: #17388a;
+  --color-indigo-800: #152e6e;
+  --color-indigo-900: #13275a;
+  --color-indigo-950: #0c1a3d;
+
+  --color-slate-50: #f4f6fa;
+  --color-slate-100: #e8ecf4;
+  --color-slate-200: #d5dce9;
+  --color-slate-300: #b4bfd3;
+  --color-slate-400: #8493ae;
+  --color-slate-500: #5f6f8c;
+  --color-slate-600: #475672;
+  --color-slate-700: #34425c;
+  --color-slate-800: #1f2b42;
+  --color-slate-900: #131d33;
+  --color-slate-950: #08142b;
+
+  --color-marker: #ffd84d;
+  --color-redline: #e5484d;
+
+  /* Tighter, more technical corners; hierarchy between sizes is preserved */
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.625rem;
+  --radius-2xl: 0.75rem;
+  --radius-3xl: 0.875rem;
+}
+
 @layer base {
   :root {
     --font-persian: "Vazirmatn", "Plus Jakarta Sans", system-ui, sans-serif;
@@ -10,6 +62,14 @@
 
   html[dir="rtl"] body {
     font-family: var(--font-persian);
+    font-feature-settings: "ss01", "kern";
+  }
+
+  html[dir="rtl"] h1,
+  html[dir="rtl"] h2,
+  html[dir="rtl"] h3,
+  html[dir="rtl"] h4 {
+    letter-spacing: 0 !important;
   }
 
   html[dir="ltr"] body {
@@ -21,82 +81,168 @@
   }
 }
 
-/* Luxury Glassmorphism Architectural Surfaces */
+/* Surfaces: opaque "sheets" with a hairline border (no blur: cheaper to paint, easier to read) */
 .glass-surface {
-  background: rgba(255, 255, 255, 0.74);
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgb(255 255 255 / 0.97);
+  border: 1px solid rgb(26 47 99 / 0.14);
   box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.65),
-    0 12px 36px -14px rgba(15, 23, 42, 0.08);
+    0 1px 0 0 rgb(26 47 99 / 0.05),
+    0 12px 28px -18px rgb(16 29 63 / 0.35);
 }
 
 .dark .glass-surface {
-  background: rgba(15, 23, 42, 0.72);
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgb(13 29 58 / 0.94);
+  border: 1px solid rgb(144 174 236 / 0.16);
   box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
-    0 16px 44px -14px rgba(2, 6, 23, 0.65);
+    inset 0 1px 0 0 rgb(255 255 255 / 0.04),
+    0 14px 32px -18px rgb(0 0 0 / 0.65);
 }
 
 .glass-subtle {
-  background: rgba(248, 250, 252, 0.68);
-  backdrop-filter: blur(14px) saturate(135%);
-  -webkit-backdrop-filter: blur(14px) saturate(135%);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgb(238 243 253 / 0.85);
+  border: 1px solid rgb(36 80 184 / 0.14);
 }
 
 .dark .glass-subtle {
-  background: rgba(30, 41, 59, 0.56);
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgb(20 40 78 / 0.7);
+  border: 1px solid rgb(144 174 236 / 0.14);
 }
 
-/* Dynamic Ambient Lighting Architectural Backdrop */
-@keyframes ambientShift {
-  0% {
-    transform: translate3d(0px, 0px, 0px) scale(1);
-  }
-  50% {
-    transform: translate3d(18px, -14px, 0px) scale(1.04);
-  }
-  100% {
-    transform: translate3d(0px, 0px, 0px) scale(1);
-  }
+/* Graph-paper page: 24px minor grid, 120px major grid */
+.canvas-backdrop {
+  background-color: #f4f6fa;
+  background-image:
+    linear-gradient(rgb(36 80 184 / 0.065) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(36 80 184 / 0.065) 1px, transparent 1px),
+    linear-gradient(rgb(36 80 184 / 0.11) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(36 80 184 / 0.11) 1px, transparent 1px);
+  background-size: 24px 24px, 24px 24px, 120px 120px, 120px 120px;
+  background-attachment: fixed;
 }
 
-.ambient-orb {
-  animation: ambientShift 18s ease-in-out infinite;
-  will-change: transform;
+.dark .canvas-backdrop {
+  background-color: #08142b;
+  background-image:
+    linear-gradient(rgb(144 174 236 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(144 174 236 / 0.05) 1px, transparent 1px),
+    linear-gradient(rgb(144 174 236 / 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(144 174 236 / 0.1) 1px, transparent 1px);
 }
 
 @keyframes storyRingSpin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .story-ring-animate {
   animation: storyRingSpin 10s linear infinite;
 }
 
-.canvas-backdrop {
-  background-color: #f8fafc;
-  background-image:
-    radial-gradient(at 12% 8%, rgba(14, 165, 233, 0.1) 0px, transparent 48%),
-    radial-gradient(at 88% 14%, rgba(245, 158, 11, 0.07) 0px, transparent 42%),
-    radial-gradient(at 50% 92%, rgba(56, 189, 248, 0.06) 0px, transparent 54%);
+/* ---- Worked-solution sheet (hero) ---- */
+.solution-sheet {
+  --margin: 4.25rem;
+  position: relative;
+  background-color: #fffef9;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 35px,
+    rgb(36 80 184 / 0.16) 35px,
+    rgb(36 80 184 / 0.16) 36px
+  );
+  border: 1px solid rgb(26 47 99 / 0.18);
+  box-shadow:
+    0 1px 0 rgb(26 47 99 / 0.06),
+    0 28px 48px -28px rgb(16 29 63 / 0.5);
 }
 
-.dark .canvas-backdrop {
-  background-color: #070b15;
-  background-image:
-    radial-gradient(at 12% 8%, rgba(14, 165, 233, 0.14) 0px, transparent 48%),
-    radial-gradient(at 88% 14%, rgba(245, 158, 11, 0.09) 0px, transparent 42%),
-    radial-gradient(at 50% 92%, rgba(16, 185, 129, 0.06) 0px, transparent 54%);
+.dark .solution-sheet {
+  background-color: #0d1f40;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 35px,
+    rgb(144 174 236 / 0.13) 35px,
+    rgb(144 174 236 / 0.13) 36px
+  );
+  border-color: rgb(144 174 236 / 0.22);
+}
+
+/* red margin rule, like a school notebook */
+.solution-sheet::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: var(--margin);
+  width: 1px;
+  background: rgb(229 72 77 / 0.55);
+}
+
+@media (min-width: 640px) {
+  .solution-sheet {
+    --margin: 5.25rem;
+  }
+}
+
+.solution-sheet .katex-html {
+  white-space: nowrap;
+}
+
+.sheet-row {
+  min-height: 72px;
+  animation: sheetRowIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 170ms + 150ms);
+}
+
+@keyframes sheetRowIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* highlighter stroke that "draws" across the final answer */
+.marker-hl {
+  background-image: linear-gradient(
+    transparent 52%,
+    #ffd84d 52%,
+    #ffd84d 90%,
+    transparent 90%
+  );
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: 0% 100%;
+  animation: markerDraw 0.7s ease-out 1s forwards;
+  color: #101d3f;
+  padding-inline: 0.35rem;
+  border-radius: 2px;
+}
+
+.dark .marker-hl {
+  color: #f4f6fa;
+  background-image: linear-gradient(
+    transparent 52%,
+    rgb(255 216 77 / 0.38) 52%,
+    rgb(255 216 77 / 0.38) 90%,
+    transparent 90%
+  );
+}
+
+html[dir="ltr"] .marker-hl {
+  background-position: left center;
+}
+
+@keyframes markerDraw {
+  to { background-size: 100% 100%; }
+}
+
+/* ---- Tool index rows ---- */
+.index-row {
+  transition: background-color 0.15s ease;
+}
+.index-row:hover {
+  background-color: rgb(36 80 184 / 0.06);
+}
+.dark .index-row:hover {
+  background-color: rgb(144 174 236 / 0.08);
 }
 
 /* Hide scrollbars nicely for horizontal Story Circles & Reels */
@@ -145,4 +291,15 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Accessibility: visible keyboard focus */
+:focus-visible {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 2px;
+}
+
+/* Wide formulas scroll inside their own box instead of breaking the page on mobile */
+.katex-display > .katex {
+  max-width: 100%;
 }

@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { Lang, LeitnerCard } from '../types/app';
 import { LatexBlock, LatexInline } from './MathRenderer';
+import { ReportIssueButton, AiGeneratedBadge } from './ReportIssueButton';
 
 export type LabTab = 'solver' | 'simulation' | 'schematics' | 'feynman' | 'pdf';
 
@@ -851,9 +852,12 @@ export const AiEngineeringLab: React.FC<AiEngineeringLabProps> = ({
                 )}
 
                 <div className="space-y-4">
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                    {lang === 'fa' ? 'مراحل گام‌به‌گام استنتاج و حل:' : 'Step-by-Step Derivation Steps:'}
-                  </h4>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                      {lang === 'fa' ? 'مراحل گام‌به‌گام استنتاج و حل:' : 'Step-by-Step Derivation Steps:'}
+                    </h4>
+                    <AiGeneratedBadge lang={lang} />
+                  </div>
                   {solverResult.steps.map((st) => (
                     <div
                       key={st.stepNumber}
@@ -890,6 +894,13 @@ export const AiEngineeringLab: React.FC<AiEngineeringLabProps> = ({
                     <p>{solverResult.physicalIntuition}</p>
                   </div>
                 )}
+
+                <ReportIssueButton
+                  lang={lang}
+                  kind="formula-solver"
+                  target={`solver-${solverResult.finalAnswerLatex?.length ?? 0}`}
+                  context={JSON.stringify({ final: solverResult.finalAnswerLatex, steps: solverResult.steps?.length })}
+                />
               </div>
             )}
           </div>

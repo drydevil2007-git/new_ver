@@ -435,7 +435,7 @@ export const Header: React.FC<HeaderProps> = ({
                   }`}
                 >
                   {user.photoURL ? (
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={user.photoURL}
                       alt={user.name}
                       referrerPolicy="no-referrer"
@@ -473,7 +473,7 @@ export const Header: React.FC<HeaderProps> = ({
                       }`}
                     >
                       {user.photoURL ? (
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={user.photoURL}
                           alt={user.name}
                           referrerPolicy="no-referrer"

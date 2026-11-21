@@ -594,7 +594,7 @@ export const DaneshReelsModal: React.FC<DaneshReelsModalProps> = ({
               className="relative h-[100dvh] w-full shrink-0 snap-start snap-always overflow-hidden flex items-center justify-center bg-slate-950"
             >
               {/* Full-bleed Ambient Blurred Image Fill for Wide Viewports */}
-              <img
+              <img loading="lazy" decoding="async"
                 src={reel.image}
                 alt=""
                 aria-hidden="true"
@@ -605,7 +605,7 @@ export const DaneshReelsModal: React.FC<DaneshReelsModalProps> = ({
               {/* Full-Height 100dvh Interactive Reel Canvas (Edge-to-edge on mobile, crisp 9:16 stage on desktop) */}
               <div className="relative h-[100dvh] w-full md:max-w-[540px] lg:max-w-[560px] md:border-x md:border-white/15 bg-slate-900 overflow-hidden shadow-2xl">
                 {/* Primary Vertical Background Visual */}
-                <img
+                <img loading="lazy" decoding="async"
                   src={reel.image}
                   alt={lang === 'fa' ? reel.titleFa : reel.titleEn}
                   referrerPolicy="no-referrer"
@@ -655,7 +655,7 @@ export const DaneshReelsModal: React.FC<DaneshReelsModalProps> = ({
                       <div
                         className={`w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr ${reel.ringGradient} shrink-0`}
                       >
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={reel.image}
                           alt={reel.courseCode}
                           referrerPolicy="no-referrer"

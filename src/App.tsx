@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Languages,
@@ -17,22 +17,9 @@ import {
 } from 'lucide-react';
 import { Header } from './components/Header';
 import { OverviewHero } from './components/OverviewHero';
-import { ExamSprintHub } from './components/ExamSprintHub';
-import { CoursesAndMindMap } from './components/CoursesAndMindMap';
-import { AiEngineeringLab, LabTab } from './components/AiEngineeringLab';
-import { DeckTab, StudyDeckHub } from './components/StudyDeckHub';
-import { StudyRoomsAndTools } from './components/StudyRoomsAndTools';
-import { CommunityAndNotes } from './components/CommunityAndNotes';
-import { CampusVoiceHub } from './components/CampusVoiceHub';
-import { MercuryAgentHub } from './components/MercuryAgentHub';
-import { OpenMausBotHub } from './components/OpenMausBotHub';
-import { StrataHub } from './components/StrataHub';
-import { ClaudableHub } from './components/ClaudableHub';
-import { ArticlesHub } from './components/ArticlesHub';
-import { AdminPanel } from './components/AdminPanel';
-import { DaneshReelsModal } from './components/DaneshReelsModal';
-import { CourseDetailModal, CourseDetailTab } from './components/CourseDetailModal';
-import { AuthModal } from './components/AuthModal';
+import type { LabTab } from './components/AiEngineeringLab';
+import type { DeckTab } from './components/StudyDeckHub';
+import type { CourseDetailTab } from './components/CourseDetailModal';
 import { signOutGoogle } from './lib/googleAuth';
 import { ENGINEERING_COURSES } from './data/coursesData';
 import { DANESH_REELS, buildReelForCourse } from './data/reelsAndCourseDetails';
@@ -45,6 +32,23 @@ import {
   Theme,
   UserSession,
 } from './types/app';
+
+const ExamSprintHub = lazy(() => import('./components/ExamSprintHub').then((m) => ({ default: m.ExamSprintHub })));
+const CoursesAndMindMap = lazy(() => import('./components/CoursesAndMindMap').then((m) => ({ default: m.CoursesAndMindMap })));
+const AiEngineeringLab = lazy(() => import('./components/AiEngineeringLab').then((m) => ({ default: m.AiEngineeringLab })));
+const StudyDeckHub = lazy(() => import('./components/StudyDeckHub').then((m) => ({ default: m.StudyDeckHub })));
+const StudyRoomsAndTools = lazy(() => import('./components/StudyRoomsAndTools').then((m) => ({ default: m.StudyRoomsAndTools })));
+const CommunityAndNotes = lazy(() => import('./components/CommunityAndNotes').then((m) => ({ default: m.CommunityAndNotes })));
+const CampusVoiceHub = lazy(() => import('./components/CampusVoiceHub').then((m) => ({ default: m.CampusVoiceHub })));
+const MercuryAgentHub = lazy(() => import('./components/MercuryAgentHub').then((m) => ({ default: m.MercuryAgentHub })));
+const OpenMausBotHub = lazy(() => import('./components/OpenMausBotHub').then((m) => ({ default: m.OpenMausBotHub })));
+const StrataHub = lazy(() => import('./components/StrataHub').then((m) => ({ default: m.StrataHub })));
+const ClaudableHub = lazy(() => import('./components/ClaudableHub').then((m) => ({ default: m.ClaudableHub })));
+const ArticlesHub = lazy(() => import('./components/ArticlesHub').then((m) => ({ default: m.ArticlesHub })));
+const AdminPanel = lazy(() => import('./components/AdminPanel').then((m) => ({ default: m.AdminPanel })));
+const DaneshReelsModal = lazy(() => import('./components/DaneshReelsModal').then((m) => ({ default: m.DaneshReelsModal })));
+const CourseDetailModal = lazy(() => import('./components/CourseDetailModal').then((m) => ({ default: m.CourseDetailModal })));
+const AuthModal = lazy(() => import('./components/AuthModal').then((m) => ({ default: m.AuthModal })));
 
 const INITIAL_FLASHCARDS: LeitnerCard[] = [
   {
@@ -386,12 +390,13 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen canvas-backdrop flex flex-col justify-between transition-colors duration-200 pb-24 lg:pb-0 overflow-x-clip">
-      {/* Subtle Ambient Lighting Orbs */}
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-        <div className="absolute -top-28 start-[-8%] w-[420px] h-[420px] rounded-full bg-sky-400/12 dark:bg-sky-500/12 blur-3xl ambient-orb" />
-        <div className="absolute bottom-12 end-[-6%] w-[360px] h-[360px] rounded-full bg-amber-400/10 dark:bg-amber-500/10 blur-3xl ambient-orb" />
-      </div>
 
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-sky-600 focus:text-white"
+      >
+        {lang === 'fa' ? 'پرش به محتوای اصلی' : 'Skip to main content'}
+      </a>
       <div className="relative z-10">
         <Header
           lang={lang}
@@ -478,7 +483,8 @@ export default function App() {
         </div>
 
         {/* Main Active View */}
-        <main className="max-w-[1380px] mx-auto px-4 sm:px-6 py-6">
+        <main id="main-content" className="max-w-[1380px] mx-auto px-4 sm:px-6 py-6">
+          <Suspense fallback={<div role="status" aria-live="polite" className="py-24 text-center text-sm text-slate-500">در حال بارگذاری…</div>}>
           {activeSection === 'overview' && (
             <OverviewHero
               lang={lang}
@@ -590,6 +596,7 @@ export default function App() {
               </button>
             </div>
           )}
+          </Suspense>
         </main>
       </div>
 
@@ -602,6 +609,12 @@ export default function App() {
               : 'DaneshYar (danshyar.ir) — University & Engineering Education Platform'}
           </div>
           <div className="flex flex-wrap items-center gap-4">
+            <a href="/about.html" className="hover:text-slate-900 dark:hover:text-white">
+              {lang === 'fa' ? 'درباره ما' : 'About'}
+            </a>
+            <a href="/privacy.html" className="hover:text-slate-900 dark:hover:text-white">
+              {lang === 'fa' ? 'حریم خصوصی و شرایط استفاده' : 'Privacy & Terms'}
+            </a>
             <button
               type="button"
               onClick={() => setActiveSection('courses')}
@@ -686,6 +699,7 @@ export default function App() {
         })}
       </nav>
 
+      <Suspense fallback={null}>
       {/* Rich Course Detail & 5-Year-Old / 3D / Proof / Hardest Exam Modal */}
       {detailModal && (
         <CourseDetailModal
@@ -721,6 +735,7 @@ export default function App() {
         onClose={() => setAuthModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
       />
+      </Suspense>
 
       {/* Smooth Toast Notification */}
       <AnimatePresence>

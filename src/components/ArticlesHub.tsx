@@ -533,7 +533,7 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang, user, onOpenAuth
           </div>
 
           <div className="aspect-[16/7] rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 dark:border-slate-800">
-            <img
+            <img loading="lazy" decoding="async"
               src={activeArticle.image}
               alt={lang === 'fa' ? activeArticle.titleFa : activeArticle.titleEn}
               referrerPolicy="no-referrer"
@@ -687,7 +687,7 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang, user, onOpenAuth
               >
                 <div>
                   <div className="aspect-[4/3] bg-slate-900 overflow-hidden">
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={art.image}
                       alt={lang === 'fa' ? art.titleFa : art.titleEn}
                       referrerPolicy="no-referrer"

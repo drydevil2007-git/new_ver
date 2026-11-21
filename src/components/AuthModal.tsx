@@ -378,6 +378,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               loop
               muted={isVideoMuted}
               playsInline
+              preload="metadata"
+              poster="/videos/auth_poster.jpg"
+              aria-hidden="true"
               className="w-full h-full object-cover opacity-60 scale-105 filter brightness-75 contrast-110 transition-opacity duration-700"
               src="/videos/auth_bg.mp4"
             />

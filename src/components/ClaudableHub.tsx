@@ -605,7 +605,7 @@ export const ClaudableHub: React.FC<ClaudableHubProps> = ({ lang, onNavigate }) 
             {/* Viewport device switcher (if preview mode) */}
             {activeTab === 'preview' && (
               <div className="flex items-center gap-1 bg-slate-200/70 dark:bg-slate-800 p-1 rounded-xl">
-                <button
+                <button aria-label="Desktop View"
                   type="button"
                   title="Desktop View"
                   onClick={() => setDeviceViewport('desktop')}
@@ -617,7 +617,7 @@ export const ClaudableHub: React.FC<ClaudableHubProps> = ({ lang, onNavigate }) 
                 >
                   <Monitor className="w-4 h-4" />
                 </button>
-                <button
+                <button aria-label="Tablet View"
                   type="button"
                   title="Tablet View"
                   onClick={() => setDeviceViewport('tablet')}
@@ -629,7 +629,7 @@ export const ClaudableHub: React.FC<ClaudableHubProps> = ({ lang, onNavigate }) 
                 >
                   <Tablet className="w-4 h-4" />
                 </button>
-                <button
+                <button aria-label="Mobile View"
                   type="button"
                   title="Mobile View"
                   onClick={() => setDeviceViewport('mobile')}

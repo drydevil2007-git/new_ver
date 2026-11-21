@@ -56,7 +56,7 @@ export const StoryCirclesBar: React.FC<StoryCirclesBarProps> = ({
                   }`}
                 />
                 <div className="relative w-[58px] h-[58px] sm:w-[63px] sm:h-[63px] rounded-full p-[2.5px] bg-white dark:bg-slate-950 overflow-hidden">
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={reel.image}
                     alt={lang === 'fa' ? reel.storyTitleFa : reel.storyTitleEn}
                     referrerPolicy="no-referrer"

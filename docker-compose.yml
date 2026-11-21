@@ -12,9 +12,10 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-AQ.Ab8RN6I7hqw0hnkQ6WgEbIy-nEjDzfm9p69g-9kIiLEuxOuSUg}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/admin/overview"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/robots.txt"]
       interval: 30s
       timeout: 5s
       retries: 3

@@ -2,7 +2,6 @@
 // DaneshYar — Resilient Universal API Bridge (Express + Static Hosting + AI Fallback)
 // ============================================================================
 
-const DEFAULT_GEMINI_KEY = 'AQ.Ab8RN6I7hqw0hnkQ6WgEbIy-nEjDzfm9p69g-9kIiLEuxOuSUg';
 const CANDIDATE_MODELS = [
   'gemini-3.8-flash',
   'gemini-3.5-flash',
@@ -19,7 +18,7 @@ function getApiKey(): string {
   } catch {
     /* ignore */
   }
-  return DEFAULT_GEMINI_KEY;
+  return '';
 }
 
 function getLocal<T>(key: string, fallback: T): T {
@@ -59,6 +58,9 @@ async function callGemini(
   imagePart?: ImagePartInput | null
 ): Promise<string> {
   const key = getApiKey();
+  if (!key) {
+    throw new Error('سرویس هوش مصنوعی در دسترس نیست؛ کلید Gemini روی سرور تنظیم نشده و کلید شخصی هم وارد نشده است.');
+  }
   const aiCfg = getLocal('dy_admin_ai_config', DEFAULT_AI_CONFIG);
 
   const parts: Array<Record<string, unknown>> = [];
@@ -1170,6 +1172,23 @@ async function handleStaticApiFallback(
     } catch {
       body = {};
     }
+  }
+
+  if (apiPath === '/api/reports' && method === 'POST') {
+    const msg = typeof body?.message === 'string' ? body.message.trim() : '';
+    if (!msg) return jsonResponse({ error: 'متن گزارش الزامی است.' }, 400);
+    const reports = getLocal<any[]>('dy_reports', []);
+    reports.unshift({
+      id: `rep-${Date.now()}`,
+      kind: String(body.kind || 'ai-solution').slice(0, 40),
+      target: String(body.target || '').slice(0, 200),
+      message: msg.slice(0, 2000),
+      context: String(body.context || '').slice(0, 4000),
+      status: 'open',
+      createdAt: new Date().toISOString(),
+    });
+    setLocal('dy_reports', reports.slice(0, 100));
+    return jsonResponse({ ok: true });
   }
 
   // --------------------------------------------------------------------------
@@ -4639,7 +4658,26 @@ export async function bridgedFetch(input: RequestInfo | URL, init?: RequestInit)
     const apiPath = parsedUrl.pathname;
 
     try {
-      const realResp = await originalFetch(input, init);
+      let reqInit = init;
+      if (apiPath.startsWith('/api/admin')) {
+        let token = '';
+        try { token = localStorage.getItem('dy_admin_token') || ''; } catch { /* ignore */ }
+        if (token) {
+          const h = new Headers(init?.headers || (input instanceof Request ? input.headers : undefined));
+          h.set('x-admin-token', token);
+          reqInit = { ...init, headers: h };
+        }
+      }
+      let realResp = await originalFetch(input, reqInit);
+      if (realResp.status === 401 && apiPath.startsWith('/api/admin')) {
+        const entered = window.prompt('توکن مدیریت را وارد کنید:');
+        if (entered) {
+          try { localStorage.setItem('dy_admin_token', entered.trim()); } catch { /* ignore */ }
+          const h = new Headers(init?.headers || (input instanceof Request ? input.headers : undefined));
+          h.set('x-admin-token', entered.trim());
+          realResp = await originalFetch(input, { ...init, headers: h });
+        }
+      }
       const contentType = realResp.headers.get('content-type') || '';
       // If server responded with a non-404 JSON/stream response, use it
       if (realResp.status !== 404 && !contentType.includes('text/html')) {

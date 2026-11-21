@@ -1,0 +1,20 @@
+{
+  "name": "دانشیار",
+  "short_name": "دانشیار",
+  "description": "پلتفرم جامع آموزش دانشگاهی و مهندسی",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "dir": "rtl",
+  "lang": "fa",
+  "background_color": "#08142b",
+  "theme_color": "#1747b5",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

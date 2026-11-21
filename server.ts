@@ -19,10 +19,12 @@ const __dirname = path.dirname(__filename);
 
 const PORT = Number(process.env.PORT) || 3000;
 
-const DEFAULT_GEMINI_KEY = 'AQ.Ab8RN6I7hqw0hnkQ6WgEbIy-nEjDzfm9p69g-9kIiLEuxOuSUg';
-
 function getAI() {
-  const apiKey = process.env.GEMINI_API_KEY || DEFAULT_GEMINI_KEY;
+  // The API key must come from the environment only. Never hardcode it.
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not configured on the server');
+  }
   return new GoogleGenAI({
     apiKey,
     httpOptions: {
@@ -902,10 +904,97 @@ setInterval(() => {
 // ============================================================================
 async function startServer() {
   const app = express();
-  app.use(express.json({ limit: '20mb' }));
+  app.set('trust proxy', 1);
+  app.disable('x-powered-by');
+
+  // Optional gzip/brotli-less compression (install with: npm i compression)
+  try {
+    // @ts-ignore - optional dependency
+    const { default: compression } = await import('compression');
+    app.use(compression());
+  } catch {
+    console.warn('[server] "compression" not installed; responses are sent uncompressed.');
+  }
+
+  // Basic security headers
+  app.use((_req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'microphone=(self), camera=(), geolocation=()');
+    next();
+  });
+
+  // Tiny in-memory rate limiter (per IP, per bucket)
+  const rateBuckets = new Map<string, { count: number; resetAt: number }>();
+  const rateLimit = (bucket: string, max: number, windowMs: number): express.RequestHandler => {
+    return (req, res, next) => {
+      const key = `${bucket}:${req.ip}`;
+      const now = Date.now();
+      const entry = rateBuckets.get(key);
+      if (!entry || entry.resetAt < now) {
+        rateBuckets.set(key, { count: 1, resetAt: now + windowMs });
+        return next();
+      }
+      entry.count += 1;
+      if (entry.count > max) {
+        res.setHeader('Retry-After', String(Math.ceil((entry.resetAt - now) / 1000)));
+        return res.status(429).json({ error: 'تعداد درخواست‌ها زیاد است؛ لطفاً کمی بعد دوباره تلاش کنید.' });
+      }
+      next();
+    };
+  };
+  setInterval(() => {
+    const now = Date.now();
+    for (const [k, v] of rateBuckets) if (v.resetAt < now) rateBuckets.delete(k);
+  }, 60_000).unref();
+
+  // AI routes may carry images/PDF/audio (base64); all other routes stay small.
+  app.use('/api/ai', rateLimit('ai', 30, 60_000), express.json({ limit: '20mb' }));
+  app.use('/api', (req, res, next) => {
+    if (req.method !== 'GET') return rateLimit('write', 60, 60_000)(req, res, next);
+    next();
+  });
+  app.use(express.json({ limit: '1mb' }));
+
+  // Admin routes require ADMIN_TOKEN (header: x-admin-token). Disabled in production if unset.
+  app.use('/api/admin', (req, res, next) => {
+    const token = process.env.ADMIN_TOKEN;
+    if (!token) {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(403).json({ error: 'پنل مدیریت پیکربندی نشده است (ADMIN_TOKEN).' });
+      }
+      return next();
+    }
+    if (req.header('x-admin-token') !== token) {
+      return res.status(401).json({ error: 'دسترسی غیرمجاز.' });
+    }
+    next();
+  });
+
+  // User error / content reports (solutions, flashcards, AI answers)
+  const reportsStore: Array<Record<string, unknown>> = [];
+  app.post('/api/reports', (req, res) => {
+    const { kind, target, message, context } = req.body || {};
+    if (typeof message !== 'string' || !message.trim()) {
+      return res.status(400).json({ error: 'متن گزارش الزامی است.' });
+    }
+    const report = {
+      id: `rep-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      kind: String(kind || 'ai-solution').slice(0, 40),
+      target: String(target || '').slice(0, 200),
+      message: message.trim().slice(0, 2000),
+      context: String(context || '').slice(0, 4000),
+      status: 'open',
+      createdAt: new Date().toISOString(),
+    };
+    reportsStore.unshift(report);
+    if (reportsStore.length > 500) reportsStore.pop();
+    res.json({ ok: true, id: report.id });
+  });
+  app.get('/api/admin/reports', (_req, res) => res.json({ reports: reportsStore }));
 
   const server = http.createServer(app);
-  const wss = new WebSocketServer({ noServer: true });
+  const wss = new WebSocketServer({ noServer: true, maxPayload: 4 * 1024 * 1024 });
 
   // WebSocket Upgrade Router
   server.on('upgrade', (request, socket, head) => {
@@ -2669,8 +2758,15 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.resolve(__dirname, 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (_req, res) => {
+    // Hashed build assets are immutable; everything else revalidates.
+    app.use(
+      '/assets',
+      express.static(path.join(distPath, 'assets'), { maxAge: '1y', immutable: true })
+    );
+    app.use(express.static(distPath, { maxAge: '1h', index: false }));
+    app.get('*', (req, res) => {
+      if (path.extname(req.path)) return res.status(404).end();
+      res.setHeader('Cache-Control', 'no-cache');
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

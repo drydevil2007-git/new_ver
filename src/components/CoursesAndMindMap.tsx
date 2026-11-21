@@ -19,7 +19,7 @@ import { ENGINEERING_FIELDS, FACULTY_GROUPS, getFieldFacultyGroup } from '../dat
 import { MIND_MAP_TRACKS } from '../data/mindMapData';
 import { infer3DModelForCourse } from '../data/deepCourseEnrichment';
 import { CourseItem, DifficultyLevel, FacultyGroupId, Lang } from '../types/app';
-import { CourseDetailTab } from './CourseDetailModal';
+import type { CourseDetailTab } from './CourseDetailModal';
 import { EngineeringConcept3DViewer } from './EngineeringConcept3DViewer';
 import { LatexBlock } from './MathRenderer';
 import { StoryCirclesBar } from './StoryCirclesBar';
