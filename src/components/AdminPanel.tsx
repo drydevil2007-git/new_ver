@@ -23,6 +23,14 @@ import {
   Baby,
   Swords,
   Download,
+  Menu,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  ShieldCheck,
+  GraduationCap,
+  Layers,
+  Sparkles,
 } from 'lucide-react';
 import { exportCourseDatabaseAsJson } from '../lib/courseDatabase';
 import { ENGINEERING_FIELDS } from '../data/coursesData';
@@ -104,6 +112,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onNotify,
 }) => {
   const [tab, setTab] = useState<'analytics' | 'courses' | 'content' | 'users' | 'ai-tuning'>('analytics');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [overview, setOverview] = useState<AdminOverviewData | null>(null);
   const [loadingOverview, setLoadingOverview] = useState(true);
 
@@ -622,100 +631,371 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header + Tabs */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-              {lang === 'fa' ? '👑 استودیوی مدیریت جامع دانشیار' : '👑 DaneshYar Admin Editing Studio'}
-            </h2>
-            {currentUser?.role === 'admin' && (
-              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                · {currentUser.name} ({currentUser.email})
-              </span>
-            )}
+    <div className="adminator-layout w-full flex flex-col lg:flex-row gap-6 items-start">
+      {/* ===================================================================== */}
+      {/* ADMINATOR SIDEBAR (Collapsible, Hierarchical Categories & Badges)      */}
+      {/* ===================================================================== */}
+      <aside
+        className={`shrink-0 transition-all duration-300 rounded-3xl glass-surface p-4 flex flex-col justify-between self-stretch lg:self-start lg:sticky lg:top-20 z-20 ${
+          sidebarCollapsed ? 'lg:w-20' : 'w-full lg:w-72 xl:w-80'
+        }`}
+      >
+        <div className="space-y-6">
+          {/* Adminator Brand Header */}
+          <div className="flex items-center justify-between pb-4 border-b border-slate-200/80 dark:border-slate-800/80">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/25 shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              {!sidebarCollapsed && (
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white truncate">
+                      {lang === 'fa' ? 'ادمیناتور دانشیار' : 'DaneshYar Adminator'}
+                    </span>
+                    <span className="px-1.5 py-0.5 text-[9px] font-extrabold rounded bg-sky-500/10 text-sky-600 dark:text-sky-400">
+                      PRO
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                    {lang === 'fa' ? 'سامانه جامع کنترل و مدیریت' : 'Executive Admin Studio'}
+                  </p>
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+              title={sidebarCollapsed ? 'گسترش منو' : 'جمع کردن منو'}
+            >
+              {sidebarCollapsed ? (
+                lang === 'fa' ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
+              ) : (
+                lang === 'fa' ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />
+              )}
+            </button>
           </div>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            {lang === 'fa'
-              ? 'ویرایش کامل دروس و فرمول‌ها، مدیریت کاربران، بازبینی مقالات و جزوات و تنظیم هسته هوش مصنوعی'
-              : 'Full CRUD studio for courses & equations, users & roles, content moderation, and AI engine settings'}
-          </p>
-        </div>
 
-        <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-slate-200/70 dark:bg-slate-800/80 self-start overflow-x-auto max-w-full">
-          {(
-            [
-              { id: 'analytics', icon: BarChart3, fa: 'داشبورد تحلیلی', en: 'Analytics' },
-              { id: 'courses', icon: BookOpen, fa: 'ویرایش دروس', en: 'Course Studio' },
-              { id: 'content', icon: Newspaper, fa: 'محتوا و مقالات', en: 'Articles & Notes' },
-              { id: 'users', icon: Users, fa: 'مدیریت کاربران', en: 'Users' },
-              { id: 'ai-tuning', icon: Sliders, fa: 'تنظیمات AI', en: 'AI Engine' },
-            ] as const
-          ).map((item) => {
-            const Icon = item.icon;
-            return (
+          {/* Adminator Navigation Groups */}
+          <div className="space-y-4">
+            {/* Group 1: Core / عمومی */}
+            <div className="space-y-1">
+              {!sidebarCollapsed && (
+                <div className="px-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                  {lang === 'fa' ? 'هسته و آمار' : 'CORE ANALYTICS'}
+                </div>
+              )}
               <button
-                key={item.id}
                 type="button"
-                onClick={() => setTab(item.id)}
-                className={`inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
-                  tab === item.id
-                    ? 'bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 shadow-sm'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                onClick={() => setTab('analytics')}
+                title={lang === 'fa' ? 'داشبورد تحلیلی' : 'Analytics Dashboard'}
+                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                  tab === 'analytics'
+                    ? 'bg-sky-50 dark:bg-sky-950/70 text-sky-600 dark:text-sky-400 shadow-xs font-bold border-s-4 border-sky-600'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60'
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                <span>{lang === 'fa' ? item.fa : item.en}</span>
+                <div className="flex items-center gap-2.5 truncate">
+                  <BarChart3 className="w-4 h-4 shrink-0 text-sky-600 dark:text-sky-400" />
+                  {!sidebarCollapsed && <span>{lang === 'fa' ? 'داشبورد تحلیلی' : 'Analytics'}</span>}
+                </div>
+                {!sidebarCollapsed && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    {lang === 'fa' ? 'زنده' : 'Live'}
+                  </span>
+                )}
               </button>
+            </div>
+
+            {/* Group 2: Management / مدیریت دانشگاهی */}
+            <div className="space-y-1">
+              {!sidebarCollapsed && (
+                <div className="px-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                  {lang === 'fa' ? 'مدیریت دانشگاهی' : 'ACADEMIC MANAGEMENT'}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => setTab('courses')}
+                title={lang === 'fa' ? 'استودیو دروس' : 'Course Studio'}
+                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                  tab === 'courses'
+                    ? 'bg-sky-50 dark:bg-sky-950/70 text-sky-600 dark:text-sky-400 shadow-xs font-bold border-s-4 border-sky-600'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 truncate">
+                  <BookOpen className="w-4 h-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                  {!sidebarCollapsed && <span>{lang === 'fa' ? 'استودیو دروس' : 'Course Studio'}</span>}
+                </div>
+                {!sidebarCollapsed && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-sky-500/10 text-sky-600 dark:text-sky-400 font-mono">
+                    {courses.length}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTab('content')}
+                title={lang === 'fa' ? 'محتوا و مقالات' : 'Articles & Notes'}
+                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                  tab === 'content'
+                    ? 'bg-sky-50 dark:bg-sky-950/70 text-sky-600 dark:text-sky-400 shadow-xs font-bold border-s-4 border-sky-600'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 truncate">
+                  <Newspaper className="w-4 h-4 shrink-0 text-purple-600 dark:text-purple-400" />
+                  {!sidebarCollapsed && <span>{lang === 'fa' ? 'مقالات و جزوات' : 'Articles & Notes'}</span>}
+                </div>
+                {!sidebarCollapsed && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 font-mono">
+                    {articles.length + notes.length}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Group 3: System & Administration / سیستم و امنیت */}
+            <div className="space-y-1">
+              {!sidebarCollapsed && (
+                <div className="px-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                  {lang === 'fa' ? 'سیستم و امنیت' : 'SYSTEM & USERS'}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => setTab('users')}
+                title={lang === 'fa' ? 'مدیریت کاربران' : 'User Roles'}
+                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                  tab === 'users'
+                    ? 'bg-sky-50 dark:bg-sky-950/70 text-sky-600 dark:text-sky-400 shadow-xs font-bold border-s-4 border-sky-600'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 truncate">
+                  <Users className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                  {!sidebarCollapsed && <span>{lang === 'fa' ? 'مدیریت کاربران' : 'Users & Roles'}</span>}
+                </div>
+                {!sidebarCollapsed && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono">
+                    {overview?.users?.length || 4}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTab('ai-tuning')}
+                title={lang === 'fa' ? 'تنظیمات هوش مصنوعی' : 'AI Engine Tuning'}
+                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                  tab === 'ai-tuning'
+                    ? 'bg-sky-50 dark:bg-sky-950/70 text-sky-600 dark:text-sky-400 shadow-xs font-bold border-s-4 border-sky-600'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 truncate">
+                  <Sliders className="w-4 h-4 shrink-0 text-teal-600 dark:text-teal-400" />
+                  {!sidebarCollapsed && <span>{lang === 'fa' ? 'تنظیمات AI' : 'AI Engine'}</span>}
+                </div>
+                {!sidebarCollapsed && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-teal-500/10 text-teal-600 dark:text-teal-400">
+                    v2.5
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Export Shortcut */}
+          {!sidebarCollapsed && (
+            <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 space-y-2">
+              <button
+                type="button"
+                onClick={() => exportCourseDatabaseAsJson()}
+                className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-xs font-bold transition-all cursor-pointer shadow-xs"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>{lang === 'fa' ? 'خروجی بانک داده (JSON)' : 'Export Database JSON'}</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Adminator Current User Footer in Sidebar */}
+        <div className="pt-4 mt-6 border-t border-slate-200/80 dark:border-slate-800/80">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
+                {currentUser?.avatarInitials || 'AD'}
+              </div>
+              <span className="absolute bottom-0 end-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+            </div>
+            {!sidebarCollapsed && (
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                  {currentUser?.name || 'مدیر سیستم'}
+                </div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                  {currentUser?.email || 'admin@danshyar.ir'}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </aside>
+
+      {/* ===================================================================== */}
+      {/* ADMINATOR MAIN CONTENT CONTAINER                                      */}
+      {/* ===================================================================== */}
+      <main className="flex-1 min-w-0 w-full space-y-6">
+        {/* Top Navbar */}
+        <div className="glass-surface rounded-2xl p-3.5 sm:px-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+              title={sidebarCollapsed ? 'گسترش منو' : 'جمع کردن منو'}
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+            <div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                <span>Adminator</span>
+                <span>/</span>
+                <span className="font-semibold text-sky-600 dark:text-sky-400">
+                  {tab === 'analytics'
+                    ? lang === 'fa' ? 'داشبورد تحلیلی' : 'Analytics'
+                    : tab === 'courses'
+                    ? lang === 'fa' ? 'استودیو دروس' : 'Course Studio'
+                    : tab === 'content'
+                    ? lang === 'fa' ? 'مقالات و جزوات' : 'Content & Notes'
+                    : tab === 'users'
+                    ? lang === 'fa' ? 'مدیریت کاربران' : 'Users'
+                    : lang === 'fa' ? 'موتور هوش مصنوعی' : 'AI Engine'}
+                </span>
+              </div>
+              <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
+                {tab === 'analytics'
+                  ? lang === 'fa' ? 'داشبورد جامع نظارت و تحلیل دانشیار' : 'Analytics & Real-time Metrics'
+                  : tab === 'courses'
+                  ? lang === 'fa' ? 'استودیوی جامع دروس و سرفصل‌ها' : 'University Courses & Curriculum Studio'
+                  : tab === 'content'
+                  ? lang === 'fa' ? 'میز بازبینی مقالات و جزوات دانشجویی' : 'Academic Content & Notes Moderation'
+                  : tab === 'users'
+                  ? lang === 'fa' ? 'کنترل کاربران، نقش‌ها و دسترسی‌ها' : 'User Management & Role Permissions'
+                  : lang === 'fa' ? 'پیکربندی هسته هوش مصنوعی و پرامپت‌ها' : 'AI Core Engine & Prompt Engineering'}
+              </h2>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{lang === 'fa' ? 'سامانه آنلاین' : 'System Live'}</span>
+            </div>
+
+            {tab === 'courses' && (
+              <button
+                type="button"
+                onClick={openCreateCourse}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold cursor-pointer shadow-sm transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>{lang === 'fa' ? 'درس جدید' : 'New Course'}</span>
+              </button>
+            )}
+
+            {tab === 'users' && (
+              <button
+                type="button"
+                onClick={openCreateUser}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold cursor-pointer shadow-sm transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>{lang === 'fa' ? 'کاربر جدید' : 'New User'}</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => exportCourseDatabaseAsJson()}
+              title={lang === 'fa' ? 'دریافت خروجی JSON دیتابیس کامل' : 'Export Full JSON DB'}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-xs font-bold cursor-pointer transition-colors shadow-xs"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden md:inline">{lang === 'fa' ? 'خروجی JSON' : 'Export JSON'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Persistent Adminator KPI Widget Strip */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              label: lang === 'fa' ? 'کاربران فعال ماهانه' : 'Monthly Active Users',
+              value: (overview?.metrics?.activeUsers ?? 1108).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US'),
+              sub: lang === 'fa' ? '+۱۸٪ رشد' : '+18% growth',
+              icon: Users,
+              iconBg: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
+            },
+            {
+              label: lang === 'fa' ? 'دروس رسمی کاتالوگ' : 'Catalog Courses',
+              value: courses.length.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US'),
+              sub: lang === 'fa' ? `${visibleCourseCount} فعال در ۱۰ دانشکده` : `${visibleCourseCount} active in 10 faculties`,
+              icon: BookOpen,
+              iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
+            },
+            {
+              label: lang === 'fa' ? 'جزوات و مقالات علمی' : 'Notes & Articles',
+              value: (notes.length + articles.length).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US'),
+              sub: lang === 'fa' ? 'تأییدشده و فعال' : 'Verified & live',
+              icon: Newspaper,
+              iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+            },
+            {
+              label: lang === 'fa' ? 'درخواست‌های هوش مصنوعی' : 'AI Query Volume',
+              value: (overview?.metrics?.totalAiQueries ?? 3493).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US'),
+              sub: lang === 'fa' ? 'Gemini Pro + فاینمن' : 'Gemini Pro + Feynman',
+              icon: Sliders,
+              iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+            },
+          ].map((kpi, idx) => {
+            const KIcon = kpi.icon;
+            return (
+              <div key={idx} className="glass-surface glass-interactive rounded-2xl p-4 sm:p-5 flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">{kpi.label}</div>
+                  <div className="text-2xl sm:text-3xl font-extrabold font-mono tabular-nums text-slate-900 dark:text-white">
+                    {kpi.value}
+                  </div>
+                  <div className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                    <TrendingUp className="w-3 h-3" />
+                    <span>{kpi.sub}</span>
+                  </div>
+                </div>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${kpi.iconBg}`}>
+                  <KIcon className="w-5 h-5" />
+                </div>
+              </div>
             );
           })}
         </div>
-      </div>
 
-      {/* ===================================================================== */}
-      {/* TAB 1: Analytics Dashboard                                            */}
-      {/* ===================================================================== */}
-      {tab === 'analytics' && (
-        <div className="space-y-6">
-          {loadingOverview && !overview ? (
-            <div className="glass-surface rounded-3xl p-12 flex items-center justify-center">
-              <Loader2 className="w-7 h-7 animate-spin text-sky-600" />
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  {
-                    label: lang === 'fa' ? 'کاربران فعال ماهانه' : 'Monthly Active Users',
-                    value: (overview?.metrics?.activeUsers ?? 1108).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US'),
-                    sub: lang === 'fa' ? '+۱۸٪ نسبت به ماه قبل' : '+18% vs last month',
-                  },
-                  {
-                    label: lang === 'fa' ? 'دروس ثبت‌شده در کاتالوگ' : 'Catalog Courses',
-                    value: courses.length.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US'),
-                    sub: lang === 'fa' ? `${visibleCourseCount} فعال در کاتالوگ` : `${visibleCourseCount} visible`,
-                  },
-                  {
-                    label: lang === 'fa' ? 'جزوات و مقالات علمی' : 'Notes & Articles',
-                    value: (notes.length + articles.length).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US'),
-                    sub: lang === 'fa' ? 'قابل ویرایش در تب محتوا' : 'Moderated in Content tab',
-                  },
-                  {
-                    label: lang === 'fa' ? 'حجم درخواست‌های هوش مصنوعی' : 'AI Query Volume',
-                    value: (overview?.metrics?.totalAiQueries ?? 3493).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US'),
-                    sub: lang === 'fa' ? 'فاینمن، حل فرمول و ربات چت' : 'Feynman, Solver & @Bot',
-                  },
-                ].map((kpi, idx) => (
-                  <div key={idx} className="glass-surface rounded-2xl p-5 space-y-1.5">
-                    <div className="text-xs text-slate-500 dark:text-slate-400">{kpi.label}</div>
-                    <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-slate-900 dark:text-white">
-                      {kpi.value}
-                    </div>
-                    <div className="text-xs text-sky-600 dark:text-sky-400 font-medium">{kpi.sub}</div>
-                  </div>
-                ))}
+        {/* ===================================================================== */}
+        {/* TAB 1: Analytics Dashboard                                            */}
+        {/* ===================================================================== */}
+        {tab === 'analytics' && (
+          <div className="space-y-6">
+            {loadingOverview && !overview ? (
+              <div className="glass-surface rounded-3xl p-12 flex items-center justify-center">
+                <Loader2 className="w-7 h-7 animate-spin text-sky-600" />
               </div>
+            ) : (
+              <>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <div className="lg:col-span-6 glass-surface rounded-3xl p-6 space-y-4">
@@ -1375,6 +1655,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         </div>
       )}
+      </main>
 
       {/* ===================================================================== */}
       {/* MODAL 1: Course Editor Modal ('ویرایش / افزودن درس')                  */}
