@@ -164,6 +164,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             ? 'مرورگر پنجره ورود گوگل را مسدود کرد؛ لطفاً مجوز Pop-up را فعال کنید.'
             : 'Browser blocked the sign-in popup. Please allow popups for this site.'
         );
+      } else if (code === 'auth/unauthorized-domain') {
+        setErrorMsg(
+          lang === 'fa'
+            ? 'دامنه سایت در Firebase مجاز نیست. لطفاً از danshyar-edu.web.app استفاده کنید یا با مدیر سایت تماس بگیرید.'
+            : 'This domain is not authorized in Firebase. Please use danshyar-edu.web.app or contact admin.'
+        );
       } else {
         setErrorMsg(
           lang === 'fa'

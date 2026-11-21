@@ -20,11 +20,13 @@ import {
   Globe,
   AlertTriangle,
 } from 'lucide-react';
-import { DifficultyLevel, Lang, ScientificArticle, ScientificResourceItem } from '../types/app';
+import { DifficultyLevel, Lang, ScientificArticle, ScientificResourceItem, UserSession } from '../types/app';
 import { RichMathText } from './MathRenderer';
 
 interface ArticlesHubProps {
   lang: Lang;
+  user?: UserSession | null;
+  onOpenAuth?: () => void;
 }
 
 const GLOBAL_LIBRARY_RESOURCES: ScientificResourceItem[] = [
@@ -172,7 +174,7 @@ const GLOBAL_LIBRARY_RESOURCES: ScientificResourceItem[] = [
   },
 ];
 
-export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
+export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang, user, onOpenAuth }) => {
   const [hubTab, setHubTab] = useState<'articles' | 'library'>('articles');
   const [articles, setArticles] = useState<ScientificArticle[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -425,7 +427,13 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
         {hubTab === 'library' ? (
           <button
             type="button"
-            onClick={() => setShowAddLibModal(true)}
+            onClick={() => {
+              if (!user) {
+                onOpenAuth?.();
+                return;
+              }
+              setShowAddLibModal(true);
+            }}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold self-start cursor-pointer shadow-sm"
           >
             <Plus className="w-4 h-4" />
@@ -434,7 +442,13 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang }) => {
         ) : (
           <button
             type="button"
-            onClick={() => setShowEditor(true)}
+            onClick={() => {
+              if (!user) {
+                onOpenAuth?.();
+                return;
+              }
+              setShowEditor(true);
+            }}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-semibold self-start cursor-pointer shadow-sm"
           >
             <Plus className="w-4 h-4" />

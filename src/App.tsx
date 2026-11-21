@@ -533,7 +533,7 @@ export default function App() {
             />
           )}
 
-          {activeSection === 'articles' && <ArticlesHub lang={lang} />}
+          {activeSection === 'articles' && <ArticlesHub lang={lang} user={user} onOpenAuth={() => setAuthModalOpen(true)} />}
 
           {activeSection === 'study-deck' && (
             <StudyDeckHub
