@@ -250,7 +250,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-white/60 dark:border-white/10 bg-white/70 dark:bg-slate-950/70 backdrop-blur-2xl shadow-xs transition-colors">
       <div className="max-w-[1400px] mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-3">
         {/* Brand Wordmark & Quick Overview Button */}
         <div className="flex items-center gap-3 shrink-0">
@@ -314,7 +314,7 @@ export const Header: React.FC<HeaderProps> = ({
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.98 }}
                       transition={{ duration: 0.16 }}
-                      className="absolute start-0 mt-2 w-80 sm:w-96 rounded-2xl glass-surface bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 shadow-2xl p-2.5 space-y-1 z-50"
+                      className="absolute start-0 mt-2 w-80 sm:w-96 rounded-2xl glass-surface bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-2xl p-2.5 space-y-1 z-50"
                     >
                       {/* Menu Header with Category Title & Quick Login Access */}
                       <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
@@ -461,7 +461,7 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
 
               {profileMenuOpen && (
-                <div className="absolute end-0 mt-2 w-72 rounded-2xl glass-surface bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 shadow-2xl p-4 space-y-3 z-50">
+                <div className="absolute end-0 mt-2 w-72 rounded-2xl glass-surface bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-2xl p-4 space-y-3 z-50">
                   <div className="flex items-center gap-3 pb-3 border-b border-slate-200/80 dark:border-slate-800/80">
                     <div
                       className={`w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-sm font-extrabold text-white shrink-0 ${
@@ -586,7 +586,7 @@ export const Header: React.FC<HeaderProps> = ({
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="lg:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl px-4 py-4 space-y-4 max-h-[85vh] overflow-y-auto"
+            className="lg:hidden border-t border-white/60 dark:border-white/10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-2xl px-4 py-4 space-y-4 max-h-[85vh] overflow-y-auto"
           >
             {/* Top Quick Login Button in Mobile Drawer */}
             {!user ? (

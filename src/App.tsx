@@ -390,6 +390,13 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen canvas-backdrop flex flex-col justify-between transition-colors duration-200 pb-24 lg:pb-0 overflow-x-clip">
+      {/* Modern Ambient Glassmorphic Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none">
+        <div className="absolute -top-32 -start-32 w-[34rem] h-[34rem] bg-sky-400/18 dark:bg-sky-500/14 rounded-full blur-[110px]" />
+        <div className="absolute top-1/4 -end-32 w-[38rem] h-[38rem] bg-indigo-500/15 dark:bg-indigo-600/14 rounded-full blur-[120px]" />
+        <div className="absolute top-2/3 start-1/4 w-[32rem] h-[32rem] bg-cyan-400/12 dark:bg-cyan-500/10 rounded-full blur-[110px]" />
+        <div className="absolute -bottom-36 end-1/4 w-[36rem] h-[36rem] bg-violet-500/12 dark:bg-purple-600/12 rounded-full blur-[130px]" />
+      </div>
 
       <a
         href="#main-content"
@@ -676,7 +683,7 @@ export default function App() {
       {/* Floating Bottom Navigation Dock (Mobile & Tablet) */}
       <nav
         aria-label={lang === 'fa' ? 'ناوبری سریع موبایل' : 'Mobile quick navigation'}
-        className="lg:hidden fixed bottom-3 inset-x-3 z-30 glass-surface rounded-2xl h-16 px-1.5 grid grid-cols-5 items-center shadow-xl"
+        className="lg:hidden fixed bottom-3 inset-x-3 z-30 glass-surface bg-white/75 dark:bg-slate-900/75 backdrop-blur-2xl rounded-2xl h-16 px-1.5 grid grid-cols-5 items-center border border-white/60 dark:border-white/10 shadow-2xl"
       >
         {dockItems.map((item) => {
           const Icon = item.icon;

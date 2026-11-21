@@ -1061,7 +1061,7 @@ export const CoursesAndMindMap: React.FC<CoursesAndMindMapProps> = ({
               return (
                 <article
                   key={course.id}
-                  className="glass-surface rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-sky-500/40 dark:hover:border-sky-400/40 transition-all"
+                  className="glass-surface glass-interactive rounded-2xl p-5 flex flex-col justify-between space-y-4 cursor-pointer"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-2">

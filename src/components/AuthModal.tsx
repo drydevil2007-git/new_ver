@@ -396,7 +396,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             role="dialog"
             aria-modal="true"
             aria-label={lang === 'fa' ? 'حساب کاربری دانشیار' : 'DaneshYar Authentication'}
-            className="glass-surface bg-white/95 dark:bg-slate-900/95 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200/80 dark:border-slate-700/70"
+            className="glass-surface bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-white/60 dark:border-white/10"
           >
             {/* Header */}
             <div className="flex items-start justify-between gap-4">

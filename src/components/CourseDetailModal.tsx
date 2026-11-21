@@ -190,8 +190,8 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-2 sm:p-5">
-      <div className="glass-surface bg-white/95 dark:bg-slate-900/95 rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto p-5 sm:p-8 space-y-6">
+    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xl flex items-center justify-center p-2 sm:p-5">
+      <div className="glass-surface bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto p-5 sm:p-8 space-y-6 border border-white/60 dark:border-white/10 shadow-2xl">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
