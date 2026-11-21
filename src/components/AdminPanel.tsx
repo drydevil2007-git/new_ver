@@ -412,6 +412,36 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newUserName.trim() || !newUserEmail.trim()) return;
+    const studentId = `DY-${Math.floor(10000 + Math.random() * 90000)}`;
+    const avatarUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(newUserEmail.trim())}&backgroundColor=b6e3f4,c0aede,ffd5dc,d1d4f9,ffdfbf`;
+
+    // Persist new user in client storage so they have a complete profile and can sign in
+    try {
+      const raw = localStorage.getItem('daneshyar_registered_users_v1');
+      const list = raw ? JSON.parse(raw) : [];
+      const newRegUser = {
+        id: `usr-${Date.now()}`,
+        name: newUserName.trim(),
+        email: newUserEmail.trim().toLowerCase(),
+        password: '1234',
+        university: 'دانشگاه صنعتی شریف',
+        field: 'مهندسی کامپیوتر',
+        role: newUserRole === 'Professor' ? 'professor' : newUserRole === 'Admin' ? 'admin' : 'student',
+        avatarInitials: newUserName.trim().slice(0, 2).toUpperCase(),
+        joinedAt: new Date().toLocaleDateString('fa-IR'),
+        photoURL: avatarUrl,
+        studentId,
+        bio: 'کاربر ایجاد شده توسط پنل مدیریت دانشیار',
+        academicLevel: 'کارشناسی',
+        semester: 'ترم ۳',
+      };
+      if (!list.some((u: any) => u.email.toLowerCase() === newRegUser.email)) {
+        localStorage.setItem('daneshyar_registered_users_v1', JSON.stringify([newRegUser, ...list]));
+      }
+    } catch {
+      // ignore
+    }
+
     try {
       const resp = await fetch('/api/admin/users', {
         method: 'POST',
@@ -420,6 +450,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           name: newUserName.trim(),
           email: newUserEmail.trim(),
           role: newUserRole,
+          photoURL: avatarUrl,
+          studentId,
         }),
       });
       const data = await resp.json();
@@ -429,7 +461,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           users: [data.user, ...overview.users],
           logs: data.logs || overview.logs,
         });
-        notify(`کاربر جدید ${data.user.name} ثبت شد.`, `Added user ${data.user.name}.`);
+        notify(`پروفایل و دسترسی کاربر ${data.user.name} ایجاد شد.`, `Created profile for ${data.user.name}.`);
         setNewUserName('');
         setNewUserEmail('');
       }

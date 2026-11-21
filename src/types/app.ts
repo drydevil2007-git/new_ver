@@ -53,6 +53,10 @@ export interface UserSession {
   avatarInitials: string;
   joinedAt: string;
   photoURL?: string | null;
+  bio?: string;
+  studentId?: string;
+  academicLevel?: string;
+  semester?: string;
 }
 
 export interface CourseItem {

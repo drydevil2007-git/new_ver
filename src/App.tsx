@@ -169,9 +169,10 @@ export default function App() {
     if (isNewRegistration) {
       showToast(
         lang === 'fa'
-          ? `ثبت‌نام با موفقیت انجام شد! خوش آمدید ${nextUser.name}`
-          : `Account registered! Welcome, ${nextUser.name}`
+          ? `🎉 پروفایل کاربری ${nextUser.name} با موفقیت ساخته شد! خوش آمدید.`
+          : `🎉 User profile created for ${nextUser.name}! Welcome.`
       );
+      setProfileModalOpen(true);
     } else if (nextUser.role === 'admin') {
       showToast(
         lang === 'fa'
@@ -203,9 +204,38 @@ export default function App() {
 
   const handleUpdateUser = (updatedUser: UserSession) => {
     setUser(updatedUser);
+    try {
+      const raw = localStorage.getItem('daneshyar_registered_users_v1');
+      if (raw) {
+        const list = JSON.parse(raw);
+        const nextList = list.map((u: any) =>
+          u.email.toLowerCase() === updatedUser.email.toLowerCase()
+            ? { ...u, ...updatedUser }
+            : u
+        );
+        localStorage.setItem('daneshyar_registered_users_v1', JSON.stringify(nextList));
+      }
+    } catch {
+      // ignore
+    }
+
+    fetch('/api/admin/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: updatedUser.name,
+        email: updatedUser.email,
+        university: updatedUser.university,
+        major: updatedUser.field,
+        role: updatedUser.role === 'professor' ? 'Professor' : updatedUser.role === 'admin' ? 'Admin' : 'Student',
+        photoURL: updatedUser.photoURL,
+        studentId: updatedUser.studentId,
+      }),
+    }).catch(() => {});
+
     showToast(
       lang === 'fa'
-        ? `پروفایل و تصویر کاربری ${updatedUser.name} با موفقیت به‌روزرسانی شد.`
+        ? `پروفایل و شناسه کاربری ${updatedUser.name} با موفقیت به‌روزرسانی شد.`
         : `Profile and avatar updated for ${updatedUser.name}`
     );
   };

@@ -51,6 +51,17 @@ const AUTHORIZED_ADMIN_EMAILS = [
   'admin@gmail.com',
 ];
 
+const REG_AVATAR_PRESETS = [
+  { id: 'p1', nameFa: 'مهندس نرم‌افزار', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=DaneshYarDev&backgroundColor=b6e3f4' },
+  { id: 'p2', nameFa: 'پژوهشگر فیزیک', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=QuantumLab&backgroundColor=c0aede' },
+  { id: 'p3', nameFa: 'مهندس برق', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=CircuitHero&backgroundColor=ffd5dc' },
+  { id: 'p4', nameFa: 'دانشمند داده', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=AlgorithmicAI&backgroundColor=d1d4f9' },
+  { id: 'p5', nameFa: 'دانشجوی پزشکی', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=BioGenetics&backgroundColor=b6e3f4' },
+  { id: 'p6', nameFa: 'مهندس هوافضا', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=CosmicVoyager&backgroundColor=ffdfbf' },
+  { id: 'p7', nameFa: 'آواتار مینیمال ۱', url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=SinaRad&backgroundColor=b6e3f4' },
+  { id: 'p8', nameFa: 'آواتار مینیمال ۲', url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=SaraTehrani&backgroundColor=ffd5dc' },
+];
+
 function computeInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return 'DY';
@@ -80,6 +91,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [regUniversity, setRegUniversity] = useState('');
   const [regField, setRegField] = useState('');
   const [regRole, setRegRole] = useState<Exclude<UserRole, 'admin'>>('student');
+  const [selectedAvatar, setSelectedAvatar] = useState<string>(REG_AVATAR_PRESETS[0].url);
 
   // CAPTCHA verification state (for both login and registration)
   const [loginCaptchaCode, setLoginCaptchaCode] = useState<string>(() => createRandomCaptcha());
@@ -153,17 +165,37 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       }
 
       const existing = getStoredUsers().find((u) => u.email.toLowerCase() === email);
+      const isNew = !existing;
+      const defaultGoogleAvatar = gUser.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(email)}&backgroundColor=b6e3f4,c0aede,ffd5dc,d1d4f9,ffdfbf`;
+      const studentId = existing?.studentId || `DY-${Math.floor(10000 + Math.random() * 90000)}`;
+
       const userSession: UserSession = {
         id: `google-${gUser.uid}`,
         name: gUser.name || email.split('@')[0],
         email,
-        university: existing?.university || (lang === 'fa' ? 'دانشگاه سراسری' : 'University Campus'),
-        field: existing?.field || (lang === 'fa' ? 'مهندسی' : 'Engineering'),
+        university: existing?.university || (lang === 'fa' ? 'دانشگاه صنعتی امیرکبیر' : 'Amirkabir University'),
+        field: existing?.field || (lang === 'fa' ? 'مهندسی کامپیوتر / هوش مصنوعی' : 'Computer Engineering'),
         role: existing && existing.role !== 'admin' ? existing.role : 'student',
         avatarInitials: computeInitials(gUser.name || email),
         joinedAt: existing?.joinedAt || new Date().toLocaleDateString(lang === 'fa' ? 'fa-IR' : 'en-US'),
-        photoURL: gUser.photoURL,
+        photoURL: existing?.photoURL || defaultGoogleAvatar,
+        studentId,
+        bio: existing?.bio || (lang === 'fa' ? 'دانشجوی مشتاق یادگیری در دانشیار' : 'Enthusiastic learner at DaneshYar'),
+        academicLevel: existing?.academicLevel || 'کارشناسی',
+        semester: existing?.semester || 'ترم ۳',
       };
+
+      if (isNew) {
+        try {
+          const allUsers = getStoredUsers().filter((u) => u.email.toLowerCase() !== email);
+          localStorage.setItem(
+            REGISTERED_USERS_KEY,
+            JSON.stringify([{ ...userSession, password: '' }, ...allUsers])
+          );
+        } catch {
+          // ignore
+        }
+      }
 
       fetch('/api/admin/users', {
         method: 'POST',
@@ -174,10 +206,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           university: userSession.university,
           major: userSession.field,
           role: userSession.role === 'professor' ? 'Professor' : 'Student',
+          photoURL: userSession.photoURL,
+          studentId: userSession.studentId,
         }),
       }).catch(() => {});
 
-      onLoginSuccess(userSession, false);
+      onLoginSuccess(userSession, isNew);
       onClose();
     } catch (err: any) {
       const code = String(err?.code || '');
@@ -320,7 +354,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
-    // Standard registration strictly assigns student or professor role
+    // Standard registration strictly assigns student or professor role with full auto-created profile
+    const defaultAvatarUrl = selectedAvatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(email || name)}&backgroundColor=b6e3f4,c0aede,ffd5dc,d1d4f9,ffdfbf`;
+    const studentId = `DY-${Math.floor(10000 + Math.random() * 90000)}`;
+
     const session: UserSession = {
       id: `usr-${Date.now()}`,
       name,
@@ -330,6 +367,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       role: regRole,
       avatarInitials: computeInitials(name),
       joinedAt: new Date().toLocaleDateString(lang === 'fa' ? 'fa-IR' : 'en-US'),
+      photoURL: defaultAvatarUrl,
+      studentId,
+      bio: lang === 'fa'
+        ? `دانشجوی ${regField.trim() || 'مهندسی'} در ${regUniversity.trim() || 'دانشگاه'}`
+        : `Student of ${regField.trim() || 'Engineering'} at ${regUniversity.trim() || 'University'}`,
+      academicLevel: lang === 'fa' ? 'کارشناسی' : 'Undergraduate',
+      semester: lang === 'fa' ? 'ترم ۳' : 'Semester 3',
     };
 
     try {
@@ -352,6 +396,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         university: session.university,
         major: session.field,
         role: session.role === 'professor' ? 'Professor' : 'Student',
+        photoURL: session.photoURL,
+        studentId: session.studentId,
       }),
     }).catch(() => {});
 
@@ -746,6 +792,44 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         className="w-full ps-9 pe-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
                       />
                     </div>
+                  </div>
+                </div>
+
+                {/* 3D Profile Avatar Picker for New User */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-sky-500" />
+                      <span>{lang === 'fa' ? 'انتخاب آواتار ۳بعدی پروفایل' : 'Choose 3D Profile Avatar'}</span>
+                    </label>
+                    <span className="text-[11px] text-slate-400">
+                      {lang === 'fa' ? 'ساخت خودکار پروفایل' : 'Auto Profile'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 overflow-x-auto p-2 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 no-scrollbar">
+                    {REG_AVATAR_PRESETS.map((p) => {
+                      const isSel = selectedAvatar === p.url;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setSelectedAvatar(p.url)}
+                          title={p.nameFa}
+                          className={`relative w-10 h-10 rounded-xl shrink-0 p-0.5 transition-all cursor-pointer ${
+                            isSel
+                              ? 'ring-2 ring-sky-500 scale-105 bg-sky-100 dark:bg-sky-950 shadow-sm'
+                              : 'opacity-70 hover:opacity-100 hover:scale-105'
+                          }`}
+                        >
+                          <img src={p.url} alt={p.nameFa} className="w-full h-full object-cover rounded-lg" />
+                          {isSel && (
+                            <span className="absolute -top-1 -end-1 w-3.5 h-3.5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[9px] font-bold">
+                              ✓
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
