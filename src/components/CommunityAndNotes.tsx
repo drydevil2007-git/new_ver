@@ -12,12 +12,17 @@ import {
   Hash,
   UserCheck,
   Sparkles,
+  Lock,
+  LogIn,
+  User,
 } from 'lucide-react';
-import { Lang, LeitnerCard } from '../types/app';
+import { Lang, LeitnerCard, UserSession } from '../types/app';
 import { LatexBlock, RichMathText } from './MathRenderer';
 
 interface CommunityAndNotesProps {
   lang: Lang;
+  user?: UserSession | null;
+  onOpenAuth?: () => void;
   onGenerateFlashcardsFromNote: (
     cards: Omit<LeitnerCard, 'id' | 'box' | 'lastReviewedAt' | 'reviewCount'>[]
   ) => void;
@@ -84,6 +89,8 @@ interface AcademicChatMessage {
 
 export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
   lang,
+  user,
+  onOpenAuth,
   onGenerateFlashcardsFromNote,
 }) => {
   const [subTab, setSubTab] = useState<'chat' | 'notes' | 'forum'>('chat');
@@ -92,10 +99,16 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
   const [channels, setChannels] = useState<AcademicChannel[]>([]);
   const [messagesByChannel, setMessagesByChannel] = useState<Record<string, AcademicChatMessage[]>>({});
   const [activeChannelId, setActiveChannelId] = useState<string>('ch-math');
-  const [chatSender, setChatSender] = useState('امیرحسین رضایی');
+  const [chatSender, setChatSender] = useState(user?.name || (lang === 'fa' ? 'دانشجو' : 'Student'));
   const [chatInput, setChatInput] = useState('');
   const [sendingChat, setSendingChat] = useState(false);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (user?.name) {
+      setChatSender(user.name);
+    }
+  }, [user?.name]);
 
   // Lecture Notes State
   const [notes, setNotes] = useState<LectureNote[]>([]);
@@ -186,6 +199,10 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
 
   const handleSendChat = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      onOpenAuth?.();
+      return;
+    }
     const text = chatInput.trim();
     if (!text || sendingChat) return;
     setChatInput('');
@@ -196,8 +213,10 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           channelId: activeChannelId,
-          sender: chatSender.trim() || (lang === 'fa' ? 'دانشجو' : 'Student'),
-          role: 'student',
+          sender: user.name,
+          role: user.role,
+          avatarUrl: user.photoURL,
+          avatarInitials: user.avatarInitials,
           text,
           lang,
         }),
@@ -247,6 +266,10 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
 
   const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      onOpenAuth?.();
+      return;
+    }
     if (!newNoteTitle.trim()) return;
     try {
       const resp = await fetch('/api/notes', {
@@ -254,8 +277,11 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           titleFa: newNoteTitle.trim(),
+          titleEn: newNoteTitle.trim(),
           courseCode: newNoteCode.trim(),
           summaryFa: newNoteSummary.trim(),
+          author: user.name,
+          university: user.university,
         }),
       });
       const data = await resp.json();
@@ -306,6 +332,10 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
 
   const handleCreateThread = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      onOpenAuth?.();
+      return;
+    }
     if (!newThreadTitle.trim() || !newThreadBody.trim()) return;
     try {
       const resp = await fetch('/api/forum', {
@@ -315,6 +345,8 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
           title: newThreadTitle.trim(),
           body: newThreadBody.trim(),
           courseCode: newThreadCode.trim(),
+          author: user.name,
+          badgeFa: `${user.field} · ${user.university}`,
         }),
       });
       const data = await resp.json();
@@ -330,13 +362,20 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
   };
 
   const handleReplyThread = async (threadId: string) => {
+    if (!user) {
+      onOpenAuth?.();
+      return;
+    }
     const text = (replyDrafts[threadId] || '').trim();
     if (!text) return;
     try {
       const resp = await fetch(`/api/forum/${threadId}/reply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({
+          text,
+          author: user.name,
+        }),
       });
       const data = await resp.json();
       if (data.thread) {
@@ -550,11 +589,14 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
               {activeMessages.map((msg) => {
                 const isBot = msg.role === 'ai-bot';
                 const isProf = msg.role === 'professor';
+                const isMe = Boolean(user && msg.sender === user.name);
                 return (
                   <div
                     key={msg.id}
-                    className={`rounded-2xl p-4 space-y-1.5 border ${
-                      isBot
+                    className={`rounded-2xl p-4 space-y-1.5 border transition-all ${
+                      isMe
+                        ? 'bg-sky-50/70 dark:bg-sky-950/40 border-sky-300 dark:border-sky-800 ring-1 ring-sky-500/20'
+                        : isBot
                         ? 'bg-sky-50/85 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800/70'
                         : isProf
                         ? 'bg-emerald-50/75 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60'
@@ -563,16 +605,25 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
                   >
                     <div className="flex items-center justify-between gap-2 text-xs">
                       <div className="flex items-center gap-2 font-bold">
+                        <div className="w-5 h-5 rounded-full overflow-hidden bg-sky-600 text-white flex items-center justify-center text-[9px] shrink-0">
+                          {isMe && user?.photoURL ? (
+                            <img src={user.photoURL} alt={user.name} className="w-full h-full object-cover" />
+                          ) : (
+                            msg.sender.slice(0, 2).toUpperCase()
+                          )}
+                        </div>
                         <span
                           className={
-                            isBot
+                            isMe
+                              ? 'text-sky-600 dark:text-sky-400'
+                              : isBot
                               ? 'text-sky-700 dark:text-sky-400'
                               : isProf
                               ? 'text-emerald-700 dark:text-emerald-400'
                               : 'text-slate-900 dark:text-white'
                           }
                         >
-                          {msg.sender}
+                          {msg.sender} {isMe && <span className="text-[10px] text-sky-500 font-normal">({lang === 'fa' ? 'شما' : 'You'})</span>}
                         </span>
                         <span className="font-normal text-slate-400">·</span>
                         <span className="font-normal text-slate-500 dark:text-slate-400">
@@ -585,7 +636,7 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
                       </div>
                       <span className="text-[11px] font-mono text-slate-400">{msg.timestamp}</span>
                     </div>
-                    <div className="text-xs sm:text-sm text-slate-800 dark:text-slate-100 leading-relaxed">
+                    <div className="text-xs sm:text-sm text-slate-800 dark:text-slate-100 leading-relaxed ps-7">
                       <RichMathText text={msg.text} />
                     </div>
                   </div>
@@ -617,27 +668,72 @@ export const CommunityAndNotes: React.FC<CommunityAndNotesProps> = ({
                 </button>
               </div>
 
-              <form onSubmit={handleSendChat} className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  placeholder={
-                    lang === 'fa'
-                      ? 'پیام بنویسید یا برای پاسخ فوری بنویسید @دانشیار ...'
-                      : 'Write a message or tag @دانشیار for AI help...'
-                  }
-                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/90 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
-                />
-                <button
-                  type="submit"
-                  disabled={sendingChat}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white text-xs sm:text-sm font-semibold cursor-pointer"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>{lang === 'fa' ? 'ارسال' : 'Send'}</span>
-                </button>
-              </form>
+              {!user ? (
+                <div className="p-4 rounded-2xl glass-subtle border border-sky-500/25 text-center space-y-2.5">
+                  <div className="flex items-center justify-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+                    <Lock className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                    <span>
+                      {lang === 'fa'
+                        ? 'برای ارسال پیام و گفتگو با اساتید و دانشجویان، وارد حساب خود شوید'
+                        : 'Please sign in or register to join the discussion and chat'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                    {lang === 'fa'
+                      ? 'امکان ارسال پیام، تبادل نظر علمی و پرسش از هوش مصنوعی @دانشیار نیازمند حساب کاربری فعال است.'
+                      : 'Sending messages and tagging @دانشیار for AI answers requires an active account.'}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={onOpenAuth}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white text-xs sm:text-sm font-bold shadow-md shadow-sky-600/25 transition-all cursor-pointer hover:scale-102"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>{lang === 'fa' ? 'ورود به حساب کاربری / ثبت‌نام' : 'Sign In / Register'}</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs px-1 text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center gap-2">
+                      <span>{lang === 'fa' ? 'ارسال به عنوان:' : 'Sending as:'}</span>
+                      <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
+                        <div className="w-5 h-5 rounded-full overflow-hidden bg-sky-600 text-white flex items-center justify-center text-[9px] shrink-0">
+                          {user.photoURL ? (
+                            <img src={user.photoURL} alt={user.name} className="w-full h-full object-cover" />
+                          ) : (
+                            user.avatarInitials
+                          )}
+                        </div>
+                        <span className="text-sky-600 dark:text-sky-400">{user.name}</span>
+                        <span className="text-[10px] text-slate-400 font-normal">({user.university})</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleSendChat} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      placeholder={
+                        lang === 'fa'
+                          ? 'پیام بنویسید یا برای پاسخ فوری بنویسید @دانشیار ...'
+                          : 'Write a message or tag @دانشیار for AI help...'
+                      }
+                      className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/90 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    />
+                    <button
+                      type="submit"
+                      disabled={sendingChat || !chatInput.trim()}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white text-xs sm:text-sm font-semibold cursor-pointer shadow-sm"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>{lang === 'fa' ? 'ارسال' : 'Send'}</span>
+                    </button>
+                  </form>
+                </div>
+              )}
             </div>
           </div>
         </div>

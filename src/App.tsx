@@ -572,10 +572,21 @@ export default function App() {
           {activeSection === 'study-rooms' && <StudyRoomsAndTools lang={lang} />}
 
           {activeSection === 'community' && (
-            <CommunityAndNotes lang={lang} onGenerateFlashcardsFromNote={handleAddCards} />
+            <CommunityAndNotes
+              lang={lang}
+              user={user}
+              onOpenAuth={() => setAuthModalOpen(true)}
+              onGenerateFlashcardsFromNote={handleAddCards}
+            />
           )}
 
-          {activeSection === 'campus' && <CampusVoiceHub lang={lang} />}
+          {activeSection === 'campus' && (
+            <CampusVoiceHub
+              lang={lang}
+              user={user}
+              onOpenAuth={() => setAuthModalOpen(true)}
+            />
+          )}
 
           {activeSection === 'mercury' && <MercuryAgentHub lang={lang} onNavigate={setActiveSection} />}
 

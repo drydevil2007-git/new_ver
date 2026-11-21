@@ -21,10 +21,13 @@ import {
   CampusPoll,
   CampusThread,
   Lang,
+  UserSession,
 } from '../types/app';
 
 interface CampusVoiceHubProps {
   lang: Lang;
+  user?: UserSession | null;
+  onOpenAuth?: () => void;
 }
 
 const CATEGORY_LABELS: Array<{ id: 'all' | CampusCategory; fa: string; en: string }> = [
@@ -36,7 +39,7 @@ const CATEGORY_LABELS: Array<{ id: 'all' | CampusCategory; fa: string; en: strin
   { id: 'student-life', fa: 'زندگی دانشجویی', en: 'Student Life' },
 ];
 
-export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
+export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang, user, onOpenAuth }) => {
   const [threads, setThreads] = useState<CampusThread[]>([]);
   const [polls, setPolls] = useState<CampusPoll[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,10 +76,25 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
   const [composerOpen, setComposerOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newBody, setNewBody] = useState('');
-  const [newAuthor, setNewAuthor] = useState('');
-  const [newBadge, setNewBadge] = useState('');
+  const [newAuthor, setNewAuthor] = useState(user?.name || '');
+  const [newBadge, setNewBadge] = useState(
+    user?.field && user?.university
+      ? `${user.field} · ${user.university}`
+      : user?.university || user?.field || ''
+  );
   const [newCategory, setNewCategory] = useState<CampusCategory>('university-industry');
   const [submittingThread, setSubmittingThread] = useState(false);
+
+  useEffect(() => {
+    if (user?.name) {
+      setNewAuthor(user.name);
+      setNewBadge(
+        user.field && user.university
+          ? `${user.field} · ${user.university}`
+          : user.university || user.field || ''
+      );
+    }
+  }, [user]);
 
   useEffect(() => {
     let active = true;
@@ -214,6 +232,10 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
   };
 
   const handlePostComment = async (threadId: string, parentCommentId?: string) => {
+    if (!user) {
+      onOpenAuth?.();
+      return;
+    }
     const raw = parentCommentId ? replyInputs[parentCommentId] : commentInputs[threadId];
     const text = (raw || '').trim();
     if (!text) return;
@@ -225,13 +247,18 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
       setCommentInputs((prev) => ({ ...prev, [threadId]: '' }));
     }
 
+    const authorName = user.name || (lang === 'fa' ? 'دانشجوی دانشیار' : 'Campus Student');
+    const badgeText = user.field && user.university
+      ? `${user.field} · ${user.university}`
+      : user.university || user.field || (lang === 'fa' ? 'دانشجو' : 'Student');
+
     try {
       const resp = await fetch(`/api/campus/threads/${threadId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          author: newAuthor.trim() || (lang === 'fa' ? 'دانشجوی دانشیار' : 'Campus Student'),
-          badgeFa: newBadge.trim() || (lang === 'fa' ? 'مهندسی · دانشیار' : 'Engineering Student'),
+          author: authorName,
+          badgeFa: badgeText,
           text,
           parentCommentId,
         }),
@@ -283,8 +310,17 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
 
   const handleCreateThread = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      onOpenAuth?.();
+      return;
+    }
     if (!newTitle.trim() || !newBody.trim() || submittingThread) return;
     setSubmittingThread(true);
+    const authorName = user.name || newAuthor.trim() || (lang === 'fa' ? 'دانشجوی دانشیار' : 'DaneshYar Student');
+    const badgeText = user.field && user.university
+      ? `${user.field} · ${user.university}`
+      : newBadge.trim() || user.university || (lang === 'fa' ? 'دانشجو' : 'Student');
+
     try {
       const resp = await fetch('/api/campus/threads', {
         method: 'POST',
@@ -293,8 +329,8 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
           category: newCategory,
           titleFa: newTitle.trim(),
           bodyFa: newBody.trim(),
-          author: newAuthor.trim() || (lang === 'fa' ? 'دانشجوی دانشیار' : 'DaneshYar Student'),
-          badgeFa: newBadge.trim() || (lang === 'fa' ? 'کارشناسی مهندسی' : 'Engineering Undergrad'),
+          author: authorName,
+          badgeFa: badgeText,
         }),
       });
       const data = await resp.json();
@@ -341,7 +377,13 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
 
         <button
           type="button"
-          onClick={() => setComposerOpen((o) => !o)}
+          onClick={() => {
+            if (!user) {
+              onOpenAuth?.();
+              return;
+            }
+            setComposerOpen((o) => !o);
+          }}
           className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold whitespace-nowrap shrink-0 transition-colors cursor-pointer shadow-sm"
         >
           <Plus className="w-4 h-4" />
@@ -380,20 +422,37 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
                 </option>
               ))}
             </select>
-            <input
-              type="text"
-              value={newAuthor}
-              onChange={(e) => setNewAuthor(e.target.value)}
-              placeholder={lang === 'fa' ? 'نام یا نام مستعار دانشجویی' : 'Your name or handle'}
-              className="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 text-slate-900 dark:text-white"
-            />
-            <input
-              type="text"
-              value={newBadge}
-              onChange={(e) => setNewBadge(e.target.value)}
-              placeholder={lang === 'fa' ? 'رشته و دانشگاه (مثلاً برق · امیرکبیر)' : 'Major & University (e.g., EE · AUT)'}
-              className="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 text-slate-900 dark:text-white"
-            />
+            {user ? (
+              <div className="md:col-span-2 flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-sky-50/80 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-800/60 text-xs">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt={user.name} className="w-7 h-7 rounded-lg object-cover ring-1 ring-sky-500/40" />
+                ) : (
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-sky-500 to-indigo-600 text-white font-bold flex items-center justify-center text-[10px]">
+                    {user.avatarInitials || user.name.slice(0, 2)}
+                  </div>
+                )}
+                <span className="font-bold text-slate-900 dark:text-white">{user.name}</span>
+                <span className="text-slate-400">·</span>
+                <span className="text-slate-600 dark:text-slate-300">{user.field || 'دانشجو'} · {user.university}</span>
+              </div>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  value={newAuthor}
+                  onChange={(e) => setNewAuthor(e.target.value)}
+                  placeholder={lang === 'fa' ? 'نام یا نام مستعار دانشجویی' : 'Your name or handle'}
+                  className="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 text-slate-900 dark:text-white"
+                />
+                <input
+                  type="text"
+                  value={newBadge}
+                  onChange={(e) => setNewBadge(e.target.value)}
+                  placeholder={lang === 'fa' ? 'رشته و دانشگاه (مثلاً برق · امیرکبیر)' : 'Major & University (e.g., EE · AUT)'}
+                  className="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 text-slate-900 dark:text-white"
+                />
+              </>
+            )}
           </div>
 
           <input
@@ -722,64 +781,110 @@ export const CampusVoiceHub: React.FC<CampusVoiceHubProps> = ({ lang }) => {
 
                               {/* Inline Nested Reply Box */}
                               {replyTargetId === comment.id && (
-                                <div className="flex items-center gap-2 pt-1">
-                                  <input
-                                    type="text"
-                                    value={replyInputs[comment.id] || ''}
-                                    onChange={(e) =>
-                                      setReplyInputs((prev) => ({ ...prev, [comment.id]: e.target.value }))
-                                    }
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') handlePostComment(thread.id, comment.id);
-                                    }}
-                                    placeholder={
-                                      lang === 'fa'
-                                        ? `پاسخ به ${comment.author}...`
-                                        : `Reply to ${comment.author}...`
-                                    }
-                                    className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-xs text-slate-900 dark:text-white"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => handlePostComment(thread.id, comment.id)}
-                                    className="px-3 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold cursor-pointer"
-                                  >
-                                    {lang === 'fa' ? 'ارسال' : 'Send'}
-                                  </button>
-                                </div>
+                                user ? (
+                                  <div className="flex items-center gap-2 pt-1">
+                                    <input
+                                      type="text"
+                                      value={replyInputs[comment.id] || ''}
+                                      onChange={(e) =>
+                                        setReplyInputs((prev) => ({ ...prev, [comment.id]: e.target.value }))
+                                      }
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handlePostComment(thread.id, comment.id);
+                                      }}
+                                      placeholder={
+                                        lang === 'fa'
+                                          ? `پاسخ به ${comment.author}...`
+                                          : `Reply to ${comment.author}...`
+                                      }
+                                      className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-xs text-slate-900 dark:text-white"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handlePostComment(thread.id, comment.id)}
+                                      className="px-3 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold cursor-pointer"
+                                    >
+                                      {lang === 'fa' ? 'ارسال' : 'Send'}
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-sky-50/70 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-xs">
+                                    <span className="text-slate-600 dark:text-slate-300">
+                                      {lang === 'fa' ? 'برای ارسال پاسخ وارد حساب کاربری خود شوید.' : 'Sign in to reply.'}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={onOpenAuth}
+                                      className="px-3 py-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-semibold text-[11px] cursor-pointer"
+                                    >
+                                      {lang === 'fa' ? 'ورود' : 'Sign In'}
+                                    </button>
+                                  </div>
+                                )
                               )}
                             </div>
                           ))}
                         </div>
                       )}
 
-                      {/* Add Top-Level Comment */}
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={commentInputs[thread.id] || ''}
-                          onChange={(e) =>
-                            setCommentInputs((prev) => ({ ...prev, [thread.id]: e.target.value }))
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handlePostComment(thread.id);
-                          }}
-                          placeholder={
-                            lang === 'fa'
-                              ? 'دیدگاه یا تجربه خود را در این گفتگو بنویسید...'
-                              : 'Share your thoughtful view on this debate...'
-                          }
-                          className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-950/80 px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handlePostComment(thread.id)}
-                          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold cursor-pointer"
-                        >
-                          <Send className="w-3.5 h-3.5" />
-                          <span>{lang === 'fa' ? 'ثبت نظر' : 'Post'}</span>
-                        </button>
-                      </div>
+                      {/* Add Top-Level Comment or Authentication Barrier */}
+                      {user ? (
+                        <div className="flex items-center gap-2 pt-1">
+                          {user.photoURL ? (
+                            <img
+                              src={user.photoURL}
+                              alt={user.name}
+                              className="w-9 h-9 rounded-xl object-cover shrink-0 ring-1 ring-sky-500/30"
+                            />
+                          ) : (
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-sm">
+                              {user.avatarInitials || user.name.slice(0, 2)}
+                            </div>
+                          )}
+                          <input
+                            type="text"
+                            value={commentInputs[thread.id] || ''}
+                            onChange={(e) =>
+                              setCommentInputs((prev) => ({ ...prev, [thread.id]: e.target.value }))
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handlePostComment(thread.id);
+                            }}
+                            placeholder={
+                              lang === 'fa'
+                                ? `دیدگاه خود را با عنوان ${user.name} بنویسید...`
+                                : `Share your thought as ${user.name}...`
+                            }
+                            className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-950/80 px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handlePostComment(thread.id)}
+                            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold cursor-pointer shrink-0 transition-colors shadow-sm"
+                          >
+                            <Send className="w-3.5 h-3.5" />
+                            <span>{lang === 'fa' ? 'ثبت نظر' : 'Post'}</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-2xl border border-dashed border-sky-400/60 dark:border-sky-500/40 bg-sky-50/60 dark:bg-sky-950/30 text-xs">
+                          <div className="flex items-center gap-2.5 text-slate-700 dark:text-slate-300">
+                            <MessageSquare className="w-4 h-4 text-sky-600 shrink-0" />
+                            <span>
+                              {lang === 'fa'
+                                ? 'برای مشارکت در این گفتگو و ثبت دیدگاه دانشجویی، لطفاً وارد شوید.'
+                                : 'Please sign in or register to join this debate and post a comment.'}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={onOpenAuth}
+                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-semibold text-xs whitespace-nowrap shadow-sm cursor-pointer"
+                          >
+                            {lang === 'fa' ? 'ورود به حساب / ثبت‌نام' : 'Sign In / Register'}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </article>
