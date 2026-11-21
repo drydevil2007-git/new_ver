@@ -828,8 +828,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         <div className="pt-4 mt-6 border-t border-slate-200/80 dark:border-slate-800/80">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
-                {currentUser?.avatarInitials || 'AD'}
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0 overflow-hidden">
+                {currentUser?.photoURL ? (
+                  <img src={currentUser.photoURL} alt={currentUser.name} className="w-full h-full object-cover" />
+                ) : (
+                  currentUser?.avatarInitials || 'AD'
+                )}
               </div>
               <span className="absolute bottom-0 end-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
             </div>

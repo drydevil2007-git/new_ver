@@ -49,6 +49,7 @@ const AdminPanel = lazy(() => import('./components/AdminPanel').then((m) => ({ d
 const DaneshReelsModal = lazy(() => import('./components/DaneshReelsModal').then((m) => ({ default: m.DaneshReelsModal })));
 const CourseDetailModal = lazy(() => import('./components/CourseDetailModal').then((m) => ({ default: m.CourseDetailModal })));
 const AuthModal = lazy(() => import('./components/AuthModal').then((m) => ({ default: m.AuthModal })));
+const ProfileModal = lazy(() => import('./components/ProfileModal').then((m) => ({ default: m.ProfileModal })));
 
 const INITIAL_FLASHCARDS: LeitnerCard[] = [
   {
@@ -140,6 +141,7 @@ export default function App() {
     }
   });
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [toast, setToast] = useState<{ id: number; message: string } | null>(null);
 
   const showToast = (message: string) => {
@@ -196,6 +198,15 @@ export default function App() {
       lang === 'fa'
         ? `با موفقیت از حساب ${prevName || ''} خارج شدید.`
         : `Signed out cleanly.`
+    );
+  };
+
+  const handleUpdateUser = (updatedUser: UserSession) => {
+    setUser(updatedUser);
+    showToast(
+      lang === 'fa'
+        ? `پروفایل و تصویر کاربری ${updatedUser.name} با موفقیت به‌روزرسانی شد.`
+        : `Profile and avatar updated for ${updatedUser.name}`
     );
   };
 
@@ -415,6 +426,7 @@ export default function App() {
             setActiveSection('study-deck');
           }}
           onOpenAuth={() => setAuthModalOpen(true)}
+          onOpenProfile={() => setProfileModalOpen(true)}
           onLogout={handleLogout}
         />
 
@@ -742,6 +754,17 @@ export default function App() {
         onClose={() => setAuthModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
       />
+
+      {/* User Profile & Avatar Customization Modal */}
+      {user && (
+        <ProfileModal
+          lang={lang}
+          isOpen={profileModalOpen}
+          user={user}
+          onClose={() => setProfileModalOpen(false)}
+          onUpdateUser={handleUpdateUser}
+        />
+      )}
       </Suspense>
 
       {/* Smooth Toast Notification */}

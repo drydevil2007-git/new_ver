@@ -36,6 +36,7 @@ interface HeaderProps {
   onNavigate: (section: NavSection) => void;
   onLaunchVoiceCoach: () => void;
   onOpenAuth: () => void;
+  onOpenProfile?: () => void;
   onLogout: () => void;
 }
 
@@ -66,6 +67,7 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigate,
   onLaunchVoiceCoach,
   onOpenAuth,
+  onOpenProfile,
   onLogout,
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -516,6 +518,18 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
 
                   <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800/80 space-y-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileMenuOpen(false);
+                        onOpenProfile?.();
+                      }}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-700 dark:text-sky-300 text-xs font-bold transition-colors cursor-pointer border border-sky-500/20"
+                    >
+                      <User className="w-3.5 h-3.5" />
+                      <span>{lang === 'fa' ? 'ویرایش پروفایل و عکس' : 'Edit Profile & Photo'}</span>
+                    </button>
+
                     {user.role === 'admin' && (
                       <button
                         type="button"
@@ -603,22 +617,33 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             ) : (
               <div className="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-xs">
-                    {user.avatarInitials}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    onOpenProfile?.();
+                  }}
+                  className="flex items-center gap-2.5 text-start flex-1 cursor-pointer"
+                >
+                  <div className="w-9 h-9 rounded-full overflow-hidden bg-sky-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                    {user.photoURL ? (
+                      <img src={user.photoURL} alt={user.name} className="w-full h-full object-cover" />
+                    ) : (
+                      user.avatarInitials
+                    )}
                   </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-800 dark:text-white">{user.name}</div>
-                    <div className="text-[10px] text-slate-400">{user.email}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold text-slate-800 dark:text-white truncate">{user.name}</div>
+                    <div className="text-[10px] text-sky-600 dark:text-sky-400 font-semibold">{lang === 'fa' ? 'ویرایش پروفایل و عکس' : 'Edit Profile & Photo'}</div>
                   </div>
-                </div>
+                </button>
                 <button
                   type="button"
                   onClick={() => {
                     setMobileOpen(false);
                     onLogout();
                   }}
-                  className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold cursor-pointer"
+                  className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold cursor-pointer shrink-0"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
