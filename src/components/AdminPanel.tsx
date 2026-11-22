@@ -361,6 +361,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   };
 
+  const openCreateUser = () => {
+    setEditingUser({
+      id: `usr-${Date.now()}`,
+      name: '',
+      email: '',
+      university: 'دانشگاه صنعتی شریف',
+      major: 'مهندسی کامپیوتر',
+      role: 'Student',
+      status: 'Active',
+      joinedAt: new Date().toISOString(),
+    });
+  };
+
   const handleSaveEditedUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;

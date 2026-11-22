@@ -15,6 +15,7 @@ import {
   Shield,
   Volume2,
   VolumeX,
+  Sparkles,
 } from 'lucide-react';
 import { Lang, UserRole, UserSession } from '../types/app';
 import { signInWithGoogleAccount } from '../lib/googleAuth';
