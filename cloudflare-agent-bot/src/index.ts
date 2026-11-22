@@ -4,6 +4,7 @@ export interface Env {
   GITHUB_TOKEN?: string;
   GITHUB_REPO?: string;
   GEMINI_API_KEY?: string;
+  AI?: any;
 }
 
 interface TelegramUpdate {
@@ -60,7 +61,6 @@ async function getGithubFile(token: string, repo: string, filePath: string) {
   if (!res.ok) return null;
   const data = (await res.json()) as any;
   if (!data.content) return null;
-  // Decode base64 UTF-8
   const binary = atob(data.content.replace(/\n/g, ''));
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
@@ -77,34 +77,48 @@ async function putGithubFile(
   newContent: string,
   commitMessage: string,
   sha?: string
-) {
-  const url = `https://api.github.com/repos/${repo}/contents/${filePath}`;
-  // Encode utf-8 to base64
-  const bytes = new TextEncoder().encode(newContent);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
+): Promise<{ ok: boolean; error?: string; commitSha?: string }> {
+  try {
+    if (!sha) {
+      const existing = await getGithubFile(token, repo, filePath);
+      if (existing) {
+        sha = existing.sha;
+      }
+    }
+
+    const url = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+    const bytes = new TextEncoder().encode(newContent);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const encodedContent = btoa(binary);
+
+    const body: any = {
+      message: commitMessage,
+      content: encodedContent,
+      branch: 'main',
+    };
+    if (sha) body.sha = sha;
+
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'User-Agent': 'Cloudflare-DaneshYar-Agent',
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    const data = (await res.json()) as any;
+    if (res.ok) {
+      return { ok: true, commitSha: data.commit?.sha };
+    }
+    return { ok: false, error: data.message || res.statusText };
+  } catch (err: any) {
+    return { ok: false, error: err.message || String(err) };
   }
-  const encodedContent = btoa(binary);
-
-  const body: any = {
-    message: commitMessage,
-    content: encodedContent,
-    branch: 'main',
-  };
-  if (sha) body.sha = sha;
-
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      'User-Agent': 'Cloudflare-DaneshYar-Agent',
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3+json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-  return res.ok;
 }
 
 async function listGithubDirectory(token: string, repo: string, dirPath = '') {
@@ -122,36 +136,67 @@ async function listGithubDirectory(token: string, repo: string, dirPath = '') {
   return list.map((item) => ({
     name: item.name,
     path: item.path,
-    type: item.type, // 'file' | 'dir'
+    type: item.type,
   }));
 }
 
-// Call Gemini API with Tool Calling or Direct Reasoning
-async function askGemini(
-  apiKey: string,
+// Unified Multi-Model AI: Google Gemini/Gemma + Cloudflare Workers AI Fallback
+async function askAI(
+  env: Env,
   systemPrompt: string,
   userPrompt: string
 ): Promise<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-      systemInstruction: { parts: [{ text: systemPrompt }] },
-      generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 2048,
-      },
-    }),
-  });
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Gemini API Error: ${errText}`);
+  // 1. Try Google Generative Language with user's key
+  if (env.GEMINI_API_KEY) {
+    const models = ['gemma-4-26b-a4b-it', 'gemini-3.8-flash', 'gemini-flash-latest'];
+    for (const model of models) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: `${systemPrompt}\n\nدرخواست کاربر:\n${userPrompt}` }],
+              },
+            ],
+            generationConfig: {
+              temperature: 0.3,
+              maxOutputTokens: 2048,
+            },
+          }),
+        });
+        if (res.ok) {
+          const data = (await res.json()) as any;
+          const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (reply) return reply;
+        }
+      } catch {}
+    }
   }
-  const data = (await res.json()) as any;
-  const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  return reply || 'پاسخی از هوش مصنوعی دریافت نشد.';
+
+  // 2. Cloudflare Workers AI Built-in Fallback (Always available, zero rate limits)
+  if (env.AI) {
+    try {
+      const aiRes = await env.AI.run('@cf/meta/llama-3.3-70b-instruct', {
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        max_tokens: 2048,
+        temperature: 0.3,
+      });
+      if (aiRes && aiRes.response) {
+        return aiRes.response;
+      }
+    } catch (e: any) {
+      console.error('Workers AI error:', e);
+    }
+  }
+
+  return 'پوزش، پاسخی از هسته هوش مصنوعی دریافت نشد.';
 }
 
 export default {
@@ -217,13 +262,14 @@ export default {
 من <b>دستیار ابری دانشیار (DaneshYar Cloud Agent)</b> هستم.
 
 ⚡ <b>وضعیت:</b> ۲۴ ساعته آنلاین روی Cloudflare Worker
-💻 <b>مستقل از کامپیوتر:</b> حتی وقتی کامپیوترت خاموش باشه، هر درخواستی بدی من مستقیماً روی مخزن <code>${repo}</code> اعمال می‌کنم!
+💻 <b>مستقل از کامپیوتر:</b> حتی وقتی کامپیوترت خاموش باشه، هر درخواستی بدی من مستقیماً روی مخزن <code>${repo}</code> اعمال و کامیت می‌کنم!
 
 🛠 <b>دستورات سریع:</b>
 • <code>/status</code> — بررسی وضعیت پروژه و دامنه‌های زنده
-• <code>/files</code> — مشاهده لیست فایل‌های اصلی پروژه
+• <code>/files [path]</code> — مشاهده فایل‌های مخزن
 • <code>/read &lt;مسیر فایل&gt;</code> — خواندن محتوای یک فایل
-• یا کافیه به زبان ساده بگی چه تغییری می‌خوای انجام بشه!
+• <code>/write &lt;مسیر فایل&gt;</code> (در خط بعد محتوا) — نوشتن مستقیم فایل روی گیت‌هاب
+• یا هر درخواستی داری به زبان فارسی بنویس تا هوش مصنوعی انجام بده و خودکار کامیت بزنه!
           `.trim();
           await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, chatId, welcome);
           return new Response('OK');
@@ -269,7 +315,8 @@ export default {
 • <b>مخزن فعال:</b> <code>${repo}</code>
 • <b>آخرین کامیت:</b> ${commitInfo}
 • <b>وضعیت وب‌سایت (danshyar.ir):</b> ${siteStatus}
-• <b>سرویس ورکر:</b> فعال روی کلودفلر (۲۴/۷)
+• <b>سرور ابری:</b> bot.danshyar.ir (Cloudflare Worker ۲۴/۷)
+• <b>اتصال گیت‌هاب:</b> ${env.GITHUB_TOKEN ? '✅ متصل (دارای حق کامیت)' : '❌ نامشخص'}
           `.trim();
           await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, chatId, statusMsg);
           return new Response('OK');
@@ -281,7 +328,7 @@ export default {
             await sendTelegramMessage(
               env.TELEGRAM_BOT_TOKEN,
               chatId,
-              '⚠️ توکن گیت‌هاب (GITHUB_TOKEN) برای خواندن فایل‌ها تنظیم نشده است.'
+              '⚠️ توکن گیت‌هاب (GITHUB_TOKEN) برای خواندن فایل‌ها هنوز تنظیم نشده است.'
             );
             return new Response('OK');
           }
@@ -338,39 +385,138 @@ export default {
           return new Response('OK');
         }
 
-        // Natural Language AI Processing with Gemini
-        await sendTelegramMessage(
-          env.TELEGRAM_BOT_TOKEN,
-          chatId,
-          '🧠 در حال تحلیل درخواست با هوش مصنوعی و بررسی پروژه...'
-        );
-
-        if (!env.GEMINI_API_KEY) {
+        // Command: /write <filepath>\n<content>
+        if (text.startsWith('/write ')) {
+          if (!env.GITHUB_TOKEN) {
+            await sendTelegramMessage(
+              env.TELEGRAM_BOT_TOKEN,
+              chatId,
+              '⚠️ توکن گیت‌هاب تنظیم نشده است.'
+            );
+            return new Response('OK');
+          }
+          const firstLineBreak = text.indexOf('\n');
+          if (firstLineBreak === -1) {
+            await sendTelegramMessage(
+              env.TELEGRAM_BOT_TOKEN,
+              chatId,
+              'فرمت صحیح دستور:\n<code>/write &lt;مسیر فایل&gt;</code>\n&lt;محتوای فایل در خط جدید&gt;'
+            );
+            return new Response('OK');
+          }
+          const targetPath = text.slice('/write '.length, firstLineBreak).trim();
+          const targetContent = text.slice(firstLineBreak + 1);
           await sendTelegramMessage(
             env.TELEGRAM_BOT_TOKEN,
             chatId,
-            '⚠️ کلید GEMINI_API_KEY روی Cloudflare Worker ست نشده است. لطفاً آن را تنظیم کنید.'
+            `⏳ در حال کامیت مستقیم فایل <code>${targetPath}</code> روی گیت‌هاب...`
           );
+          const putResult = await putGithubFile(
+            env.GITHUB_TOKEN,
+            repo,
+            targetPath,
+            targetContent,
+            `Update ${targetPath} via Telegram Agent`
+          );
+          if (putResult.ok) {
+            await sendTelegramMessage(
+              env.TELEGRAM_BOT_TOKEN,
+              chatId,
+              `✅ <b>فایل با موفقیت ثبت شد!</b>\n\n📄 <b>فایل:</b> <code>${targetPath}</code>\n🔗 <b>کامیت:</b> <code>${putResult.commitSha?.slice(
+                0,
+                7
+              )}</code>\n🚀 انتشار خودکار روی هاستینگ فعال شد.`
+            );
+          } else {
+            await sendTelegramMessage(
+              env.TELEGRAM_BOT_TOKEN,
+              chatId,
+              `❌ خطا در ذخیره فایل: ${putResult.error}`
+            );
+          }
           return new Response('OK');
         }
+
+        // Natural Language AI Processing
+        await sendTelegramMessage(
+          env.TELEGRAM_BOT_TOKEN,
+          chatId,
+          '🧠 در حال تحلیل درخواست با هوش مصنوعی دانشیار...'
+        );
 
         const systemPrompt = `
 شما دستیار هوش مصنوعی توسعه‌دهنده پلتفرم دانشیار هستید.
 پروژه دانشیار یک وب‌اپلیکیشن مهندسی و دانشگاهی بر پایه React + Vite + TypeScript است.
 مخزن پروژه: ${repo}
-وظیفه شما: پاسخ به سوالات توسعه، بررسی کدها، یا آماده‌سازی دستورات دقیق ویرایش فایل برای کاربر.
-اگر کاربر خواست تغییری در پروژه ایجاد شود، دقیقاً فایل مربوطه و کدهای لازم را بنویسید.
-همیشه پاسخ‌ها را دقیق، حرفه‌ای و به زبان فارسی محترمانه ارسال کنید.
-        `.trim();
+شما روی سرور ابری ۲۴ ساعته Cloudflare Worker فعال هستید و به تلگرام کاربر متصل شده‌اید.
+وظیفه شما: پاسخ به سوالات توسعه، بررسی کدها، و اعمال مستقیم تغییرات در فایل‌های پروژه بر اساس درخواست کاربر است.
+
+اگر کاربر از شما خواست تغییری در فایل‌های پروژه بدهید، کدی بنویسید یا فایلی بسازید:
+ابتدا پاسخ و توضیح لازم را به زبان فارسی ارائه دهید.
+سپس برای اعمال خودکار تغییرات روی مخزن گیت‌هاب، دستور کامیت را در انتهای پاسخ خود دقیقاً در قالب زیر بیاورید:
+\`\`\`COMMIT_ACTION
+{
+  "path": "مسیر فایل نسبت به ریشه مثلا src/App.tsx یا public/robots.txt",
+  "content": "محتوای کامل و جدید فایل",
+  "message": "پیام کامیت به انگلیسی مثلا update App.tsx"
+}
+\`\`\`
+`.trim();
 
         try {
-          const aiResponse = await askGemini(env.GEMINI_API_KEY, systemPrompt, text);
-          await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, chatId, aiResponse, 'Markdown');
+          const aiResponse = await askAI(env, systemPrompt, text);
+
+          let cleanReply = aiResponse;
+          const actionMatch = aiResponse.match(/```COMMIT_ACTION\s*([\s\S]*?)\s*```/);
+          let actionData: any = null;
+          if (actionMatch) {
+            cleanReply = aiResponse.replace(/```COMMIT_ACTION[\s\S]*?```/, '').trim();
+            try {
+              actionData = JSON.parse(actionMatch[1]);
+            } catch (e) {
+              console.error('Failed to parse COMMIT_ACTION JSON', e);
+            }
+          }
+
+          if (cleanReply) {
+            await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, chatId, cleanReply, 'Markdown');
+          }
+
+          if (actionData && actionData.path && actionData.content && env.GITHUB_TOKEN) {
+            await sendTelegramMessage(
+              env.TELEGRAM_BOT_TOKEN,
+              chatId,
+              `⏳ در حال ثبت و کامیت خودکار تغییرات روی مخزن: <code>${actionData.path}</code>...`
+            );
+            const putRes = await putGithubFile(
+              env.GITHUB_TOKEN,
+              repo,
+              actionData.path,
+              actionData.content,
+              actionData.message || `Update ${actionData.path} via DaneshYar AI Agent`
+            );
+            if (putRes.ok) {
+              await sendTelegramMessage(
+                env.TELEGRAM_BOT_TOKEN,
+                chatId,
+                `✅ <b>تغییرات با موفقیت روی گیت‌هاب اعمال و کامیت شد!</b>\n\n📄 <b>فایل:</b> <code>${actionData.path}</code>\n🔗 <b>کامیت:</b> <code>${putRes.commitSha?.slice(
+                  0,
+                  7
+                )}</code>\n🚀 پایپ‌لاین بیلد و انتشار خودکار روی وب‌سایت فعال شد.`
+              );
+            } else {
+              await sendTelegramMessage(
+                env.TELEGRAM_BOT_TOKEN,
+                chatId,
+                `❌ خطا در ثبت کامیت گیت‌هاب: ${putRes.error}`
+              );
+            }
+          }
         } catch (e: any) {
           await sendTelegramMessage(
             env.TELEGRAM_BOT_TOKEN,
             chatId,
-            `❌ خطا در هوش مصنوعی: ${e.message || String(e)}`
+            `❌ خطا در پردازش هوش مصنوعی: ${e.message || String(e)}`
           );
         }
 

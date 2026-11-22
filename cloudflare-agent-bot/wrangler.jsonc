@@ -4,9 +4,14 @@
   "main": "src/index.ts",
   "compatibility_date": "2025-02-14",
   "compatibility_flags": ["nodejs_compat"],
+  "ai": {
+    "binding": "AI"
+  },
   "vars": {
     "TELEGRAM_BOT_TOKEN": "9030854275:AAG483JDHfpemDCMf_4udvh3Sn-lXndwkBw",
     "ALLOWED_USER_ID": "736983845",
-    "GITHUB_REPO": "drydevil2007-git/new_ver"
+    "GITHUB_REPO": "drydevil2007-git/new_ver",
+    "GITHUB_TOKEN": "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",
+    "GEMINI_API_KEY": "AQ.Ab8RN6I9VsgitnTHP92onGwz5eJ4a3JiCqf-5XEVviFNQqqWUw"
   }
 }
