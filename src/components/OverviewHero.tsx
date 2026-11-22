@@ -164,10 +164,10 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({
     {
       id: 'papers',
       icon: BookOpen,
-      titleFa: 'مقالات و کتب مرجع رایگان',
-      titleEn: 'Open Access Research & Textbook Hub',
-      descFa: 'دسترسی رایگان و قانونی به بیش از ۲۵۰ میلیون مقاله علمی و تکست‌بوک با CORE، DOAJ، Unpaywall و LibGen.',
-      descEn: 'Free and legal access to 250M+ peer-reviewed papers and textbooks via CORE, DOAJ, Unpaywall, and LibGen.',
+      titleFa: 'پایگاه مقالات و کتب مرجع',
+      titleEn: 'Academic Research & Textbook Hub',
+      descFa: 'دسترسی آزاد به مراجع علمی دانشگاهی، مقالات پژوهشی و تکست‌بوک‌ها از طریق پایگاه‌های معتبر CORE، DOAJ، arXiv و Unpaywall.',
+      descEn: 'Open access to academic textbooks, reference materials, and research papers via CORE, DOAJ, arXiv, and Unpaywall.',
       action: () => onNavigate('articles'),
     },
   ];

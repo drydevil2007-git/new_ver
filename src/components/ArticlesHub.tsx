@@ -416,8 +416,8 @@ export const ArticlesHub: React.FC<ArticlesHubProps> = ({ lang, user, onOpenAuth
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             {hubTab === 'library'
               ? lang === 'fa'
-                ? 'دانلود رایگان و قانونی کتب مرجع دانشگاهی، تکست‌بوک‌های زبان اصلی و مقالات ISI از طریق LibGen، CORE، DOAJ و OA.mg'
-                : 'Free and legal access to academic textbooks, reference books, and ISI papers via LibGen, CORE, DOAJ, and OA.mg'
+                ? 'دسترسی به کتب مرجع دانشگاهی، تکست‌بوک‌های زبان اصلی و مقالات علمی از طریق CORE، DOAJ، arXiv، OA.mg و منابع بین‌المللی'
+                : 'Access to academic textbooks, reference books, and scientific papers via CORE, DOAJ, arXiv, OA.mg, and international databases'
               : lang === 'fa'
               ? 'راهنماهای عمیق مهندسی با فرمول‌های LaTeX، قطعه کدهای آزمایشگاهی و نکات کلیدی امتحان'
               : 'In-depth engineering guides with KaTeX derivations, annotated code snippets, and key takeaways'}
