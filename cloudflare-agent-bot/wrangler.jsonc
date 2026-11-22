@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "danshyar-cloud-agent",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-02-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "TELEGRAM_BOT_TOKEN": "9030854275:AAG483JDHfpemDCMf_4udvh3Sn-lXndwkBw",
+    "ALLOWED_USER_ID": "736983845",
+    "GITHUB_REPO": "drydevil2007-git/new_ver"
+  }
+}
