@@ -140,15 +140,23 @@ async function listGithubDirectory(token: string, repo: string, dirPath = '') {
   }));
 }
 
-// Unified Multi-Model AI: Google Gemini/Gemma + Cloudflare Workers AI Fallback
+// Unified Multi-Model AI: Google Gemini + Cloudflare Workers AI Fallback
 async function askAI(
   env: Env,
   systemPrompt: string,
   userPrompt: string
 ): Promise<string> {
-  // 1. Try Google Generative Language with user's key
+  let lastError = '';
+
+  // 1. Try Google Generative Language with verified active models
   if (env.GEMINI_API_KEY) {
-    const models = ['gemma-4-26b-a4b-it', 'gemini-3.8-flash', 'gemini-flash-latest'];
+    const models = [
+      'gemini-3.1-flash-lite',
+      'gemini-flash-lite-latest',
+      'gemini-3-flash-preview',
+      'gemini-3.5-flash',
+      'gemma-4-26b-a4b-it',
+    ];
     for (const model of models) {
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
@@ -172,31 +180,43 @@ async function askAI(
           const data = (await res.json()) as any;
           const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
           if (reply) return reply;
+        } else {
+          const errData = (await res.json().catch(() => ({}))) as any;
+          lastError = `${model}: ${errData?.error?.message || res.statusText}`;
         }
-      } catch {}
-    }
-  }
-
-  // 2. Cloudflare Workers AI Built-in Fallback (Always available, zero rate limits)
-  if (env.AI) {
-    try {
-      const aiRes = await env.AI.run('@cf/meta/llama-3.3-70b-instruct', {
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        max_tokens: 2048,
-        temperature: 0.3,
-      });
-      if (aiRes && aiRes.response) {
-        return aiRes.response;
+      } catch (e: any) {
+        lastError = `${model}: ${e.message || String(e)}`;
       }
-    } catch (e: any) {
-      console.error('Workers AI error:', e);
     }
   }
 
-  return 'پوزش، پاسخی از هسته هوش مصنوعی دریافت نشد.';
+  // 2. Cloudflare Workers AI Built-in Fallback
+  if (env.AI) {
+    const cfModels = [
+      '@cf/meta/llama-3.1-8b-instruct',
+      '@cf/meta/llama-3-8b-instruct',
+      '@cf/meta/llama-3.3-70b-instruct',
+    ];
+    for (const cfModel of cfModels) {
+      try {
+        const aiRes = await env.AI.run(cfModel, {
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          max_tokens: 2048,
+          temperature: 0.3,
+        });
+        if (aiRes && aiRes.response) {
+          return aiRes.response;
+        }
+      } catch (e: any) {
+        lastError = `WorkersAI(${cfModel}): ${e.message || String(e)}`;
+      }
+    }
+  }
+
+  return `پوزش، پاسخی از هسته هوش مصنوعی دریافت نشد.\n\nعلت: ${lastError || 'خطای ناشناخته'}`;
 }
 
 export default {
