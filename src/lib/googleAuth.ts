@@ -9,7 +9,20 @@ import {
 } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
 
-const app = getApps().length > 0 ? getApps()[0] : initializeApp(firebaseConfig);
+// Dynamically use custom domain authDomain in production to bypass Iran filtering on firebaseapp.com and enable 1st-party cookies
+const customAuthDomain =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'danshyar.ir' || window.location.hostname === 'www.danshyar.ir')
+    ? window.location.hostname
+    : firebaseConfig.authDomain;
+
+const app =
+  getApps().length > 0
+    ? getApps()[0]
+    : initializeApp({
+        ...firebaseConfig,
+        authDomain: customAuthDomain,
+      });
 export const auth = getAuth(app);
 
 const provider = new GoogleAuthProvider();
