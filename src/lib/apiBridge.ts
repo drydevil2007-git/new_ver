@@ -3,12 +3,10 @@
 // ============================================================================
 
 const CANDIDATE_MODELS = [
-  'gemini-3.8-flash',
-  'gemini-3.5-flash',
-  'gemini-flash-latest',
+  'gemini-3.1-flash-lite',
   'gemini-flash-lite-latest',
-  'gemini-1.5-flash',
-  'gemini-pro-latest',
+  'gemini-3-flash-preview',
+  'gemini-3.5-flash',
 ];
 
 function getApiKey(): string {
@@ -18,7 +16,10 @@ function getApiKey(): string {
   } catch {
     /* ignore */
   }
-  return '';
+  return (
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) ||
+    'AQ.Ab8RN6I9VsgitnTHP92onGwz5eJ4a3JiCqf-5XEVviFNQqqWUw'
+  );
 }
 
 function getLocal<T>(key: string, fallback: T): T {
