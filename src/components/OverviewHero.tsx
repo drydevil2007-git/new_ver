@@ -13,10 +13,6 @@ import {
   Landmark,
   Box,
   Target,
-  Cpu,
-  Bot,
-  Zap,
-  Code2,
 } from 'lucide-react';
 import { Lang, NavSection } from '../types/app';
 import { ENGINEERING_COURSES, ENGINEERING_FIELDS } from '../data/coursesData';
@@ -108,42 +104,6 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({
       action: () => onNavigate('study-rooms'),
     },
     {
-      id: 'mercury',
-      icon: Cpu,
-      titleFa: '⚡ دانشیار مرکیوری: عامل خودگردان و مغز دوم',
-      titleEn: '⚡ Mercury Agent: Soul-Driven AI & Second Brain',
-      descFa: 'عامل هوشمند با شخصیت قابل ویرایش (SOUL.md)، حافظه مغز دوم، ناوگان ربات‌های تخصصی (ارشمیدس، تورینگ، اویلر، هیپاتیا) و نظارت بر امنیت.',
-      descEn: 'Persistent second-brain memory, editable soul, autonomous specialist bot fleet, and permission-gated execution.',
-      action: () => onNavigate('mercury'),
-    },
-    {
-      id: 'mausbot',
-      icon: Bot,
-      titleFa: '🐭 فلیت ربات‌های اوپن‌ماوس‌بات (OpenMausBot)',
-      titleEn: '🐭 OpenMausBot Autonomous Fleet & Sandboxed VMs',
-      descFa: 'تیم بات‌های هوش مصنوعی با کامپیوتر ایزوله اختصاصی (VM)، کارت‌های تایید مجوز (Approval Cards)، اتاق‌های چندرباته و پشتیبانی از مدل‌های Claude، Gemini، Grok و DeepSeek.',
-      descEn: 'Your AI team in a chat app. Every bot gets an isolated computer sandbox, interactive approval cards for dangerous actions, and multi-bot collaborative rooms.',
-      action: () => onNavigate('mausbot'),
-    },
-    {
-      id: 'claudable',
-      icon: Code2,
-      titleFa: '✨ وب‌ساز هوشمند کلودبل (Claudable Studio)',
-      titleEn: '✨ Claudable Studio: Lovable for CLI Agents',
-      descFa: 'ساخت و دیپلوی آنی وب‌اپلیکیشن‌ها و شبیه‌سازهای مهندسی با ایجنت‌های محلی Claude Code، Cursor و Codex همراه با پیش‌نمایش زنده و هات‌لود.',
-      descEn: 'Build and deploy full-stack engineering tools effortlessly with local CLI coding agents, live hot-reload sandbox, and Vercel edge deployment.',
-      action: () => onNavigate('claudable'),
-    },
-    {
-      id: 'strata',
-      icon: Zap,
-      titleFa: '⚡ هسته استنتاج محلی Strata: اجرای MoE بدون اینترنت',
-      titleEn: '⚡ Strata Local Engine: Frontier MoE on Consumer Hardware',
-      descFa: 'اجرای مدل‌های فرانتیر (Qwen3.8 Flash و DeepSeek V4) روی کارت‌های گرافیک معمولی با لایه‌بندی حافظه VRAM/RAM/NVMe، بدون تحریم، آفلاین و ۱۰۰٪ خصوصی.',
-      descEn: 'Run 110B+ MoE models on consumer gaming GPUs using layered VRAM/RAM/NVMe offloading with OpenAI/Anthropic compatible local APIs.',
-      action: () => onNavigate('strata'),
-    },
-    {
       id: 'campus',
       icon: Landmark,
       titleFa: 'تریبون هم‌دانشگاهی و نظرسنجی زنده',
@@ -207,12 +167,6 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({
       titleFa: 'کار گروهی و منابع',
       titleEn: 'Together & sources',
       ids: ['rooms', 'campus', 'papers'],
-    },
-    {
-      id: 'agents',
-      titleFa: 'عامل‌ها و ابزارهای پیشرفته',
-      titleEn: 'Agents & advanced tools',
-      ids: ['mercury', 'mausbot', 'claudable', 'strata'],
     },
   ];
 

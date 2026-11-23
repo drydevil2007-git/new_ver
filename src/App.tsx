@@ -40,10 +40,6 @@ const StudyDeckHub = lazy(() => import('./components/StudyDeckHub').then((m) => 
 const StudyRoomsAndTools = lazy(() => import('./components/StudyRoomsAndTools').then((m) => ({ default: m.StudyRoomsAndTools })));
 const CommunityAndNotes = lazy(() => import('./components/CommunityAndNotes').then((m) => ({ default: m.CommunityAndNotes })));
 const CampusVoiceHub = lazy(() => import('./components/CampusVoiceHub').then((m) => ({ default: m.CampusVoiceHub })));
-const MercuryAgentHub = lazy(() => import('./components/MercuryAgentHub').then((m) => ({ default: m.MercuryAgentHub })));
-const OpenMausBotHub = lazy(() => import('./components/OpenMausBotHub').then((m) => ({ default: m.OpenMausBotHub })));
-const StrataHub = lazy(() => import('./components/StrataHub').then((m) => ({ default: m.StrataHub })));
-const ClaudableHub = lazy(() => import('./components/ClaudableHub').then((m) => ({ default: m.ClaudableHub })));
 const ArticlesHub = lazy(() => import('./components/ArticlesHub').then((m) => ({ default: m.ArticlesHub })));
 const AdminPanel = lazy(() => import('./components/AdminPanel').then((m) => ({ default: m.AdminPanel })));
 const DaneshReelsModal = lazy(() => import('./components/DaneshReelsModal').then((m) => ({ default: m.DaneshReelsModal })));
@@ -482,8 +478,6 @@ export default function App() {
                   {activeSection === 'study-rooms' && (lang === 'fa' ? 'اتاق مطالعه اشتراکی' : 'Study Rooms & Tools')}
                   {activeSection === 'community' && (lang === 'fa' ? 'چت علمی، انجمن و جزوات' : 'Academic Chat, Forum & Notes')}
                   {activeSection === 'campus' && (lang === 'fa' ? 'هم‌دانشگاهی · صدای دانشجو و جامعه' : 'Campus & Society Student Voice')}
-                  {activeSection === 'claudable' && (lang === 'fa' ? '✨ استودیوی وب‌ساز کلودبل (Claudable Studio)' : '✨ Claudable Web Builder Studio')}
-                  {activeSection === 'mercury' && (lang === 'fa' ? '⚡ دانشیار مرکیوری · دستیار خودگردان و مغز دوم' : '⚡ Mercury Agent Hub & Second Brain')}
                   {activeSection === 'admin' && (lang === 'fa' ? 'پنل مدیریت جامع ادمین' : 'Comprehensive Admin Panel')}
                 </span>
               </>
@@ -618,13 +612,6 @@ export default function App() {
             />
           )}
 
-          {activeSection === 'mercury' && <MercuryAgentHub lang={lang} onNavigate={setActiveSection} />}
-
-          {activeSection === 'mausbot' && <OpenMausBotHub lang={lang} onNavigate={setActiveSection} />}
-
-          {activeSection === 'strata' && <StrataHub lang={lang} onNavigate={setActiveSection} />}
-
-          {activeSection === 'claudable' && <ClaudableHub lang={lang} onNavigate={setActiveSection} />}
 
           {activeSection === 'admin' && user?.role === 'admin' && (
             <AdminPanel
@@ -715,10 +702,10 @@ export default function App() {
             </button>
             <button
               type="button"
-              onClick={() => setActiveSection('mercury')}
+              onClick={() => setActiveSection('ai-lab')}
               className="hover:text-slate-900 dark:hover:text-white cursor-pointer font-semibold text-sky-600 dark:text-sky-400"
             >
-              {lang === 'fa' ? '⚡ مرکیوری ایجنت' : '⚡ Mercury Agent'}
+              {lang === 'fa' ? '✨ هوش مصنوعی دانشیار' : '✨ DaneshYar AI'}
             </button>
             {user?.role === 'admin' && (
               <button
